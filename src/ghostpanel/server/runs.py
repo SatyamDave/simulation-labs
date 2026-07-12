@@ -31,6 +31,7 @@ class RunRecord:
     status: RunStatus = RunStatus.PENDING
     report: Optional[RunReport] = None
     error: str = ""
+    memory_mode: str = "off"
     # asyncio.Task driving the swarm (so tests / shutdown can await it).
     task_handle: Optional["asyncio.Task"] = None
 
@@ -48,6 +49,7 @@ class RunRecord:
                 if self.report is not None
                 else len(self.persona_ids)
             ),
+            "memory_mode": self.memory_mode,
         }
 
 
@@ -58,7 +60,12 @@ class RunRegistry:
         self._runs: dict[str, RunRecord] = {}
 
     def create(
-        self, run_id: str, target_url: str, task: str, persona_ids: list[str]
+        self,
+        run_id: str,
+        target_url: str,
+        task: str,
+        persona_ids: list[str],
+        memory_mode: str = "off",
     ) -> RunRecord:
         record = RunRecord(
             run_id=run_id,
@@ -66,6 +73,7 @@ class RunRegistry:
             task=task,
             persona_ids=list(persona_ids),
             status=RunStatus.RUNNING,
+            memory_mode=memory_mode,
         )
         self._runs[run_id] = record
         return record

@@ -1,7 +1,7 @@
 // Ghostpanel API client. The backend base URL is read from VITE_API_BASE and
 // never hardcoded. See CLAUDE.md for the endpoint contract.
 
-import type { PersonaConfig, RunReport } from "./types";
+import type { Insight, MemoryMode, PersonaConfig, RunReport } from "./types";
 
 // Default: explicit env override > dev-server assumption (backend on :8000) >
 // same-origin ("" — the built app is mounted at / by the backend itself).
@@ -13,6 +13,7 @@ export interface StartRunPayload {
   target_url: string;
   task: string;
   persona_ids: string[];
+  memory_mode?: MemoryMode;
 }
 
 export interface StartRunResponse {
@@ -41,6 +42,25 @@ export async function getReport(runId: string): Promise<RunReport> {
     throw new Error(`getReport failed: ${res.status} ${res.statusText}`);
   }
   return (await res.json()) as RunReport;
+}
+
+// GET /insights?q=&limit=&impairment= -> { insights: Insight[], count }
+// The cross-run knowledge base. Returns data.insights (default limit 20).
+export async function getInsights(params?: {
+  q?: string;
+  limit?: number;
+  impairment?: string;
+}): Promise<Insight[]> {
+  const qs = new URLSearchParams();
+  if (params?.q) qs.set("q", params.q);
+  qs.set("limit", String(params?.limit ?? 20));
+  if (params?.impairment) qs.set("impairment", params.impairment);
+  const res = await fetch(`${API_BASE}/insights?${qs.toString()}`);
+  if (!res.ok) {
+    throw new Error(`getInsights failed: ${res.status} ${res.statusText}`);
+  }
+  const data = (await res.json()) as { insights: Insight[]; count: number };
+  return data.insights;
 }
 
 // WS /ws/runs/{id} — the live RunEvent stream for the grid.

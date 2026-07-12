@@ -29,6 +29,12 @@ export type ActionType =
 
 export type ScrollDirection = "up" | "down" | "left" | "right";
 
+// Memory layer: how much prior knowledge personas carry into a run.
+// "off" = fresh first-time users (honest baseline); "site_hints" = reuse what
+// past runs learned about this site; "returning_user" = each persona also
+// recalls its own prior visits.
+export type MemoryMode = "off" | "site_hints" | "returning_user";
+
 // Only `success` counts as completion. `error` is infra failure (excluded from
 // survival stats). Everything else is a genuine human abandon.
 export type PersonaOutcome =
@@ -137,6 +143,21 @@ export interface RunReport {
   heatmap_points: HeatPoint[];
   completion_rate: number;
   generated_at?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Cross-run memory — insights the swarm has accumulated across sites/runs.
+// Wire shape of each item in GET /insights.
+// ---------------------------------------------------------------------------
+export interface Insight {
+  content: string;
+  site: string;
+  persona_id: string;
+  persona_name: string;
+  impairment: string;
+  outcome: string;
+  steps_survived: number | null;
+  score: number | null;
 }
 
 // ---------------------------------------------------------------------------

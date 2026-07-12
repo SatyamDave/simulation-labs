@@ -14,6 +14,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from ghostpanel.memory import normalize_mode
+
 # repo root: src/ghostpanel/server/config.py -> parents[3]
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -77,6 +79,15 @@ class Settings:
     # --- NemoClaw / NVIDIA (optional stretch) ---
     nemoclaw_gateway_url: str = ""
 
+    # --- Supermemory (memory layer) ---
+    supermemory_api_key: str = ""
+    supermemory_base_url: str = ""
+    supermemory_default_mode: str = "off"
+
+    @property
+    def has_memory(self) -> bool:
+        return bool(self.supermemory_api_key.strip())
+
     @property
     def holo_base_url(self) -> str:
         """Effective Holo base URL — routed through the NemoClaw policy gateway
@@ -106,4 +117,9 @@ def get_settings() -> Settings:
         port=_get_int("GHOSTPANEL_PORT", 8000),
         artifact_dir=Path(artifact_dir).expanduser().resolve(),
         nemoclaw_gateway_url=_get_str("NEMOCLAW_GATEWAY_URL"),
+        supermemory_api_key=_get_str("SUPERMEMORY_API_KEY"),
+        supermemory_base_url=_get_str("SUPERMEMORY_BASE_URL"),
+        supermemory_default_mode=normalize_mode(
+            _get_str("SUPERMEMORY_DEFAULT_MODE", "off")
+        ),
     )

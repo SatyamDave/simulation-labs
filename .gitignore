@@ -34,3 +34,6 @@ artifacts/
 
 # TS build cache
 *.tsbuildinfo
+
+# benchmark run logs (keep the JSON results, drop the stdout logs)
+bench/results/*.log

@@ -3,12 +3,40 @@ import { motion } from "framer-motion";
 import { listPersonas } from "../api";
 import { PERSONA_CATALOG, type CatalogEntry } from "../personaCatalog";
 import { perturbationBadges } from "../theme";
+import type { MemoryMode } from "../types";
 
 export interface LaunchValues {
   target_url: string;
   task: string;
   persona_ids: string[];
+  memory_mode: MemoryMode;
 }
+
+// Memory-layer options for the launch selector. `helper` is the one-line
+// tradeoff shown under the active choice.
+const MEMORY_MODES: {
+  value: MemoryMode;
+  label: string;
+  helper: string;
+}[] = [
+  {
+    value: "off",
+    label: "Off (fresh users)",
+    helper:
+      "Honest research runs — personas behave as first-time users with no prior knowledge.",
+  },
+  {
+    value: "site_hints",
+    label: "Site hints",
+    helper:
+      "Reuse what past runs learned about this site — faster, fewer steps to the goal.",
+  },
+  {
+    value: "returning_user",
+    label: "Returning users",
+    helper: "Each persona also recalls its own prior visits to this site.",
+  },
+];
 
 interface Props {
   onLaunch: (v: LaunchValues) => void;
@@ -58,6 +86,7 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
   const [selected, setSelected] = useState<string[]>(
     PERSONA_CATALOG.map((p) => p.id)
   );
+  const [memoryMode, setMemoryMode] = useState<MemoryMode>("off");
 
   // Prefer the backend's live roster (GET /personas); the static catalog is
   // the offline/backendless fallback.
@@ -149,6 +178,7 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
                 target_url: url.trim(),
                 task: task.trim(),
                 persona_ids: selected,
+                memory_mode: memoryMode,
               });
           }}
         >
@@ -209,6 +239,38 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
                 placeholder="Create a new account and reach the verification step."
               />
             </label>
+
+            <div className="flex flex-col gap-2">
+              <span className={FIELD_LABEL}>Memory mode</span>
+              <div
+                className="grid grid-cols-3 gap-1 p-1 rounded-md border border-border bg-background"
+                role="radiogroup"
+                aria-label="Memory mode"
+              >
+                {MEMORY_MODES.map((m) => {
+                  const on = memoryMode === m.value;
+                  return (
+                    <button
+                      type="button"
+                      key={m.value}
+                      role="radio"
+                      aria-checked={on}
+                      onClick={() => setMemoryMode(m.value)}
+                      className={`px-2 py-1.5 rounded-sm font-mono text-[11px] text-center leading-tight transition-colors ${
+                        on
+                          ? "bg-live text-on-live"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {MEMORY_MODES.find((m) => m.value === memoryMode)?.helper}
+              </p>
+            </div>
 
             <div className="flex flex-col gap-2">
               <span className={FIELD_LABEL}>

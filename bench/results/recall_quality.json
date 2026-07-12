@@ -1,0 +1,155 @@
+{
+  "benchmark": "recall_quality",
+  "matching_rule": "a returned row is the gold hint if >=2 of the hint's distinctive keywords appear as case-insensitive substrings; precision@3 = gold row present in top-3 (hit@3); MRR uses rank of first gold-matching row.",
+  "sites": [
+    "checkout",
+    "banking",
+    "airline",
+    "streaming"
+  ],
+  "seeded_counts": {
+    "checkout": 6,
+    "banking": 6,
+    "airline": 6,
+    "streaming": 6
+  },
+  "per_query": [
+    {
+      "q": "how do I make the continue button work on checkout",
+      "site": "checkout",
+      "gold": "co1",
+      "n_rows": 6,
+      "first_gold_rank": 1,
+      "precision_at_3": 1,
+      "reciprocal_rank": 1.0,
+      "top3_texts": [
+        "The user wants the cookie banner to be dismissed before the Continue button becomes clickable on the checkout page.",
+        "The Place Order button on checkout is positioned below the fold under the shipping summary.",
+        "Promo-code field on checkout page empties cart when focused."
+      ]
+    },
+    {
+      "q": "is the promo code box on checkout real or a trap",
+      "site": "checkout",
+      "gold": "co2",
+      "n_rows": 6,
+      "first_gold_rank": 1,
+      "precision_at_3": 1,
+      "reciprocal_rank": 1.0,
+      "top3_texts": [
+        "Promo-code field on checkout page empties cart when focused.",
+        "The user wants the cookie banner to be dismissed before the Continue button becomes clickable on the checkout page.",
+        "The Place Order button on checkout is positioned below the fold under the shipping summary."
+      ]
+    },
+    {
+      "q": "where is the place order button",
+      "site": "checkout",
+      "gold": "co3",
+      "n_rows": 6,
+      "first_gold_rank": 1,
+      "precision_at_3": 1,
+      "reciprocal_rank": 1.0,
+      "top3_texts": [
+        "The Place Order button on checkout is positioned below the fold under the shipping summary.",
+        "Promo-code field on checkout page empties cart when focused.",
+        "The user wants the cookie banner to be dismissed before the Continue button becomes clickable on the checkout page."
+      ]
+    },
+    {
+      "q": "why is the amount field locked on the transfer form",
+      "site": "banking",
+      "gold": "bk1",
+      "n_rows": 4,
+      "first_gold_rank": 1,
+      "precision_at_3": 1,
+      "reciprocal_rank": 1.0,
+      "top3_texts": [
+        "The banking transfer form requires selecting a payee before the amount field unlocks.",
+        "Banking statement download opens a new tab which popup blockers block",
+        "banking login requires auto-submission after six-digit two-factor code entry without a button."
+      ]
+    },
+    {
+      "q": "does the banking 2fa need a submit button",
+      "site": "banking",
+      "gold": "bk2",
+      "n_rows": 4,
+      "first_gold_rank": 1,
+      "precision_at_3": 1,
+      "reciprocal_rank": 1.0,
+      "top3_texts": [
+        "banking login requires auto-submission after six-digit two-factor code entry without a button.",
+        "The banking transfer form requires selecting a payee before the amount field unlocks.",
+        "Banking statement download opens a new tab which popup blockers block"
+      ]
+    },
+    {
+      "q": "how to pick an exit row seat on the airline",
+      "site": "airline",
+      "gold": "al1",
+      "n_rows": 4,
+      "first_gold_rank": 1,
+      "precision_at_3": 1,
+      "reciprocal_rank": 1.0,
+      "top3_texts": [
+        "Exit-row seats on airline seat maps remain greyed out until passenger ages are confirmed.",
+        "Baggage add-ons on the airline site appear only after selecting a return flight.",
+        "User wants the cookie banner dismissed before the Continue button is clickable on the checkout page."
+      ]
+    },
+    {
+      "q": "the fare calendar shows wrong prices",
+      "site": "airline",
+      "gold": "al2",
+      "n_rows": 4,
+      "first_gold_rank": null,
+      "precision_at_3": 0,
+      "reciprocal_rank": 0.0,
+      "top3_texts": [
+        "Baggage add-ons on the airline site appear only after selecting a return flight.",
+        "A payee must be selected before the amount field unlocks in the banking transfer form.",
+        "User wants the cookie banner dismissed before the Continue button is clickable on the checkout page."
+      ]
+    },
+    {
+      "q": "where is the cancel button on the streaming service",
+      "site": "streaming",
+      "gold": "st3",
+      "n_rows": 4,
+      "first_gold_rank": null,
+      "precision_at_3": 0,
+      "reciprocal_rank": 0.0,
+      "top3_texts": [
+        "The checkout page requires the cookie banner to be dismissed before the Continue button becomes clickable.",
+        "Streaming profile creation caps profile names at ten characters and silently truncates them.",
+        "Payee selection is required before the amount field unlocks on the banking transfer form."
+      ]
+    }
+  ],
+  "aggregate": {
+    "n_queries": 8,
+    "precision_at_3": 0.75,
+    "mrr": 0.75
+  },
+  "isolation": {
+    "checks": 24,
+    "leaks": [],
+    "pass": true,
+    "note": "Each row is tagged with metadata.site == the tag it was seeded under. A leak = a row surfaced under a tag it was never written to. Container tags are isolated namespaces, so 0 leaks is expected."
+  },
+  "cleanup": {
+    "deleted": {
+      "gp:bench:quality:checkout": 6,
+      "gp:bench:quality:banking": 6,
+      "gp:bench:quality:airline": 6,
+      "gp:bench:quality:streaming": 6
+    },
+    "residual": {
+      "gp:bench:quality:checkout": 0,
+      "gp:bench:quality:banking": 0,
+      "gp:bench:quality:airline": 0,
+      "gp:bench:quality:streaming": 0
+    }
+  }
+}

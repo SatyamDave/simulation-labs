@@ -30,6 +30,11 @@ class StartRunRequest(BaseModel):
         default=None,
         description="Subset of persona ids; omit/empty for the full roster.",
     )
+    memory_mode: Optional[str] = Field(
+        default=None,
+        description="Memory recall mode: off | site_hints | returning_user. "
+        "Omit to use the server default.",
+    )
 
 
 class StartRunResponse(BaseModel):
@@ -52,13 +57,54 @@ async def start_run(req: StartRunRequest, request: Request) -> StartRunResponse:
     swarm = request.app.state.swarm
     if swarm is None:
         raise HTTPException(status_code=503, detail="Swarm not initialized.")
-    run_id = await swarm.start_run(req.target_url, req.task, req.persona_ids)
+    run_id = await swarm.start_run(
+        req.target_url, req.task, req.persona_ids, memory_mode=req.memory_mode
+    )
     return StartRunResponse(run_id=run_id)
 
 
 @router.get("/runs")
 async def list_runs(request: Request) -> list[dict]:
     return request.app.state.runs.list()
+
+
+@router.get("/memory/modes")
+async def memory_modes(request: Request) -> dict:
+    """Available memory recall modes + the server default (for the launch form)."""
+    settings = request.app.state.settings
+    return {
+        "modes": ["off", "site_hints", "returning_user"],
+        "default": settings.supermemory_default_mode,
+    }
+
+
+@router.get("/insights")
+async def get_insights(
+    request: Request,
+    q: str = "",
+    limit: int = 20,
+    impairment: Optional[str] = None,
+) -> dict:
+    """Cross-run insight knowledge base — which UX patterns kill which impaired
+    users across every site."""
+    store = request.app.state.memory_store
+    if store is None:
+        raise HTTPException(status_code=503, detail="Memory store not initialized.")
+    records = await store.recall_insights(query=q, limit=limit, impairment=impairment)
+    insights = [
+        {
+            "content": r.content,
+            "site": r.site,
+            "persona_id": r.persona_id,
+            "persona_name": r.persona_name,
+            "impairment": r.impairment,
+            "outcome": r.outcome,
+            "steps_survived": r.steps_survived,
+            "score": r.score,
+        }
+        for r in records
+    ]
+    return {"insights": insights, "count": len(insights)}
 
 
 @router.get("/runs/{run_id}/report")

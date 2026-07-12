@@ -29,6 +29,8 @@ dependencies = [
     "gradium>=0.1.0",         # Gradium official Python SDK (TTS/STT/voice clone)
     "anthropic>=0.34",        # Claude turns an action-trace into a first-person exit interview
     "jinja2>=3.1",            # standalone HTML report artifact
+    # --- Memory layer (cross-run learning): Supermemory hybrid vector store ---
+    "supermemory>=3.50",      # site playbooks + cross-run insight memory (optional at runtime)
     # --- shared ---
     "pydantic>=2.7",
     "httpx>=0.27",

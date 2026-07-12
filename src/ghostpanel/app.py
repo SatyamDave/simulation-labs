@@ -25,6 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from ghostpanel.engine.holo_client import LiveHoloClient
+from ghostpanel.memory import create_memory_store
 from ghostpanel.voice.gradium_voice import GradiumVoiceEngine
 
 from .server.api import router
@@ -42,6 +43,7 @@ def create_app(
     *,
     settings: Optional[Settings] = None,
     holo_client: Optional[Any] = None,
+    memory_store: Optional[Any] = None,
     enable_voice: Optional[bool] = None,
     launch_browser: bool = True,
 ) -> FastAPI:
@@ -73,6 +75,16 @@ def create_app(
                 rpm=settings.hai_rpm,
             )
 
+        store = memory_store
+        if store is None:
+            store = create_memory_store(
+                api_key=settings.supermemory_api_key,
+                base_url=settings.supermemory_base_url,
+                anthropic_key=settings.anthropic_api_key,
+                default_mode=settings.supermemory_default_mode,
+            )
+        app.state.memory_store = store
+
         voice_factory = None
         anthropic_key: Optional[str] = None
         if enable_voice:
@@ -93,18 +105,23 @@ def create_app(
             artifact_dir=artifact_dir,
             anthropic_key=anthropic_key,
             voice_engine_factory=voice_factory,
+            memory_store=store,
+            default_memory_mode=settings.supermemory_default_mode,
         )
 
         try:
             yield
         finally:
-            # --- shutdown: close the browser + Playwright ---
+            # --- shutdown: close the browser + Playwright + memory store ---
             if app.state.browser is not None:
                 with contextlib.suppress(Exception):
                     await app.state.browser.close()
             if app.state._playwright is not None:
                 with contextlib.suppress(Exception):
                     await app.state._playwright.stop()
+            if app.state.memory_store is not None:
+                with contextlib.suppress(Exception):
+                    await app.state.memory_store.aclose()
 
     app = FastAPI(title="Ghostpanel Orchestrator", lifespan=lifespan)
 
@@ -126,6 +143,7 @@ def create_app(
     app.state.swarm = None
     app.state.browser = None
     app.state._playwright = None
+    app.state.memory_store = None
 
     # API routes first so they win over the catch-all "/" mount below.
     app.include_router(router)

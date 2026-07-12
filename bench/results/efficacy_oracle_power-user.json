@@ -1,0 +1,115 @@
+{
+  "summary": {
+    "persona": "power-user",
+    "hints": [
+      "Close the cookie pop-up first by clicking 'Accept all' \u2014 it blocks every other click until dismissed.",
+      "Type an email address into the Email field.",
+      "Scroll down: a required 'Promo code' field only appears after you scroll. Fill it with any value.",
+      "To submit, click the plain grey 'Create account' button at the bottom. Do NOT click the blue 'Explore plans' button \u2014 it is a decoy that does nothing."
+    ],
+    "off_baseline": {
+      "n": 3,
+      "success_rate": 0.6666666666666666,
+      "mean_steps": 7.333333333333333,
+      "mean_prompt_tokens": 11600.666666666666,
+      "mean_total_tokens": 12272.666666666666,
+      "mean_wall_s": 125.5
+    },
+    "oracle": {
+      "n": 3,
+      "success_rate": 1.0,
+      "mean_steps": 7.0,
+      "mean_total_tokens": 12449.0,
+      "mean_wall_s": 80.43333333333334
+    },
+    "step_reduction_pct": 4.5,
+    "token_reduction_pct": -1.4,
+    "success_delta": 0.333
+  },
+  "runs": [
+    {
+      "mode": "oracle",
+      "run_id": "bench-oracle-0",
+      "outcome": "success",
+      "success": true,
+      "steps": 7,
+      "holo_calls": 7,
+      "prompt_tokens": 11775,
+      "completion_tokens": 691,
+      "total_tokens": 12466,
+      "per_step_prompt_tokens": [
+        1639,
+        1659,
+        1672,
+        1688,
+        1696,
+        1704,
+        1717
+      ],
+      "hints_injected": [
+        "Close the cookie pop-up first by clicking 'Accept all' \u2014 it blocks every other click until dismissed.",
+        "Type an email address into the Email field.",
+        "Scroll down: a required 'Promo code' field only appears after you scroll. Fill it with any value.",
+        "To submit, click the plain grey 'Create account' button at the bottom. Do NOT click the blue 'Explore plans' button \u2014 it is a decoy that does nothing."
+      ],
+      "failure_step": null,
+      "wall_s": 104.7
+    },
+    {
+      "mode": "oracle",
+      "run_id": "bench-oracle-1",
+      "outcome": "success",
+      "success": true,
+      "steps": 7,
+      "holo_calls": 7,
+      "prompt_tokens": 11775,
+      "completion_tokens": 631,
+      "total_tokens": 12406,
+      "per_step_prompt_tokens": [
+        1639,
+        1659,
+        1672,
+        1688,
+        1696,
+        1704,
+        1717
+      ],
+      "hints_injected": [
+        "Close the cookie pop-up first by clicking 'Accept all' \u2014 it blocks every other click until dismissed.",
+        "Type an email address into the Email field.",
+        "Scroll down: a required 'Promo code' field only appears after you scroll. Fill it with any value.",
+        "To submit, click the plain grey 'Create account' button at the bottom. Do NOT click the blue 'Explore plans' button \u2014 it is a decoy that does nothing."
+      ],
+      "failure_step": null,
+      "wall_s": 62.8
+    },
+    {
+      "mode": "oracle",
+      "run_id": "bench-oracle-2",
+      "outcome": "success",
+      "success": true,
+      "steps": 7,
+      "holo_calls": 7,
+      "prompt_tokens": 11775,
+      "completion_tokens": 700,
+      "total_tokens": 12475,
+      "per_step_prompt_tokens": [
+        1639,
+        1659,
+        1672,
+        1688,
+        1696,
+        1704,
+        1717
+      ],
+      "hints_injected": [
+        "Close the cookie pop-up first by clicking 'Accept all' \u2014 it blocks every other click until dismissed.",
+        "Type an email address into the Email field.",
+        "Scroll down: a required 'Promo code' field only appears after you scroll. Fill it with any value.",
+        "To submit, click the plain grey 'Create account' button at the bottom. Do NOT click the blue 'Explore plans' button \u2014 it is a decoy that does nothing."
+      ],
+      "failure_step": null,
+      "wall_s": 73.8
+    }
+  ]
+}

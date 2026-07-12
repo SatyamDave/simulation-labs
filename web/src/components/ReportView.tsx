@@ -7,6 +7,7 @@ import { OUTCOME_TEXT_CLASS } from "../theme";
 import { SurvivalCurve } from "./SurvivalCurve";
 import { Heatmap } from "./Heatmap";
 import { VitalLine } from "./VitalLine";
+import { InsightsPanel } from "./InsightsPanel";
 
 interface Props {
   report: RunReport;
@@ -165,6 +166,8 @@ export function ReportView({ report, coordSpace, live, onBack }: Props) {
           </p>
         )}
       </div>
+
+      <InsightsPanel />
     </div>
   );
 }

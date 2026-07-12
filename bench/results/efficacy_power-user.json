@@ -1,0 +1,176 @@
+{
+  "summary": {
+    "persona": "power-user",
+    "target": "file:///Users/udsy/.superset/worktrees/simulation-labs/memory-improvement/fixtures/hostile_form.html",
+    "task": "Create a QuantumLeap account: enter the email demo@ghost.test, choose a password, accept the terms, and click the button that creates the account.",
+    "off": {
+      "n": 3,
+      "success_rate": 0.6666666666666666,
+      "mean_steps": 7.333333333333333,
+      "mean_prompt_tokens": 11600.666666666666,
+      "mean_total_tokens": 12272.666666666666,
+      "mean_wall_s": 125.5
+    },
+    "on": {
+      "n": 3,
+      "success_rate": 0.6666666666666666,
+      "mean_steps": 7.333333333333333,
+      "mean_prompt_tokens": 11834.0,
+      "mean_total_tokens": 12628.0,
+      "mean_wall_s": 112.39999999999999
+    },
+    "token_reduction_pct": -2.9,
+    "step_reduction_pct": 0.0
+  },
+  "runs": [
+    {
+      "mode": "off",
+      "run_id": "bench-off-0",
+      "outcome": "success",
+      "success": true,
+      "steps": 7,
+      "holo_calls": 7,
+      "prompt_tokens": 11033,
+      "completion_tokens": 603,
+      "total_tokens": 11636,
+      "per_step_prompt_tokens": [
+        1533,
+        1553,
+        1566,
+        1582,
+        1590,
+        1598,
+        1611
+      ],
+      "hints_injected": [],
+      "failure_step": null,
+      "wall_s": 25.6
+    },
+    {
+      "mode": "off",
+      "run_id": "bench-off-1",
+      "outcome": "time_budget",
+      "success": false,
+      "steps": 8,
+      "holo_calls": 8,
+      "prompt_tokens": 12736,
+      "completion_tokens": 796,
+      "total_tokens": 13532,
+      "per_step_prompt_tokens": [
+        1533,
+        1553,
+        1566,
+        1584,
+        1598,
+        1616,
+        1634,
+        1652
+      ],
+      "hints_injected": [],
+      "failure_step": 7,
+      "wall_s": 240.6
+    },
+    {
+      "mode": "off",
+      "run_id": "bench-off-2",
+      "outcome": "success",
+      "success": true,
+      "steps": 7,
+      "holo_calls": 7,
+      "prompt_tokens": 11033,
+      "completion_tokens": 617,
+      "total_tokens": 11650,
+      "per_step_prompt_tokens": [
+        1533,
+        1553,
+        1566,
+        1582,
+        1590,
+        1598,
+        1611
+      ],
+      "hints_injected": [],
+      "failure_step": null,
+      "wall_s": 110.3
+    },
+    {
+      "mode": "site_hints",
+      "run_id": "bench-on-0",
+      "outcome": "success",
+      "success": true,
+      "steps": 7,
+      "holo_calls": 7,
+      "prompt_tokens": 11252,
+      "completion_tokens": 834,
+      "total_tokens": 12086,
+      "per_step_prompt_tokens": [
+        1564,
+        1584,
+        1597,
+        1613,
+        1621,
+        1629,
+        1644
+      ],
+      "hints_injected": [
+        "QuantumLeap account with email demo@ghost.test was created.",
+        "Alex is a power user."
+      ],
+      "failure_step": null,
+      "wall_s": 92.0
+    },
+    {
+      "mode": "site_hints",
+      "run_id": "bench-on-1",
+      "outcome": "stuck",
+      "success": false,
+      "steps": 8,
+      "holo_calls": 8,
+      "prompt_tokens": 12980,
+      "completion_tokens": 741,
+      "total_tokens": 13721,
+      "per_step_prompt_tokens": [
+        1564,
+        1584,
+        1597,
+        1615,
+        1628,
+        1646,
+        1664,
+        1682
+      ],
+      "hints_injected": [
+        "QuantumLeap account with email demo@ghost.test was created.",
+        "Alex is a power user."
+      ],
+      "failure_step": 7,
+      "wall_s": 124.3
+    },
+    {
+      "mode": "site_hints",
+      "run_id": "bench-on-2",
+      "outcome": "success",
+      "success": true,
+      "steps": 7,
+      "holo_calls": 7,
+      "prompt_tokens": 11270,
+      "completion_tokens": 807,
+      "total_tokens": 12077,
+      "per_step_prompt_tokens": [
+        1564,
+        1584,
+        1597,
+        1613,
+        1621,
+        1639,
+        1652
+      ],
+      "hints_injected": [
+        "QuantumLeap account with email demo@ghost.test was created.",
+        "Alex is a power user."
+      ],
+      "failure_step": null,
+      "wall_s": 120.9
+    }
+  ]
+}

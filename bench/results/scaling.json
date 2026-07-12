@@ -1,0 +1,77 @@
+{
+  "benchmark": "scaling",
+  "tag": "gp:bench:scale",
+  "needle": "On the Zephyr Aurora insurance portal, the platinum-tier renewal toggle is a hidden lavender switch in the top-right that only appears after hovering the policy number for two seconds.",
+  "sizes": [
+    {
+      "size": 25,
+      "recall_p50_ms": 941.6,
+      "recall_p95_ms": 3187.0,
+      "recall_mean_ms": 1208.8,
+      "needle_rank_top5": 1,
+      "needle_similarity": 0.85563499,
+      "impairment_filter": {
+        "query_latency_ms": 794.7,
+        "rows_returned": 25,
+        "blur_rows_after_filter": 6
+      }
+    },
+    {
+      "size": 100,
+      "recall_p50_ms": 818.8,
+      "recall_p95_ms": 1341.0,
+      "recall_mean_ms": 880.2,
+      "needle_rank_top5": 1,
+      "needle_similarity": 0.85563499,
+      "impairment_filter": {
+        "query_latency_ms": 1785.2,
+        "rows_returned": 25,
+        "blur_rows_after_filter": 6
+      }
+    },
+    {
+      "size": 250,
+      "recall_p50_ms": 920.4,
+      "recall_p95_ms": 19285.1,
+      "recall_mean_ms": 4920.4,
+      "needle_rank_top5": 1,
+      "needle_similarity": 0.85563499,
+      "impairment_filter": {
+        "query_latency_ms": 673.0,
+        "rows_returned": 25,
+        "blur_rows_after_filter": 9
+      }
+    }
+  ],
+  "table": [
+    {
+      "size": 25,
+      "recall_p50_ms": 941.6,
+      "recall_p95_ms": 3187.0,
+      "needle_rank": 1,
+      "needle_similarity": 0.85563499
+    },
+    {
+      "size": 100,
+      "recall_p50_ms": 818.8,
+      "recall_p95_ms": 1341.0,
+      "needle_rank": 1,
+      "needle_similarity": 0.85563499
+    },
+    {
+      "size": 250,
+      "recall_p50_ms": 920.4,
+      "recall_p95_ms": 19285.1,
+      "needle_rank": 1,
+      "needle_similarity": 0.85563499
+    }
+  ],
+  "cleanup": {
+    "deleted": {
+      "gp:bench:scale": 250
+    },
+    "residual": {
+      "gp:bench:scale": 0
+    }
+  }
+}

@@ -27,6 +27,7 @@ from ghostpanel_contracts import (
 
 from ghostpanel.engine.persona_agent import HoloPersonaAgent
 from ghostpanel.engine.personas import load_personas
+from ghostpanel.memory import MemoryStore, NullMemoryStore, normalize_mode
 from ghostpanel.report.builder import SurvivalReportBuilder
 from ghostpanel.report.html_report import write_html_report
 from ghostpanel.runner.session import PlaywrightSessionRunner
@@ -81,6 +82,8 @@ class SwarmManager:
         agent_factory: AgentFactory = _default_agent_factory,
         runner_factory: RunnerFactory = _default_runner_factory,
         predicate_factory: PredicateFactory = _default_predicate_factory,
+        memory_store: Optional[MemoryStore] = None,
+        default_memory_mode: str = "off",
     ) -> None:
         self.browser = browser
         self.holo_client = holo_client
@@ -89,6 +92,8 @@ class SwarmManager:
         self.artifact_dir = Path(artifact_dir)
         self.report_builder = report_builder or SurvivalReportBuilder()
         self.anthropic_key = anthropic_key or None
+        self.memory_store = memory_store or NullMemoryStore()
+        self.default_memory_mode = normalize_mode(default_memory_mode)
         self.voice_engine_factory = voice_engine_factory
         # Personas that still get a voice interview even on success (e.g. ai-agent).
         self.voice_success_ids = voice_success_ids or {"ai-agent"}
@@ -102,6 +107,7 @@ class SwarmManager:
         target_url: str,
         task: str,
         persona_ids: Optional[list[str]] = None,
+        memory_mode: Optional[str] = None,
     ) -> str:
         """Register a run, kick it off in the background, return its ``run_id``.
 
@@ -114,11 +120,13 @@ class SwarmManager:
             # Unknown/empty ids -> fall back to the full roster so a run is never empty.
             personas = load_personas(None)
 
+        mode = normalize_mode(memory_mode) if memory_mode else self.default_memory_mode
+
         self.registry.create(
-            run_id, target_url, task, [p.id for p in personas]
+            run_id, target_url, task, [p.id for p in personas], memory_mode=mode
         )
         task_handle = asyncio.create_task(
-            self._execute(run_id, target_url, task, personas)
+            self._execute(run_id, target_url, task, personas, mode)
         )
         record = self.registry.get(run_id)
         if record is not None:
@@ -132,6 +140,7 @@ class SwarmManager:
         target_url: str,
         task: str,
         personas: list[PersonaConfig],
+        memory_mode: str,
     ) -> RunReport:
         run_sink = WebSocketEventSink(run_id, self.hub)
         try:
@@ -151,7 +160,9 @@ class SwarmManager:
             predicate = self.predicate_factory(target_url)
             results: list[PersonaResult] = await asyncio.gather(
                 *(
-                    self._run_one(run_id, persona, target_url, task, predicate)
+                    self._run_one(
+                        run_id, persona, target_url, task, predicate, memory_mode
+                    )
                     for persona in personas
                 )
             )
@@ -167,6 +178,19 @@ class SwarmManager:
             try:
                 write_html_report(report, self.artifact_dir)
             except Exception:  # noqa: BLE001 - a report render hiccup must not kill the run
+                pass
+
+            # Persist what this run learned (site playbooks + cross-run insights).
+            # Guarded like voice: a memory hiccup must never break the run.
+            try:
+                await self.memory_store.remember_run(
+                    run_id=run_id,
+                    target_url=target_url,
+                    task=task,
+                    report=report,
+                    personas=personas,
+                )
+            except Exception:  # noqa: BLE001
                 pass
 
             self.registry.set_report(run_id, report)
@@ -226,12 +250,32 @@ class SwarmManager:
         target_url: str,
         task: str,
         predicate: Optional[Callable],
+        memory_mode: str,
     ) -> PersonaResult:
         """Run one persona; convert any hard failure into an ERROR PersonaResult so
         a single crash never poisons ``asyncio.gather`` for the rest of the swarm."""
         sink = WebSocketEventSink(run_id, self.hub)
         try:
-            agent = self.agent_factory(persona, self.holo_client, task)
+            # Recall memory hints and fold them into this persona's task. Hints reach
+            # the model through the task string (HoloPersonaAgent._effective_task);
+            # guarded so a memory hiccup can never break the run.
+            effective_task = task
+            try:
+                hints = await self.memory_store.recall_hints(
+                    target_url=target_url,
+                    task=task,
+                    persona=persona,
+                    mode=memory_mode,
+                )
+            except Exception:  # noqa: BLE001
+                hints = []
+            if hints:
+                lines = "\n".join(f"- {h}" for h in hints)
+                effective_task = (
+                    f"{task}\n\nWhat helped previous visitors complete this here:\n{lines}"
+                )
+
+            agent = self.agent_factory(persona, self.holo_client, effective_task)
             runner = self.runner_factory(self.browser, self.artifact_dir, predicate)
             return await runner.run(persona, agent, target_url, task, sink, run_id)
         except Exception as exc:  # noqa: BLE001
