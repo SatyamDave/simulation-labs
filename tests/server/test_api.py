@@ -109,3 +109,11 @@ def test_late_websocket_subscriber_gets_full_backlog(client):
         while (payload := ws.receive_json())["event"] != "run_finished":
             pass
         assert payload["completion_rate"] == 0.5
+
+
+def test_get_personas_returns_roster(client):
+    response = client.get("/personas")
+    assert response.status_code == 200
+    roster = response.json()
+    assert isinstance(roster, list) and len(roster) >= 2
+    assert all("id" in p and "name" in p for p in roster)

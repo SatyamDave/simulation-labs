@@ -37,6 +37,12 @@ async def create_run(body: RunRequest, request: Request) -> RunCreated:
     return RunCreated(run_id=run_id)
 
 
+@router.get("/personas")
+async def list_personas(request: Request) -> list[dict[str, Any]]:
+    """The persona roster the frontend offers in the launch form."""
+    return [p.model_dump(mode="json") for p in request.app.state.swarm.personas()]
+
+
 @router.get("/runs")
 async def list_runs(request: Request) -> list[dict[str, Any]]:
     return request.app.state.registry.list()

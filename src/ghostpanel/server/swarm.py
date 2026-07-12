@@ -150,6 +150,10 @@ class SwarmManager:
         bg.add_done_callback(lambda _t: self._tasks.pop(run_id, None))
         return run_id
 
+    def personas(self, ids: Optional[list[str]] = None) -> list[PersonaConfig]:
+        """The available persona roster (GET /personas)."""
+        return self._persona_loader(ids)
+
     async def wait_for_run(self, run_id: str) -> None:
         """Block until a started run has fully settled (tests / clean shutdown)."""
         bg = self._tasks.get(run_id)
