@@ -33,13 +33,16 @@ class RateLimiter:
     """A simple asyncio token bucket sized by requests-per-minute.
 
     ONE instance is meant to be shared across every persona's client so the whole
-    swarm respects a single budget (Holo free tier = 10 RPM). Refills continuously
-    at ``rpm / 60`` tokens per second up to a burst capacity of ``rpm``.
+    swarm respects a single budget. Refills continuously at ``rpm / 60`` tokens
+    per second. Burst capacity is deliberately TINY (<= 2 tokens): the hosted
+    Holo API enforces even ~rpm/60 pacing with no burst allowance (verified
+    live: a burst of 5 on a 5 RPM key got 429 + retry-after=11s), so bursting
+    just triggers a 429/backoff storm that is slower than even pacing.
     """
 
     def __init__(self, rpm: float = 10.0) -> None:
         self.rpm = float(rpm) if rpm and rpm > 0 else 10.0
-        self._capacity = max(1.0, self.rpm)
+        self._capacity = min(2.0, max(1.0, self.rpm))
         self._tokens = self._capacity
         self._rate = self.rpm / 60.0  # tokens per second
         self._updated = time.monotonic()
