@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuantumLeap — Sign Up (accessible)</title>
+<!--
+  The CONTROL page for the benchmark harness: the same signup goal as
+  fixtures/hostile_form.html but with none of the traps — no cookie wall, no
+  decoy CTA, high-contrast text, no scroll-gated field, one obvious primary
+  button. Every persona (and any competent agent) should complete this page;
+  a regression that breaks completion HERE is an engine/runner bug, not a
+  finding about the target site. Success marker: #ok becomes visible.
+-->
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; margin: 0; color: #111; }
+  header { padding: 20px 24px; border-bottom: 1px solid #ddd; font-weight: 700; font-size: 20px; }
+  main { max-width: 420px; margin: 48px auto; padding: 0 20px; }
+  h1 { font-size: 26px; }
+  label { display: block; font-size: 16px; font-weight: 600; margin: 18px 0 6px; }
+  input { width: 100%; padding: 14px; border: 2px solid #555; border-radius: 8px; font-size: 17px; }
+  button { width: 100%; margin-top: 26px; background: #1a56db; color: #fff; border: none;
+           padding: 16px; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer; }
+  #ok { display: none; padding: 18px; background: #e6f6ec; border-radius: 8px;
+        margin-top: 18px; color: #136f38; font-size: 17px; }
+</style>
+</head>
+<body>
+  <header>QuantumLeap</header>
+  <main>
+    <h1>Create your account</h1>
+    <form id="f" onsubmit="return submitForm(event)">
+      <label for="email">Email address</label>
+      <input id="email" type="email" placeholder="you@work.com" />
+
+      <label for="pw">Password</label>
+      <input id="pw" type="password" placeholder="Choose a password" />
+
+      <button type="submit">Create account</button>
+    </form>
+    <div id="ok">✓ Account created. Welcome to QuantumLeap.</div>
+  </main>
+
+  <script>
+    function submitForm(e){
+      e.preventDefault();
+      const email = document.getElementById('email');
+      const pw = document.getElementById('pw');
+      if (!email.value || !pw.value) return false;
+      document.getElementById('f').style.display = 'none';
+      document.getElementById('ok').style.display = 'block';   // success predicate: #ok visible
+      return false;
+    }
+  </script>
+</body>
+</html>
