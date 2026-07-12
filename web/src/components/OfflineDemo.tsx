@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import type { LiveRunState, RunEvent, RunReport, Viewport } from "../types";
 import { emptyLiveState, reduceEvent } from "../runReducer";
 import { loadOfflineDemo } from "../offline";
@@ -70,10 +71,16 @@ export function OfflineDemo({ onExit }: Props) {
 
   if (loadError) {
     return (
-      <div className="offline-error">
-        <p>Couldn't load offline fixtures.</p>
-        <pre>{loadError}</pre>
-        <button className="btn btn--ghost" onClick={onExit}>
+      <div className="py-24 text-center">
+        <p className="text-muted-foreground">Couldn't load offline fixtures.</p>
+        <pre className="text-sm text-red-500 whitespace-pre-wrap max-w-xl mx-auto my-4 font-mono text-left">
+          {loadError}
+        </pre>
+        <button
+          type="button"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          onClick={onExit}
+        >
           ← Back
         </button>
       </div>
@@ -81,7 +88,11 @@ export function OfflineDemo({ onExit }: Props) {
   }
 
   if (view === "loading" || !report) {
-    return <div className="offline-loading">Loading simulation…</div>;
+    return (
+      <div className="py-24 text-center text-sm font-mono text-muted-foreground">
+        Loading simulation…
+      </div>
+    );
   }
 
   if (view === "report") {
@@ -97,12 +108,25 @@ export function OfflineDemo({ onExit }: Props) {
   const finished = state.status === "finished";
 
   return (
-    <div className="offline">
-      <div className="offline__banner">
-        <span className="offline__dot" /> OFFLINE DEMO — replaying local fixtures,
-        no backend
-        <button className="btn btn--ghost btn--sm offline__exit" onClick={onExit}>
-          ✕ Exit
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-muted/30 px-5 py-3">
+        <motion.span
+          className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+        <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
+          Offline demo
+        </span>
+        <span className="text-sm text-muted-foreground max-sm:hidden">
+          replaying local fixtures, no backend
+        </span>
+        <button
+          type="button"
+          className="ml-auto text-sm text-muted-foreground hover:text-foreground transition-colors"
+          onClick={onExit}
+        >
+          Exit
         </button>
       </div>
       <PersonaGrid

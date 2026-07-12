@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { HeatPoint, Viewport } from "../types";
-import { BLOOD } from "../theme";
+import { FAIL_HEX } from "../theme";
 
 const BASE = import.meta.env.BASE_URL || "/";
 const SAMPLE = `${BASE}fixtures/sample_screenshot.png`;
@@ -30,28 +30,29 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
   const maxW = Math.max(1, ...points.map((p) => p.weight ?? 1));
 
   return (
-    <figure className="chart">
-      <figcaption className="chart__title">
-        Abandonment heatmap
-        <span className="chart__sub">
+    <figure className="p-6 rounded-2xl border border-border bg-background m-0">
+      <figcaption className="mb-6">
+        <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-1">
+          Abandonment heatmap
+        </p>
+        <p className="text-sm text-muted-foreground">
           where, on your actual page, users give up
-        </span>
+        </p>
       </figcaption>
 
       <div
-        className="heatmap"
+        className="relative w-full rounded-xl overflow-hidden border border-border bg-muted/30"
         style={{ aspectRatio: `${space.width} / ${space.height}` }}
       >
         <img
-          className="heatmap__img"
+          className="block w-full h-full object-cover grayscale-[0.3] opacity-80"
           src={img}
           alt="Target page"
           onError={() => {
             if (useLive) setLiveFailed(true);
           }}
         />
-        <div className="heatmap__scrim" />
-        <span className="heatmap__source">
+        <span className="absolute top-2.5 left-2.5 z-10 text-[10px] font-mono uppercase tracking-wider text-muted-foreground bg-background/80 backdrop-blur-sm border border-border rounded-md px-2 py-0.5">
           {useLive ? "Live target page" : "Sample page"}
         </span>
         {points.map((p, i) => {
@@ -62,13 +63,13 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
           return (
             <div
               key={`${p.persona_id}-${i}`}
-              className="heatmap__blob"
+              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none mix-blend-multiply dark:mix-blend-screen"
               style={{
                 left: `${left}%`,
                 top: `${top}%`,
                 width: size,
                 height: size,
-                background: `radial-gradient(circle, ${BLOOD}cc 0%, ${BLOOD}66 35%, ${BLOOD}00 70%)`,
+                background: `radial-gradient(circle, ${FAIL_HEX}cc 0%, ${FAIL_HEX}66 35%, ${FAIL_HEX}00 70%)`,
               }}
               title={`${p.persona_id || "abandon"} @ ${p.x},${p.y}`}
             />
@@ -78,21 +79,30 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
           const left = (p.x / space.width) * 100;
           const top = (p.y / space.height) * 100;
           return (
-            <div
+            <svg
               key={`dot-${p.persona_id}-${i}`}
-              className="heatmap__x"
+              className="absolute w-3.5 h-3.5 -translate-x-1/2 -translate-y-1/2 text-red-500 cursor-help"
               style={{ left: `${left}%`, top: `${top}%` }}
-              title={`${p.persona_id || "abandon"} @ ${p.x},${p.y}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              ✕
-            </div>
+              <title>{`${p.persona_id || "abandon"} @ ${p.x},${p.y}`}</title>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={3}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
           );
         })}
       </div>
-      <div className="heatmap__caption">
-        {points.length} abandonment {points.length === 1 ? "point" : "points"} ·
-        each ✕ marks a persona that gave up here
-      </div>
+      <p className="mt-4 text-xs text-muted-foreground">
+        <span className="tabular-nums">{points.length}</span> abandonment{" "}
+        {points.length === 1 ? "point" : "points"} · each mark is a persona that
+        gave up here
+      </p>
     </figure>
   );
 }
