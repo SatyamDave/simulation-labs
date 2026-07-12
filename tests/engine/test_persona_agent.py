@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
-import pytest
 
 from ghostpanel.engine.holo_client import (
     FakeHoloClient,

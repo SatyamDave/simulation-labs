@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 
 from ghostpanel.engine.personas import load_personas
 from ghostpanel_contracts import PersonaConfig

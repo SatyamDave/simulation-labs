@@ -13,7 +13,6 @@ it reaches the live model even through the persona-free navigate() signature.
 
 from __future__ import annotations
 
-from typing import Optional
 
 from ghostpanel_contracts import Action, HoloClient, Observation, PersonaConfig
 
