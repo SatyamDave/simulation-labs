@@ -70,6 +70,19 @@ class RateLimiter:
 # ---------------------------------------------------------------------------
 _CLICK_RE = re.compile(r"click\s*\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)", re.I)
 _JSON_OBJ_RE = re.compile(r"\{.*\}", re.S)
+_NUMBER_RE = re.compile(r"-?\d+(?:\.\d+)?")
+# Holo 3.1 frequently emits {"action": "click", "x": 426, 536} — a bare number
+# where the "y" key should be (verified live). These repair the two observed
+# key-dropped shapes so the JSON parse succeeds instead of falling back.
+_MISSING_Y_RE = re.compile(r'("x"\s*:\s*-?\d+(?:\.\d+)?\s*,\s*)(-?\d+(?:\.\d+)?)(?=\s*[,}])')
+_MISSING_X_RE = re.compile(r'([{,]\s*)(-?\d+(?:\.\d+)?)(\s*,\s*"y"\s*:)')
+
+
+def _repair_json(fragment: str) -> str:
+    """Best-effort repair of Holo's key-dropped coordinate JSON."""
+    fragment = _MISSING_Y_RE.sub(lambda m: f'{m.group(1)}"y": {m.group(2)}', fragment)
+    fragment = _MISSING_X_RE.sub(lambda m: f'{m.group(1)}"x": {m.group(2)}{m.group(3)}', fragment)
+    return fragment
 
 _ACTION_ALIASES = {
     "click": ActionType.CLICK,
@@ -113,12 +126,12 @@ def _denormalize(x: int, y: int, w: int, h: int) -> tuple[int, int]:
 
 
 def _caption_for(action_type: ActionType, x=None, y=None, text=None,
-                 direction=None, url=None, seconds=None) -> str:
+                 direction=None, url=None, seconds=None, label=None) -> str:
     if action_type == ActionType.CLICK:
-        return f"Clicking at ({x}, {y})"
+        return f"Clicking {label}" if label else f"Clicking at ({x}, {y})"
     if action_type == ActionType.WRITE:
         snippet = (text or "")[:30]
-        return f"Typing '{snippet}'"
+        return f"Typing '{snippet}' into {label}" if label else f"Typing '{snippet}'"
     if action_type == ActionType.SCROLL:
         return f"Scrolling {direction.value if direction else 'down'}"
     if action_type == ActionType.GO_BACK:
@@ -155,14 +168,17 @@ def parse_action(text: str, w: int, h: int, normalize: bool = False) -> Action:
     """
     raw = text or ""
 
-    # 1. Try a JSON object anywhere in the text.
+    # 1. Try a JSON object anywhere in the text (repairing Holo's known
+    #    key-dropped coordinate shape if the first parse fails).
     obj = None
     m = _JSON_OBJ_RE.search(raw)
     if m:
-        try:
-            obj = json.loads(m.group(0))
-        except (json.JSONDecodeError, ValueError):
-            obj = None
+        for candidate in (m.group(0), _repair_json(m.group(0))):
+            try:
+                obj = json.loads(candidate)
+                break
+            except (json.JSONDecodeError, ValueError):
+                obj = None
     if isinstance(obj, dict):
         parsed = _action_from_dict(obj, w, h, raw, normalize=normalize)
         if parsed is not None:
@@ -189,7 +205,17 @@ def parse_action(text: str, w: int, h: int, normalize: bool = False) -> Action:
         return Action(type=ActionType.REFRESH,
                       caption=_caption_for(ActionType.REFRESH), raw=raw)
 
-    # 4. Give up: click the center so the runner still makes progress.
+    # 4. A click intent with two loose numbers somewhere in the text — take the
+    #    last coordinate pair rather than inventing a center click.
+    if "click" in low:
+        nums = _NUMBER_RE.findall(raw)
+        if len(nums) >= 2:
+            px, py = int(round(float(nums[-2]))), int(round(float(nums[-1])))
+            x, y = (_denormalize if normalize else _clamp)(px, py, w, h)
+            return Action(type=ActionType.CLICK, x=x, y=y,
+                          caption=_caption_for(ActionType.CLICK, x=x, y=y), raw=raw)
+
+    # 5. Give up: click the center so the runner still makes progress.
     cx, cy = w // 2, h // 2
     return Action(type=ActionType.CLICK, x=cx, y=cy,
                   caption=_caption_for(ActionType.CLICK, x=cx, y=cy),
@@ -244,8 +270,11 @@ def _action_from_dict(obj: dict, w: int, h: int, raw: str,
     if action_type == ActionType.SCROLL and direction is None:
         direction = ScrollDirection.DOWN
 
+    label = obj.get("label") or obj.get("element") or obj.get("target")
+    label = str(label).strip()[:60] if label else None
     caption = _caption_for(action_type, x=x, y=y, text=text,
-                           direction=direction, url=url, seconds=seconds)
+                           direction=direction, url=url, seconds=seconds,
+                           label=label)
     return Action(
         type=action_type,
         x=x if action_type in (ActionType.CLICK, ActionType.WRITE) else None,

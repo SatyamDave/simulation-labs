@@ -17,7 +17,8 @@ interface Props {
 }
 
 export function PersonaTile({ live, index, coordSpace }: Props) {
-  const { persona, status, lastCaption, lastThumb, step, failure } = live;
+  const { persona, status, lastCaption, lastThumb, step, failure, blockedSteps } =
+    live;
   const color = personaColor(index);
   const badges = perturbationBadges(persona);
   const space: Viewport =
@@ -97,6 +98,16 @@ export function PersonaTile({ live, index, coordSpace }: Props) {
           {persona.blurb && <div className="tile__blurb">{persona.blurb}</div>}
         </div>
         <div className="tile__badges">
+          {blockedSteps > 0 && (
+            <span
+              className="badge badge--shield"
+              title={`${blockedSteps} action${
+                blockedSteps === 1 ? "" : "s"
+              } blocked by the NemoClaw policy gateway`}
+            >
+              🛡{blockedSteps}
+            </span>
+          )}
           {badges.map((b) => (
             <span key={b.kind} className="badge" title={b.label}>
               {b.icon}

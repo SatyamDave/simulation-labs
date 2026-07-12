@@ -49,13 +49,24 @@ def template_exit_interview(
     )
 
     if captions:
-        if len(captions) == 1:
-            steps_sentence = f"I tried to {captions[0].lower()}"
+        # Compress consecutive repeats ("clicking X, then clicking X, ..." →
+        # "clicking X again and again") — that's how a person tells it.
+        compressed: list[str] = []
+        repeats = 1
+        for caption, nxt in zip(captions, captions[1:] + [None]):
+            if caption == nxt:
+                repeats += 1
+                continue
+            phrase = caption.lower()
+            if repeats > 1:
+                phrase += " again and again" if repeats > 2 else " twice"
+            compressed.append(phrase)
+            repeats = 1
+        if len(compressed) == 1:
+            steps_sentence = f"I tried {compressed[0]}"
         else:
-            body = ", then ".join(c.lower() for c in captions[:-1])
-            steps_sentence = (
-                f"First I tried to {body}, then {captions[-1].lower()}"
-            )
+            body = ", then ".join(compressed[:-1])
+            steps_sentence = f"First I tried {body}, then {compressed[-1]}"
     else:
         steps_sentence = "I looked around the page"
 

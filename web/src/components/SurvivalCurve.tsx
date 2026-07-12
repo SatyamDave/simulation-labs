@@ -24,7 +24,7 @@ export function SurvivalCurve({ survival }: Props) {
   return (
     <figure className="chart">
       <figcaption className="chart__title">
-        Survival curve
+        Per-persona outcome
         <span className="chart__sub">
           how far each persona got before finishing or giving up
         </span>

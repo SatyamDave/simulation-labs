@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { PersonaResult, RunReport, Viewport } from "../types";
 import { OUTCOME_LABELS } from "../types";
 import { API_BASE, artifactUrl } from "../api";
-import { OUTCOME_COLOR } from "../theme";
+import { OUTCOME_COLOR, scoreColor } from "../theme";
+import {
+  computeFallbackInsights,
+  fetchInsights,
+  withDerivedStats,
+  type AgentReadiness,
+  type RunInsights,
+  type WcagFinding,
+} from "../insights";
 import { SurvivalCurve } from "./SurvivalCurve";
 import { Heatmap } from "./Heatmap";
+import { StatsPanel } from "./StatsPanel";
+import { PolicyPanel } from "./PolicyPanel";
 
 interface Props {
   report: RunReport;
@@ -13,42 +23,42 @@ interface Props {
   // The offline demo leaves this false so it renders from bundled fixtures.
   live?: boolean;
   onBack?: () => void;
+  // Server-backed report screens offer "Compare with another run".
+  onCompare?: () => void;
 }
 
-// Agent-readiness: can a computer-use agent complete this flow at all? Derived
-// client-side from the "ai-agent" persona's outcome (or any persona whose id or
-// name mentions "agent"). PASS iff that persona completed the task.
-interface AgentVerdict {
-  status: "pass" | "fail";
-  name: string;
-  outcome: RunReport["survival"][number]["outcome"];
-  steps: number;
-}
-
-function computeAgentVerdict(report: RunReport): AgentVerdict | null {
-  const s =
-    report.survival.find((p) => p.persona_id === "ai-agent") ??
-    report.survival.find(
-      (p) =>
-        /agent/i.test(p.persona_id) || /agent/i.test(p.persona_name ?? "")
-    );
-  if (!s) return null;
-  const pass = s.completed || s.outcome === "success";
-  return {
-    status: pass ? "pass" : "fail",
-    name: s.persona_name || s.persona_id,
-    outcome: s.outcome,
-    steps: s.steps_survived,
-  };
-}
-
-export function ReportView({ report, coordSpace, live, onBack }: Props) {
+export function ReportView({ report, coordSpace, live, onBack, onCompare }: Props) {
   const pct = Math.round((report.completion_rate ?? 0) * 100);
   const counted = report.survival.filter((s) => s.outcome !== "error");
   const survived = counted.filter((s) => s.completed).length;
   const total = counted.length;
 
-  const verdict = computeAgentVerdict(report);
+  // Server-written insights.json when the backend is up; a client-side
+  // fallback (offline replay / older runs without the file) otherwise.
+  const fallbackInsights = useMemo(
+    () => computeFallbackInsights(report),
+    [report]
+  );
+  const [serverInsights, setServerInsights] = useState<RunInsights | null>(
+    null
+  );
+  useEffect(() => {
+    if (!live) return;
+    let cancelled = false;
+    fetchInsights(report.run_id).then((ins) => {
+      if (!cancelled && ins) setServerInsights(ins);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [live, report.run_id]);
+  // Server copy may predate the additive meta/stats/survival_series keys —
+  // fill anything missing from the report so the dashboard always renders.
+  const insights = withDerivedStats(
+    serverInsights ?? fallbackInsights,
+    report
+  );
+
   const liveBackdrop = live
     ? `${API_BASE}/artifacts/${report.run_id}/target.png`
     : undefined;
@@ -66,10 +76,19 @@ export function ReportView({ report, coordSpace, live, onBack }: Props) {
   return (
     <div className="report">
       <header className="report__head">
-        {onBack && (
-          <button className="btn btn--ghost btn--sm" onClick={onBack}>
-            ← Back to grid
-          </button>
+        {(onBack || onCompare) && (
+          <div className="report__nav">
+            {onBack && (
+              <button className="btn btn--ghost btn--sm" onClick={onBack}>
+                ← Back to grid
+              </button>
+            )}
+            {onCompare && (
+              <button className="btn btn--ghost btn--sm" onClick={onCompare}>
+                ⇄ Compare with another run
+              </button>
+            )}
+          </div>
         )}
         <div className="report__headline">
           <div className="report__pct" style={{ color: pct > 50 ? OUTCOME_COLOR.success : OUTCOME_COLOR.stuck }}>
@@ -88,7 +107,11 @@ export function ReportView({ report, coordSpace, live, onBack }: Props) {
         </div>
       </header>
 
-      {verdict && <AgentReadiness verdict={verdict} />}
+      {live && <PolicyPanel />}
+
+      <InsightsPanel insights={insights} />
+
+      <StatsPanel insights={insights} />
 
       <div className="report__charts">
         <SurvivalCurve survival={report.survival} />
@@ -112,38 +135,136 @@ export function ReportView({ report, coordSpace, live, onBack }: Props) {
           <p className="report__empty">No per-persona receipts in this report.</p>
         )}
       </div>
+
+      <WhyItMatters />
     </div>
   );
 }
 
-function AgentReadiness({ verdict }: { verdict: AgentVerdict }) {
-  const pass = verdict.status === "pass";
+// Report footer, small print: the market context in hard numbers, with the
+// source named inline for each claim.
+function WhyItMatters() {
   return (
-    <section className={`verdict verdict--${verdict.status}`}>
+    <details className="whyit">
+      <summary>Why this matters — the market in four numbers</summary>
+      <ul>
+        <li>
+          <b>2,019</b> US digital-accessibility lawsuits were filed in H1 2025
+          alone <span className="whyit__src">(UsableNet)</span>.
+        </li>
+        <li>
+          The <b>EU Accessibility Act</b> has been in force since June 2025 —
+          EN&nbsp;301&nbsp;549 conformity gives a legal presumption of
+          conformity <span className="whyit__src">(Directive (EU) 2019/882)</span>.
+        </li>
+        <li>
+          Prompt-based LLM personas reproduce real user actions at only{" "}
+          <b>11.86%</b> <span className="whyit__src">(arXiv 2503.20749)</span> —
+          Ghostpanel degrades the perception channel mechanically instead of
+          asking a model to roleplay.
+        </li>
+        <li>
+          Cloudflare's Agent Readiness Score scans what sites <i>declare</i>;
+          Ghostpanel measures what agents <b>survive</b>.
+        </li>
+      </ul>
+    </details>
+  );
+}
+
+function InsightsPanel({ insights }: { insights: RunInsights }) {
+  return (
+    <section className="insights">
+      <div className="insights__hero">
+        <div className="insights__score">
+          <div className="insights__score-label">Simulation Score</div>
+          <div
+            className="insights__score-num"
+            style={{ color: scoreColor(insights.ghostpanel_score) }}
+          >
+            {insights.ghostpanel_score}
+            <span className="insights__score-denom">/100</span>
+          </div>
+          <div className="insights__score-sub">{insights.summary}</div>
+        </div>
+        {insights.agent_readiness && (
+          <AgentReadinessStat agent={insights.agent_readiness} />
+        )}
+      </div>
+      <WcagEvidence findings={insights.wcag_findings} />
+    </section>
+  );
+}
+
+function AgentReadinessStat({ agent }: { agent: AgentReadiness }) {
+  const pass = agent.outcome === "success";
+  return (
+    <div className={`verdict verdict--${pass ? "pass" : "fail"}`}>
       <div className="verdict__seal">{pass ? "PASS" : "FAIL"}</div>
       <div className="verdict__body">
-        <div className="verdict__label">Agent-readiness verdict</div>
-        <div className="verdict__head">
-          {pass
-            ? "An AI agent can complete this flow."
-            : "An AI agent cannot complete this flow."}
-        </div>
+        <div className="verdict__label">Agent readiness</div>
+        <div className="verdict__head">Can an AI agent use your site?</div>
         <div className="verdict__sub">
-          {pass ? (
-            <>
-              <b>{verdict.name}</b> completed the task in {verdict.steps} steps
-              with no perturbation — your site is ready for computer-use agents.
-            </>
-          ) : (
-            <>
-              <b>{verdict.name}</b> ran unimpaired and still failed (
-              {OUTCOME_LABELS[verdict.outcome].toLowerCase()}) after{" "}
-              {verdict.steps} steps — this flow is not yet agent-ready.
-            </>
-          )}
+          <b>
+            {agent.score}
+            /100
+          </b>{" "}
+          · {OUTCOME_LABELS[agent.outcome]} · {agent.steps} steps
+          {agent.note && <> — {agent.note}</>}
         </div>
       </div>
-    </section>
+    </div>
+  );
+}
+
+function WcagEvidence({ findings }: { findings: WcagFinding[] }) {
+  return (
+    <div className="insights__wcag">
+      <h3 className="insights__wcag-title">Accessibility evidence</h3>
+      <p className="insights__wcag-caption">
+        Each row is evidenced by a video receipt and an exact failure pixel —
+        WCAG 2.2 / EN 301 549 mapping.
+      </p>
+      {findings.length === 0 ? (
+        <div className="insights__wcag-clear">
+          ✓ No accessibility failures evidenced in this run.
+        </div>
+      ) : (
+        <div className="insights__wcag-scroll">
+          <table className="insights__table">
+            <thead>
+              <tr>
+                <th>Persona</th>
+                <th>WCAG 2.2 criterion</th>
+                <th>EN 301 549</th>
+                <th>Evidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              {findings.map((f, i) => (
+                <tr key={`${f.persona_id}-${f.criterion}-${i}`}>
+                  <td className="insights__td-persona">{f.persona_name}</td>
+                  <td className="insights__td-criterion">
+                    <span className="insights__crit">{f.criterion}</span>{" "}
+                    {f.name}
+                    <span className="insights__level">{f.level}</span>
+                  </td>
+                  <td className="insights__td-en">{f.standard_ref}</td>
+                  <td className="insights__td-evidence">
+                    {f.evidence}
+                    {f.failure_step != null && (
+                      <span className="insights__step">
+                        step {f.failure_step}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }
 

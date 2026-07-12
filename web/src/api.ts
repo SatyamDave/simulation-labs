@@ -41,6 +41,87 @@ export async function getReport(runId: string): Promise<RunReport> {
   return (await res.json()) as RunReport;
 }
 
+// ---------------------------------------------------------------------------
+// Run index / leaderboard
+// ---------------------------------------------------------------------------
+
+// GET /runs summary row (see server RunRecord.summary()).
+export interface RunSummary {
+  run_id: string;
+  target_url: string;
+  task: string;
+  status?: string;
+  completion_rate?: number | null;
+  persona_count?: number | null;
+}
+
+// GET /leaderboard entry. All score fields may be absent (older servers) —
+// render "—" rather than assuming them.
+export interface LeaderboardEntry {
+  run_id: string;
+  target_url: string;
+  task: string;
+  ghostpanel_score?: number | null;
+  agent_readiness_score?: number | null;
+  completion_rate?: number | null;
+  personas?: number | null;
+  generated_at?: string | null;
+}
+
+// GET /leaderboard, gracefully degrading to GET /runs when the endpoint is
+// absent (the /runs summaries carry no scores — those columns render "—").
+export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
+  try {
+    const res = await fetch(`${API_BASE}/leaderboard`);
+    if (res.ok) return (await res.json()) as LeaderboardEntry[];
+  } catch {
+    // fall through to /runs
+  }
+  const res = await fetch(`${API_BASE}/runs`);
+  if (!res.ok) {
+    throw new Error(`getLeaderboard failed: ${res.status} ${res.statusText}`);
+  }
+  const runs = (await res.json()) as RunSummary[];
+  return runs.map((r) => ({
+    run_id: r.run_id,
+    target_url: r.target_url,
+    task: r.task,
+    completion_rate: r.completion_rate,
+    personas: r.persona_count,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// NemoClaw policy (sandbox strip)
+// ---------------------------------------------------------------------------
+export interface PolicySummary {
+  preset?: string;
+  allowed_methods?: string[];
+  denied_by_default?: boolean;
+  hosts?: string[];
+}
+
+export interface PolicyInfo {
+  gateway_url?: string;
+  active?: boolean;
+  enforced?: boolean;
+  summary?: PolicySummary | null;
+  source?: string;
+  [k: string]: unknown;
+}
+
+// GET /policy — null on 503 / absent / network failure so the panel can hide
+// itself silently.
+export async function getPolicy(): Promise<PolicyInfo | null> {
+  try {
+    const res = await fetch(`${API_BASE}/policy`);
+    if (!res.ok) return null;
+    return (await res.json()) as PolicyInfo;
+  } catch {
+    return null;
+  }
+}
+
 // WS /ws/runs/{id} — the live RunEvent stream for the grid.
 export function openRunSocket(runId: string): WebSocket {
   const wsBase = API_BASE.replace(/^http/, "ws");

@@ -24,8 +24,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+import gradium
+
 from ghostpanel.engine.holo_client import LiveHoloClient
+from ghostpanel.runner.policy import RequestPolicy
 from ghostpanel.voice.gradium_voice import GradiumVoiceEngine
+from ghostpanel.voice.voices import assign_voices
+from ghostpanel_contracts import PersonaConfig
 
 from .server.api import router
 from .server.config import Settings, get_settings
@@ -52,6 +57,13 @@ def create_app(
     artifact_dir = Path(settings.artifact_dir)
     artifact_dir.mkdir(parents=True, exist_ok=True)
 
+    # NemoClaw browse-only mirror: parse the configured OpenShell preset once
+    # and hand it to every session runner. Loud failure on a bad file — a
+    # misconfigured security policy must never silently no-op.
+    request_policy: Optional[RequestPolicy] = None
+    if settings.nemoclaw_policy_file is not None:
+        request_policy = RequestPolicy.from_file(settings.nemoclaw_policy_file)
+
     @contextlib.asynccontextmanager
     async def lifespan(app: FastAPI):  # noqa: ANN202
         # --- startup: launch the shared browser + build the swarm ---
@@ -74,6 +86,7 @@ def create_app(
             )
 
         voice_factory = None
+        voice_assigner = None
         anthropic_key: Optional[str] = None
         if enable_voice:
             anthropic_key = settings.anthropic_api_key or None
@@ -85,6 +98,15 @@ def create_app(
                         anthropic_key=anthropic_key,
                     )
 
+                async def voice_assigner(
+                    personas: list[PersonaConfig],
+                ) -> dict[str, str]:
+                    # One catalog lookup per run: distinct Gradium preset/cloned
+                    # voices per persona. SwarmManager guards every failure and
+                    # never overrides an explicit persona voice_id.
+                    client = gradium.GradiumClient(api_key=settings.gradium_api_key)
+                    return await assign_voices(personas, client)
+
         app.state.swarm = SwarmManager(
             browser=browser,
             holo_client=holo,
@@ -93,6 +115,8 @@ def create_app(
             artifact_dir=artifact_dir,
             anthropic_key=anthropic_key,
             voice_engine_factory=voice_factory,
+            voice_assigner=voice_assigner,
+            request_policy=request_policy,
         )
 
         try:

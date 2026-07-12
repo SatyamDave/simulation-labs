@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
-from ghostpanel_contracts import RunReport
+from ghostpanel_contracts import PersonaConfig, RunReport
 
 
 class RunStatus(str, Enum):
@@ -28,6 +28,9 @@ class RunRecord:
     target_url: str
     task: str
     persona_ids: list[str] = field(default_factory=list)
+    # Resolved PersonaConfigs for the run (incl. any per-run assigned voice_ids),
+    # so post-run features (/runs/{id}/ask) can voice/name a persona.
+    personas: list[PersonaConfig] = field(default_factory=list)
     status: RunStatus = RunStatus.PENDING
     report: Optional[RunReport] = None
     error: str = ""

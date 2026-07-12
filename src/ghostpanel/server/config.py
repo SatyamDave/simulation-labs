@@ -11,6 +11,7 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -76,6 +77,10 @@ class Settings:
 
     # --- NemoClaw / NVIDIA (optional stretch) ---
     nemoclaw_gateway_url: str = ""
+    # OpenShell preset the swarm mirrors client-side (see runner.policy).
+    # Resolved by get_settings(): env NEMOCLAW_POLICY_FILE, else the bundled
+    # policies/ghostpanel-browse-only.yaml when it exists, else None.
+    nemoclaw_policy_file: Optional[Path] = None
 
     @property
     def holo_base_url(self) -> str:
@@ -87,6 +92,16 @@ class Settings:
     @property
     def has_gradium(self) -> bool:
         return bool(self.gradium_api_key.strip())
+
+
+def _resolve_policy_file() -> Optional[Path]:
+    """NEMOCLAW_POLICY_FILE from env, else the bundled browse-only preset if
+    present, else None (no client-side mirror enforcement)."""
+    raw = _get_str("NEMOCLAW_POLICY_FILE")
+    if raw:
+        return Path(raw).expanduser().resolve()
+    default = _REPO_ROOT / "policies" / "ghostpanel-browse-only.yaml"
+    return default if default.is_file() else None
 
 
 @lru_cache(maxsize=1)
@@ -106,4 +121,5 @@ def get_settings() -> Settings:
         port=_get_int("GHOSTPANEL_PORT", 8000),
         artifact_dir=Path(artifact_dir).expanduser().resolve(),
         nemoclaw_gateway_url=_get_str("NEMOCLAW_GATEWAY_URL"),
+        nemoclaw_policy_file=_resolve_policy_file(),
     )

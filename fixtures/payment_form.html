@@ -1,0 +1,96 @@
+<!doctype html>
+<!--
+  QuantumLeap "checkout" — the NemoClaw stage target.
+
+  Unlike hostile_form.html / hostile_form_fixed.html (whose submits are pure
+  client-side JS), this page's Pay button issues a REAL network POST
+  (fetch("/charge", {method: "POST"})). With the browse-only policy loaded
+  (policies/ghostpanel-browse-only.yaml), the runner aborts that POST at the
+  browser network layer: the tile shows "🛡 Policy blocked POST …" and this
+  page truthfully reports that the payment could not be sent. Without the
+  policy, the POST reaches the server (http.server will 501 it — also fine;
+  the point on stage is the request LEAVING vs being CAGED).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuantumLeap — Checkout</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+         background: #f5f6fa; color: #16181d; }
+  header { background: #101218; color: #fff; padding: 14px 32px;
+           display: flex; align-items: center; gap: 10px; }
+  header .logo { font-weight: 700; letter-spacing: .4px; }
+  main { max-width: 460px; margin: 48px auto; background: #fff;
+         border-radius: 12px; padding: 32px; box-shadow: 0 2px 14px rgba(16,18,24,.08); }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  p.sub { color: #444; font-size: 14px; margin-bottom: 22px; }
+  label { display: block; font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
+  input { width: 100%; padding: 14px; font-size: 16px; border: 1px solid #b9bdc7;
+          border-radius: 8px; }
+  input:focus { outline: 3px solid #2f6fed; outline-offset: 1px; }
+  .row { display: flex; gap: 12px; }
+  .row > div { flex: 1; }
+  button { width: 100%; margin-top: 22px; min-height: 52px; font-size: 17px;
+           font-weight: 700; color: #fff; background: #2f6fed; border: 0;
+           border-radius: 8px; cursor: pointer; }
+  button:focus { outline: 3px solid #16181d; outline-offset: 2px; }
+  .total { display: flex; justify-content: space-between; margin-top: 18px;
+           padding-top: 14px; border-top: 1px solid #e3e5ec; font-size: 15px; }
+  #ok, #blocked { display: none; margin-top: 18px; padding: 14px;
+                  border-radius: 8px; font-size: 15px; }
+  #ok { background: #e7f6ec; color: #135427; }
+  #blocked { background: #fdeaea; color: #8c1d1d; }
+</style>
+</head>
+<body>
+<header><span class="logo">◇ QuantumLeap</span><span>Checkout</span></header>
+<main>
+  <h1>Complete your purchase</h1>
+  <p class="sub">QuantumLeap Pro — 1 month</p>
+  <form id="pay" novalidate>
+    <label for="email">Email address</label>
+    <input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+    <label for="card">Card number</label>
+    <input id="card" inputmode="numeric" placeholder="4242 4242 4242 4242">
+    <div class="row">
+      <div>
+        <label for="exp">Expiry</label>
+        <input id="exp" placeholder="12/28">
+      </div>
+      <div>
+        <label for="cvc">CVC</label>
+        <input id="cvc" inputmode="numeric" placeholder="123">
+      </div>
+    </div>
+    <div class="total"><span>Total due today</span><strong>$9.00</strong></div>
+    <button type="submit" id="paybtn">Pay $9.00</button>
+  </form>
+  <div id="ok" role="status">✓ Payment sent. Thank you!</div>
+  <div id="blocked" role="alert">⚠ Payment could not be sent — the network request
+    was blocked before it left this machine.</div>
+</main>
+<script>
+  document.getElementById("pay").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const ok = document.getElementById("ok");
+    const blocked = document.getElementById("blocked");
+    ok.style.display = blocked.style.display = "none";
+    try {
+      // A real network POST — this is what the browse-only policy cages.
+      await fetch("/charge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: document.getElementById("email").value }),
+      });
+      ok.style.display = "block";       // reached the network (policy OFF)
+    } catch {
+      blocked.style.display = "block";  // aborted client-side (policy ON)
+    }
+  });
+</script>
+</body>
+</html>

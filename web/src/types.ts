@@ -210,6 +210,9 @@ export interface PersonaLiveState {
   lastCaption: string;
   lastThumb: string; // data URI, or "" if none streamed yet
   step: number;
+  // Steps whose caption started with "🛡" — blocked by the NemoClaw policy
+  // gateway at the network layer. Drives the tile's shield badge counter.
+  blockedSteps: number;
   x?: number | null;
   y?: number | null;
   failure?: {

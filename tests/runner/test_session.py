@@ -86,17 +86,23 @@ async def _measure(browser, url) -> dict:
     ctx = await browser.new_context(viewport=VIEWPORT)
     p = await ctx.new_page()
     await p.goto(url)
+    # Mirror the RUN's exact action sequence while measuring, so every
+    # coordinate is read from the same page state the run will click it in
+    # (the page's reveal-on-scroll layout shifts with interaction order).
     accept = _center(await p.locator("#cookie button").bounding_box())
     await p.mouse.click(*accept)
     email = _center(await p.locator("#email").bounding_box())
-    # Same scroll the SCROLL action performs (wheel down 600).
-    await p.mouse.wheel(0, 600)
-    await p.wait_for_timeout(150)
+    await p.mouse.click(*email)                    # WRITE = click + type + Enter
+    await p.keyboard.type("me@work.com")
+    await p.keyboard.press("Enter")
+    await p.mouse.wheel(0, 600)                    # SCROLL action
+    await p.wait_for_timeout(400)                  # WAIT action
     promo = _center(await p.locator("#promo").bounding_box())
     submit = _center(await p.locator("button.btn-real").bounding_box())
     decoy = _center(await p.locator(".actions .btn-decoy").bounding_box())
     await ctx.close()
-    return {"accept": accept, "email": email, "promo": promo, "submit": submit, "decoy": decoy}
+    return {"accept": accept, "email": email, "promo": promo,
+            "submit": submit, "decoy": decoy}
 
 
 async def _ok_visible(page) -> bool:
@@ -167,6 +173,9 @@ async def test_success_script_yields_success(browser, tmp_path, target_url):
         Action(type=ActionType.CLICK, x=c["accept"][0], y=c["accept"][1], caption="accept cookies"),
         Action(type=ActionType.WRITE, x=c["email"][0], y=c["email"][1], text="me@work.com", caption="type email"),
         Action(type=ActionType.SCROLL, direction=ScrollDirection.DOWN, caption="scroll down"),
+        # Let the wheel scroll settle before clicking at pre-measured coords —
+        # a real (rate-limited) run always has seconds between steps.
+        Action(type=ActionType.WAIT, seconds=0.4, caption="wait"),
         Action(type=ActionType.WRITE, x=c["promo"][0], y=c["promo"][1], text="LEAP50", caption="type promo"),
         Action(type=ActionType.CLICK, x=c["submit"][0], y=c["submit"][1], caption="create account"),
     ]

@@ -44,6 +44,7 @@ export function reduceEvent(
           lastCaption: "Queued…",
           lastThumb: "",
           step: 0,
+          blockedSteps: 0,
         };
       }
       return {
@@ -86,6 +87,8 @@ export function reduceEvent(
             ...cur,
             status: "running",
             step: ev.step,
+            blockedSteps:
+              cur.blockedSteps + (ev.caption?.startsWith("🛡") ? 1 : 0),
             lastCaption: ev.caption || cur.lastCaption,
             lastThumb: asDataUri(ev.thumbnail_b64) || cur.lastThumb,
             x: ev.x ?? cur.x,

@@ -11,6 +11,7 @@ export interface LaunchValues {
 interface Props {
   onLaunch: (v: LaunchValues) => void;
   onOfflineDemo: () => void;
+  onIndex?: () => void;
   busy?: boolean;
   error?: string | null;
 }
@@ -41,7 +42,7 @@ const EXAMPLES: {
   },
 ];
 
-export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
+export function LaunchForm({ onLaunch, onOfflineDemo, onIndex, busy, error }: Props) {
   const [url, setUrl] = useState("https://github.com/signup");
   const [task, setTask] = useState(
     "Create a new account and reach the verification step."
@@ -190,6 +191,16 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
           >
             ▶ Offline demo
           </button>
+          {onIndex && (
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={onIndex}
+              title="Every run on this server, worst sites first"
+            >
+              📊 Index
+            </button>
+          )}
         </div>
         <p className="launch__note">
           Works on any live URL — public sites, staging, or the bundled hostile

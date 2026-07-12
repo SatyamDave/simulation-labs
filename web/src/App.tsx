@@ -3,11 +3,14 @@ import { LaunchForm, type LaunchValues } from "./components/LaunchForm";
 import { PersonaGrid } from "./components/PersonaGrid";
 import { ReportView } from "./components/ReportView";
 import { OfflineDemo } from "./components/OfflineDemo";
+import { CompareView } from "./components/CompareView";
+import { IndexView } from "./components/IndexView";
+import { PolicyPanel } from "./components/PolicyPanel";
 import { useRunStream } from "./useRunStream";
 import { getReport, startRun } from "./api";
 import type { RunReport } from "./types";
 
-type Mode = "launch" | "live" | "report" | "offline";
+type Mode = "launch" | "live" | "report" | "offline" | "index" | "compare";
 
 export default function App() {
   const [mode, setMode] = useState<Mode>("launch");
@@ -90,12 +93,15 @@ export default function App() {
         <LaunchForm
           onLaunch={handleLaunch}
           onOfflineDemo={() => setMode("offline")}
+          onIndex={() => setMode("index")}
           busy={busy}
           error={error}
         />
       )}
 
       {mode === "offline" && <OfflineDemo onExit={reset} />}
+
+      {mode === "index" && <IndexView onBack={reset} />}
 
       {mode === "live" && (
         <div className="live">
@@ -109,6 +115,7 @@ export default function App() {
             {loadingReport && <span className="live__loading">loading report…</span>}
           </div>
           {error && <div className="launch__error live__error">⚠ {error}</div>}
+          <PolicyPanel />
           <PersonaGrid
             state={state}
             reportReady={state.status === "finished"}
@@ -118,7 +125,16 @@ export default function App() {
       )}
 
       {mode === "report" && report && (
-        <ReportView report={report} live onBack={() => setMode("live")} />
+        <ReportView
+          report={report}
+          live
+          onBack={() => setMode("live")}
+          onCompare={() => setMode("compare")}
+        />
+      )}
+
+      {mode === "compare" && report && (
+        <CompareView baseReport={report} onBack={() => setMode("report")} />
       )}
 
       <footer className="app__foot">

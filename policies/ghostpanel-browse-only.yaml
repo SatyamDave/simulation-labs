@@ -1,0 +1,53 @@
+# =============================================================================
+# ghostpanel-browse-only — NemoClaw / OpenShell network-policy preset
+# =============================================================================
+# Ghostpanel's own preset, authored against NVIDIA's live-pulled OpenShell
+# policy schema:
+#   https://docs.nvidia.com/nemoclaw/user-guide/openclaw/network-policy/customize-network-policy.md
+# This file does NOT ship with NemoClaw — it is Ghostpanel's custom preset,
+# written to conform to that documented schema. Baseline reference policy:
+#   nemoclaw-blueprint/policies/openclaw-sandbox.yaml
+#
+# Intent: "the swarm can browse but never submit/pay/exfiltrate."
+# Only HTTP GET is allowed, on any host/path. Within an `enforce`d endpoint
+# the rules are an allow-list — anything not allowed (POST form submits,
+# PUT/PATCH uploads, DELETE, payment posts, data exfiltration) is intercepted
+# by default-deny. Unlisted endpoints escalate to operator approval.
+#
+# Apply inside a NemoClaw sandbox:
+#   nemoclaw onboard
+#   nemoclaw <sandbox> policy-add --from-file ghostpanel-browse-only.yaml
+# Inspect what is in effect:
+#   nemoclaw <sandbox> policy-list
+#   nemoclaw <sandbox> policy-explain
+# NOTE: `openshell policy set` REPLACES the active policy (no merge) — prefer
+# policy-add when layering on the baseline.
+#
+# Ghostpanel also mirrors these semantics client-side (see
+# ghostpanel.runner.policy.RequestPolicy) so enforcement is verifiable in the
+# demo even without the OpenShell gateway in the network path.
+# =============================================================================
+preset:
+  name: ghostpanel-browse-only
+  description: "Ghostpanel swarm: read-only web browsing. GET anywhere; every write verb (POST/PUT/PATCH/DELETE) denied by default-deny."
+network_policies:
+  ghostpanel_browse_only:
+    name: ghostpanel_browse_only
+    endpoints:
+      # HTTPS browsing — any host, GET only.
+      - host: "*"
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow: { method: GET, path: "/**" }
+      # Plain-HTTP browsing (local fixtures / dev targets) — any host, GET only.
+      - host: "*"
+        port: 80
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow: { method: GET, path: "/**" }
+    binaries:
+      # The Playwright-managed Chromium the swarm browses with.
+      - { path: /usr/bin/chromium }

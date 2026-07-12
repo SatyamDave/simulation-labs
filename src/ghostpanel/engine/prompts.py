@@ -44,12 +44,14 @@ exactly ONE next action from this action space:
 - answer(text)               — the task is complete; `text` is the final answer
 
 Coordinates are in pixels measured from the top-left corner of the image you were
-given. Respond with a single action. Prefer a JSON object, e.g.:
-  {"action": "click", "x": 512, "y": 240}
-  {"action": "write", "x": 300, "y": 120, "text": "hello"}
+given. Respond with a single action. Prefer a JSON object with EVERY key named,
+including "y", e.g.:
+  {"action": "click", "x": 512, "y": 240, "label": "Accept cookies button"}
+  {"action": "write", "x": 300, "y": 120, "text": "hello", "label": "Email field"}
   {"action": "scroll", "direction": "down"}
   {"action": "answer", "text": "done"}
-You may add a short "reason" field. Do not output anything except the JSON object.
+"label" is a short name for the element you are acting on. You may add a short
+"reason" field. Do not output anything except the JSON object.
 
 Guidelines:
 - If a cookie banner, consent prompt, or modal dialog covers the page, DISMISS it

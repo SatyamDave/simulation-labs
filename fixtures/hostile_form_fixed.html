@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuantumLeap — Sign Up</title>
+<!--
+  The REMEDIATED twin of hostile_form.html — same brand, same signup flow, same
+  field set, same success signal (#ok becomes visible on submit), but every
+  hostile trait fixed. Run the swarm on both and watch the survival curve heal.
+
+  REMEDIATION LEDGER (hostile trait → fix → WCAG 2.2 criterion):
+    * blocking cookie wall that stole the first click
+        → in-flow, dismissible notice bar; page fully usable without touching it
+        → 2.2.4 Interruptions (AAA); no click-theft overlay
+    * primary-looking DECOY ("Explore plans") next to a grey real submit
+        → decoy removed from the button row; demoted to a clearly-labeled
+          secondary text link BELOW the form; the real "Create account" is the
+          single, visually primary CTA
+        → 2.4.6 Headings and Labels; 3.2.4 Consistent Identification
+    * 10px #b8b8b8-on-#fff legal text hiding a hard requirement
+        → 14px #444 (≈9.7:1), plain language, no hidden requirements
+        → 1.4.3 Contrast (Minimum); 3.3.2 Labels or Instructions
+    * error state = red border ONLY (invisible to colour-blind users)
+        → inline text error with ⚠ icon + aria-invalid/aria-describedby;
+          the red border remains only as reinforcement
+        → 1.4.1 Use of Color; 3.3.1 Error Identification
+    * required promo field revealed only after scrolling (impatience trap)
+        → field visible from load, explicitly "(optional)", not required;
+          520px spacer deleted — the whole form sits above the fold
+        → 3.3.2 Labels or Instructions; 2.4.11-adjacent (nothing hidden)
+    * hamburger hiding "Create account" at mobile widths
+        → nav stays visible and wraps at every width; no hamburger
+        → 2.4.6 Headings and Labels; 3.2.3 Consistent Navigation
+    * ~38px click targets, 10px gaps (tremor-hostile)
+        → all controls ≥48px tall, full-width 56px primary button, 16px+ gaps
+        → 2.5.8 Target Size (Minimum, AA) — exceeds it to the 2.5.5 AAA 44px bar
+    * jargon labels ("Data Processing Addendum", "promo code required to continue")
+        → literal plain-language labels + one-line helpers under each field
+        → 3.1.5 Reading Level (AAA); 2.4.6 Headings and Labels
+    * no focus indication anywhere
+        → 3px visible focus outline on every interactive element
+        → 2.4.7 Focus Visible
+
+  SUCCESS SIGNAL — unchanged on purpose: submitting a valid form hides #f and
+  shows `#ok` ("✓ Account created…"), the exact element the runner's success
+  predicate checks (`page.locator("#ok").is_visible()`).
+
+  Serve with:  python -m http.server 8137
+  then open   http://localhost:8137/fixtures/hostile_form_fixed.html
+  (append `?as=hostile_form.html` when targeting it from Ghostpanel — see
+  DEMO_PLAYBOOK.md, the server keys its success predicate off that suffix)
+-->
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; margin: 0; color: #222; font-size: 16px; }
+  #cookie { background:#eef2ff; border-bottom:1px solid #c7d2fe; padding:12px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  #cookie p { margin:0; font-size:15px; color:#222; }
+  #cookie button { background:#fff; color:#26317a; border:2px solid #26317a; padding:10px 20px; min-height:44px; border-radius:6px; cursor:pointer; font-size:15px; font-weight:600; }
+  header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:16px 24px; border-bottom:1px solid #eee; }
+  .brand { font-weight:700; font-size:18px; }
+  nav { display:flex; flex-wrap:wrap; gap:6px; }
+  nav a { display:inline-block; padding:10px 12px; color:#333; text-decoration:underline; font-size:15px; border-radius:6px; }
+  main { max-width:420px; margin:32px auto; padding:0 20px; }
+  h1 { font-size:24px; margin:0 0 4px; }
+  .sub { color:#444; font-size:15px; margin:0 0 20px; }
+  label { display:block; font-size:16px; font-weight:600; margin:18px 0 6px; }
+  .hint { display:block; font-weight:400; font-size:14px; color:#444; margin-top:2px; }
+  input { width:100%; min-height:48px; padding:12px; border:1px solid #767676; border-radius:6px; font-size:16px; }
+  input.err { border:2px solid #b42318; }          /* reinforcement only — text carries the error */
+  .field-err { color:#b42318; font-size:14px; font-weight:600; margin:6px 0 0; }
+  .legal { color:#444; font-size:14px; line-height:1.5; margin:18px 0; }
+  .btn-real { display:block; width:100%; min-height:56px; background:#3b5bdb; color:#fff; border:none; padding:14px 20px; border-radius:6px; cursor:pointer; font-size:17px; font-weight:600; margin-top:24px; }
+  .alt { text-align:center; margin-top:20px; font-size:15px; color:#444; }
+  .alt a { display:inline-block; padding:12px; color:#26317a; text-decoration:underline; }
+  #ok { display:none; padding:16px; background:#e6f6ec; border-radius:8px; margin-top:16px; color:#136f38; }
+  .perks { border-top:1px solid #eee; margin-top:32px; padding-top:20px; }
+  .perks h2 { font-size:17px; margin:0 0 10px; }
+  .perks ul { margin:0; padding-left:20px; color:#444; font-size:15px; line-height:1.7; }
+  footer { text-align:center; color:#444; font-size:14px; padding:24px; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline:3px solid #1d2f8f; outline-offset:2px; }
+</style>
+</head>
+<body>
+  <div id="cookie" role="region" aria-label="Cookie notice">
+    <p>We use cookies to keep you signed in. You can keep using the page either way.</p>
+    <button onclick="document.getElementById('cookie').remove()">Got it</button>
+  </div>
+
+  <header>
+    <div class="brand">QuantumLeap</div>
+    <nav><a href="#">Product</a><a href="#">Pricing</a><a href="#" id="nav-signup">Create account</a></nav>
+  </header>
+
+  <main>
+    <h1>Start your free trial</h1>
+    <p class="sub">Fill in the two boxes below, then press the blue button.</p>
+
+    <form id="f" onsubmit="return submitForm(event)" novalidate>
+      <label for="email">Email address
+        <span class="hint">We will send a confirmation message to this address.</span>
+      </label>
+      <input id="email" type="email" autocomplete="email" aria-describedby="email-err" />
+      <p class="field-err" id="email-err" hidden></p>
+
+      <label for="pw">Password
+        <span class="hint">Choose at least 12 characters.</span>
+      </label>
+      <input id="pw" type="password" autocomplete="new-password" aria-describedby="pw-err" />
+      <p class="field-err" id="pw-err" hidden></p>
+
+      <label for="promo">Promo code (optional)
+        <span class="hint">Leave this blank if you do not have one.</span>
+      </label>
+      <input id="promo" autocomplete="off" />
+
+      <p class="legal">By creating an account you agree to our Terms of Service and
+        Privacy Policy. We will email you once to confirm your address — nothing else
+        is required to finish signing up.</p>
+
+      <button type="submit" class="btn-real">Create account</button>
+    </form>
+
+    <p class="alt">Not ready yet? <a href="#" onclick="return false;">See our plans first</a></p>
+
+    <div id="ok" role="status">✓ Account created. Welcome to QuantumLeap.</div>
+
+    <section class="perks">
+      <h2>What you get</h2>
+      <ul>
+        <li>Unlimited quantum leaps on the free plan</li>
+        <li>Cancel any time — one click, no phone call</li>
+        <li>Support answers within one business day</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>QuantumLeap, Inc. — accessible by design since the retrofit.</footer>
+
+  <script>
+    function setErr(id, msg){
+      const input = document.getElementById(id);
+      const err = document.getElementById(id + '-err');
+      if (msg) {
+        input.classList.add('err');
+        input.setAttribute('aria-invalid', 'true');
+        err.textContent = '⚠ ' + msg;                 // text + icon, never colour alone
+        err.hidden = false;
+      } else {
+        input.classList.remove('err');
+        input.removeAttribute('aria-invalid');
+        err.hidden = true;
+      }
+    }
+    function submitForm(e){
+      e.preventDefault();
+      let bad = false;
+      if (!document.getElementById('email').value) { setErr('email', 'Please enter your email address.'); bad = true; }
+      else setErr('email', '');
+      if (!document.getElementById('pw').value) { setErr('pw', 'Please enter a password of at least 12 characters.'); bad = true; }
+      else setErr('pw', '');
+      if (bad) return false;
+      document.getElementById('f').style.display = 'none';
+      document.getElementById('ok').style.display = 'block';   // success predicate: #ok visible (same as hostile form)
+      return false;
+    }
+  </script>
+</body>
+</html>

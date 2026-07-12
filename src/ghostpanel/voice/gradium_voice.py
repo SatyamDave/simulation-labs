@@ -26,6 +26,21 @@ from ghostpanel_contracts import PersonaConfig, PersonaResult
 from .narrate import write_exit_interview
 
 
+def _fix_wav_header(audio: bytes) -> bytes:
+    """Rewrite the RIFF/data chunk sizes from the actual byte length.
+
+    Gradium's streamed WAVs carry placeholder sizes (0xFFFFFFFF-style), which
+    makes players report absurd durations and breaks <audio> scrubbing."""
+    if len(audio) < 44 or audio[:4] != b"RIFF" or audio[8:12] != b"WAVE":
+        return audio
+    fixed = bytearray(audio)
+    fixed[4:8] = (len(audio) - 8).to_bytes(4, "little")
+    data_at = audio.find(b"data", 12)
+    if data_at != -1 and data_at + 8 <= len(audio):
+        fixed[data_at + 4:data_at + 8] = (len(audio) - data_at - 8).to_bytes(4, "little")
+    return bytes(fixed)
+
+
 class GradiumVoiceEngine:
     """Concrete `VoiceEngine`. See registry: constructed as
     ``GradiumVoiceEngine(api_key, artifact_dir, anthropic_key=None)``."""
@@ -64,7 +79,7 @@ class GradiumVoiceEngine:
     def _write_wav(self, name: str, audio: bytes) -> str:
         self._artifact_dir.mkdir(parents=True, exist_ok=True)
         path = self._artifact_dir / f"{name}.wav"
-        path.write_bytes(audio)
+        path.write_bytes(_fix_wav_header(audio))
         return str(path)
 
     # -- VoiceEngine protocol --------------------------------------------

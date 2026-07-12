@@ -12,6 +12,7 @@ import asyncio
 import time
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlsplit
 
 from ghostpanel_contracts import (
     Action,
@@ -28,7 +29,14 @@ from ghostpanel_contracts import (
 
 from .detect import SuccessPredicate, is_stuck, is_success
 from .execute import execute_action
+from .policy import RequestPolicy
 from .thumbnail import to_thumb_data_uri
+
+# EXACT StepRecord.note for a policy-denied request. The report module counts
+# blocked actions with `note == "policy_blocked"` (strict equality — see
+# ghostpanel.report.insights.POLICY_BLOCKED_NOTE), so nothing may be appended;
+# the blocked METHOD + host travel in the 🛡 StepEvent caption instead.
+_POLICY_BLOCKED_NOTE = "policy_blocked"
 
 
 def _default_caption(action: Action) -> str:
@@ -70,10 +78,15 @@ class PlaywrightSessionRunner:
         browser,
         artifact_dir,
         success_predicate: Optional[SuccessPredicate] = None,
+        *,
+        policy: Optional[RequestPolicy] = None,
     ) -> None:
         self.browser = browser
         self.artifact_dir = Path(artifact_dir)
         self.success_predicate = success_predicate
+        # Optional NemoClaw-mirror request policy: when set, every browser
+        # request the policy denies is ABORTED at the context level.
+        self.policy = policy
 
     async def run(
         self,
@@ -94,6 +107,7 @@ class PlaywrightSessionRunner:
             "failure_coords": None,
             "failure_step": None,
             "failure_reason": "",
+            "current_step": 0,  # read by the policy route handler
         }
 
         video_dir = self.artifact_dir / run_id
@@ -108,8 +122,52 @@ class PlaywrightSessionRunner:
         page = await context.new_page()
         video = None
 
+        # --- NemoClaw-mirror policy enforcement (see runner.policy) --------
+        if self.policy is not None:
+            policy = self.policy
+            shield_emitted: set[int] = set()  # steps that already got a 🛡 event
+
+            async def _enforce(route) -> None:
+                """Abort any request the policy denies. Fully guarded — policy
+                enforcement must never crash the session."""
+                req = route.request
+                allowed = True
+                try:
+                    allowed = policy.allows(req.method, req.url)
+                except Exception:  # noqa: BLE001
+                    allowed = False  # fail closed: a broken policy engine is not a bypass
+                try:
+                    if allowed:
+                        await route.continue_()
+                        return
+                    await route.abort("blockedbyclient")
+                except Exception:  # noqa: BLE001 - context tearing down mid-flight
+                    return
+                # Record the block against the current step (best-effort).
+                try:
+                    step = state["current_step"]
+                    method = req.method.upper()
+                    if steps and not steps[-1].note:
+                        steps[-1].note = _POLICY_BLOCKED_NOTE
+                    if step not in shield_emitted:
+                        shield_emitted.add(step)
+                        host = urlsplit(req.url).hostname or ""
+                        await sink.emit(
+                            StepEvent(
+                                run_id=run_id,
+                                persona_id=persona.id,
+                                step=step,
+                                caption=f"🛡 Policy blocked {method} {host}",
+                            )
+                        )
+                except Exception:  # noqa: BLE001 - recording must not break the session
+                    pass
+
+            await context.route("**/*", _enforce)
+
         async def _loop() -> None:
             for step in range(persona.max_steps):
+                state["current_step"] = step
                 png = await page.screenshot()
                 obs = Observation(
                     raw_png=png,
@@ -117,7 +175,9 @@ class PlaywrightSessionRunner:
                     step_index=step,
                     url=page.url,
                 )
+                decide_t0 = time.perf_counter()
                 action = await agent.decide(obs, history)
+                latency_ms = int((time.perf_counter() - decide_t0) * 1000)
                 caption = action.caption or _default_caption(action)
                 thumb = to_thumb_data_uri(png)
 
@@ -127,6 +187,7 @@ class PlaywrightSessionRunner:
                         step=step,
                         action=action,
                         thumbnail_b64=thumb,
+                        latency_ms=latency_ms,
                     )
                 )
                 await sink.emit(
@@ -143,8 +204,27 @@ class PlaywrightSessionRunner:
 
                 # --- terminal checks (against the frame we just observed) ---
                 if action.type == ActionType.ANSWER:
-                    state["outcome"] = PersonaOutcome.SUCCESS
-                    return
+                    # "Receipts, not vibes": when a success predicate exists, a
+                    # claimed completion must be VERIFIED by it. An agent whose
+                    # payment was policy-blocked will happily answer "done" —
+                    # that must not count as success.
+                    if self.success_predicate is None or await is_success(
+                        page, self.success_predicate
+                    ):
+                        state["outcome"] = PersonaOutcome.SUCCESS
+                        return
+                    if steps and not steps[-1].note:
+                        steps[-1].note = "answer_unverified"
+                    history.append(caption)
+                    if is_stuck(history):
+                        state["outcome"] = PersonaOutcome.STUCK
+                        state["failure_step"] = step
+                        state["failure_reason"] = (
+                            "claimed the task was done, but the success signal "
+                            "never appeared"
+                        )
+                        return
+                    continue
                 if await is_success(page, self.success_predicate):
                     state["outcome"] = PersonaOutcome.SUCCESS
                     return

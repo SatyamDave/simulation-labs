@@ -55,6 +55,12 @@ export function personaColor(index: number): string {
   return CATEGORICAL[index % CATEGORICAL.length];
 }
 
+// Color-stepped 0-100 score (status palette — state, not identity).
+// Shared by the report hero, the compare view, and the leaderboard.
+export function scoreColor(score: number): string {
+  return score >= 70 ? STATUS.good : score >= 40 ? STATUS.warning : STATUS.critical;
+}
+
 // ---------------------------------------------------------------------------
 // Perturbation badges — the "which channels are degraded" chips on a tile.
 // Prefer the persona's declared active_perturbations; if absent (sparse
