@@ -1,11 +1,10 @@
 import { useCallback, useState } from "react";
-import { MotionConfig, motion } from "framer-motion";
+import { MotionConfig } from "framer-motion";
 import { LaunchForm, type LaunchValues } from "./components/LaunchForm";
 import { PersonaGrid } from "./components/PersonaGrid";
 import { ReportView } from "./components/ReportView";
 import { OfflineDemo } from "./components/OfflineDemo";
 import { useRunStream } from "./useRunStream";
-import type { WsStatus } from "./useRunStream";
 import { getReport, startRun } from "./api";
 import type { RunReport } from "./types";
 
@@ -33,11 +32,11 @@ function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
       type="button"
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="text-muted-foreground hover:text-foreground transition-colors"
+      className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-hover transition-colors"
     >
       {dark ? (
         /* sun */
-        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -47,7 +46,7 @@ function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
         </svg>
       ) : (
         /* moon */
-        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -60,57 +59,6 @@ function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
   );
 }
 
-/** Header status cluster: run-state lamp + mono label. */
-function StatusCluster({ mode, wsStatus }: { mode: Mode; wsStatus: WsStatus }) {
-  let label: string;
-  let tone: "live" | "idle" | "fail";
-  if (mode === "live") {
-    if (wsStatus === "open") {
-      label = "live · streaming";
-      tone = "live";
-    } else if (wsStatus === "connecting") {
-      label = "live · connecting";
-      tone = "live";
-    } else if (wsStatus === "error") {
-      label = "live · error";
-      tone = "fail";
-    } else {
-      label = "live · closed";
-      tone = "idle";
-    }
-  } else if (mode === "offline") {
-    label = "replay";
-    tone = "live";
-  } else if (mode === "report") {
-    label = "report";
-    tone = "idle";
-  } else {
-    label = "standby";
-    tone = "idle";
-  }
-
-  const pulsing = tone === "live";
-  const dotCls =
-    tone === "live" ? "bg-live" : tone === "fail" ? "bg-fail" : "border border-idle/50";
-
-  return (
-    <span className="flex items-center gap-2">
-      {pulsing ? (
-        <motion.span
-          className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotCls}`}
-          animate={{ opacity: [1, 0.35, 1] }}
-          transition={{ duration: 1.6, repeat: Infinity }}
-        />
-      ) : (
-        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotCls}`} />
-      )}
-      <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">
-        {label}
-      </span>
-    </span>
-  );
-}
-
 export default function App() {
   const [mode, setMode] = useState<Mode>("launch");
   const [runId, setRunId] = useState<string | null>(null);
@@ -120,7 +68,7 @@ export default function App() {
   const [loadingReport, setLoadingReport] = useState(false);
   const { dark, toggle } = useTheme();
 
-  const { state, wsStatus } = useRunStream(mode === "live" ? runId : null);
+  const { state } = useRunStream(mode === "live" ? runId : null);
 
   async function handleLaunch(v: LaunchValues) {
     setError(null);
@@ -134,7 +82,7 @@ export default function App() {
       setError(
         `Couldn't reach the backend (${String(
           err
-        )}). Try the Offline demo — it needs no server.`
+        )}). Try the offline demo — it needs no server.`
       );
     } finally {
       setBusy(false);
@@ -149,7 +97,7 @@ export default function App() {
       setReport(r);
       setMode("report");
     } catch (err) {
-      setError(`Couldn't load report: ${String(err)}`);
+      setError(`Couldn't load the report: ${String(err)}`);
     } finally {
       setLoadingReport(false);
     }
@@ -165,34 +113,17 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <header className="sticky top-0 z-50 bg-background border-b border-hairline">
-          <div className="container mx-auto px-6 py-3 max-w-6xl flex items-center justify-between gap-4">
-            <div className="flex items-baseline gap-4 min-w-0">
-              <button
-                type="button"
-                className="text-base font-mono font-medium hover:opacity-70 transition-opacity whitespace-nowrap"
-                onClick={reset}
-                title="Back to launch"
-              >
-                [simulation labs]
-              </button>
-              <span className="hidden md:inline text-xs font-mono text-muted-foreground truncate">
-                behavioral user simulation
-              </span>
-            </div>
-            <nav className="flex items-center gap-4 sm:gap-5">
-              <StatusCluster mode={mode} wsStatus={wsStatus} />
-              {mode !== "launch" && (
-                <button
-                  type="button"
-                  className="px-3 py-1.5 rounded-md border border-border font-mono text-[11px] uppercase tracking-widest hover:border-foreground/40 transition-colors"
-                  onClick={reset}
-                >
-                  New run
-                </button>
-              )}
-              <ThemeToggle dark={dark} toggle={toggle} />
-            </nav>
+        <header className="sticky top-0 z-50 bg-background border-b border-border">
+          <div className="mx-auto max-w-6xl px-6 h-12 flex items-center justify-between">
+            <button
+              type="button"
+              className="font-mono text-sm hover:opacity-70 transition-opacity"
+              onClick={reset}
+              title="Back to start"
+            >
+              simulation labs
+            </button>
+            <ThemeToggle dark={dark} toggle={toggle} />
           </div>
         </header>
 
@@ -207,21 +138,17 @@ export default function App() {
           )}
 
           {mode !== "launch" && (
-            <div className="container mx-auto max-w-6xl px-6 py-10">
+            <div className="mx-auto max-w-6xl px-6 py-10">
               {mode === "offline" && <OfflineDemo onExit={reset} />}
 
               {mode === "live" && (
                 <div className="flex flex-col gap-6">
                   {loadingReport && (
-                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-                      loading report…
-                    </span>
-                  )}
-                  {error && (
-                    <p className="font-mono text-xs text-fail border border-fail/30 bg-fail/10 rounded-md px-3 py-2.5">
-                      {error}
+                    <p className="text-sm text-muted-foreground">
+                      Loading the report…
                     </p>
                   )}
+                  {error && <p className="text-sm text-fail">{error}</p>}
                   <PersonaGrid
                     state={state}
                     reportReady={state.status === "finished"}
@@ -237,21 +164,10 @@ export default function App() {
           )}
         </main>
 
-        <footer className="border-t border-hairline pt-10 pb-8 px-6 mt-16">
-          <div className="container mx-auto max-w-6xl">
-            <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-10">
-              <div>
-                <span className="font-mono text-sm">[simulation labs]</span>
-                <p className="text-sm text-muted-foreground mt-2 max-w-xs">
-                  Behavioral user simulation. A swarm of impaired synthetic
-                  users, and the exact pixel where they give up.
-                </p>
-              </div>
-            </div>
-            <div className="border-t border-hairline pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono text-muted-foreground">
-              <p>© 2026 Simulation Labs, Inc.</p>
-              <p>Powered by H Company Holo &amp; Gradium</p>
-            </div>
+        <footer className="border-t border-border mt-24 py-8 px-6">
+          <div className="mx-auto max-w-6xl flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            <span className="font-mono">simulation labs</span>
+            <span>Powered by H Company Holo &amp; Gradium · © 2026</span>
           </div>
         </footer>
       </div>
