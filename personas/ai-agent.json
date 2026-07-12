@@ -1,0 +1,9 @@
+{
+  "id": "ai-agent",
+  "name": "Agent (headless AI)",
+  "blurb": "An unimpaired AI agent - is your site agent-ready?",
+  "language": "en",
+  "max_steps": 30,
+  "deadline_s": 300.0,
+  "active_perturbations": []
+}

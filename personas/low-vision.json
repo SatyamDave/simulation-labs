@@ -1,0 +1,11 @@
+{
+  "id": "low-vision",
+  "name": "Sam (low vision)",
+  "blurb": "Severe visual acuity loss: heavy blur plus detail-destroying downscale.",
+  "language": "en",
+  "blur_sigma": 3.5,
+  "downscale_factor": 0.45,
+  "max_steps": 30,
+  "deadline_s": 240.0,
+  "active_perturbations": ["blur", "downscale"]
+}

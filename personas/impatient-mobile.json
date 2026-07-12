@@ -1,0 +1,10 @@
+{
+  "id": "impatient-mobile",
+  "name": "Priya (impatient, mobile)",
+  "blurb": "Phone viewport and no patience - bails if the flow drags past 45 seconds.",
+  "language": "en",
+  "viewport": {"width": 390, "height": 844},
+  "max_steps": 15,
+  "deadline_s": 45.0,
+  "active_perturbations": ["small_viewport", "impatience"]
+}
