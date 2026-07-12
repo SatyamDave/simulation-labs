@@ -45,21 +45,42 @@ async def test_offline_benchmark_produces_metrics(browser, tmp_path):
 
 
 async def test_scripted_success_counts_as_completion(browser, tmp_path):
+    from ghostpanel.benchmarks.harness import _REPO_ROOT
+
+    # A genuine completion of easy_form: fill both fields (each WRITE presses
+    # Enter; the second submits once both are non-empty) so #ok becomes visible.
+    # A bare ANSWER would (correctly) be rejected as unverified — the runner
+    # requires the success predicate to confirm a claimed completion.
+    url = f"file://{_REPO_ROOT / 'benchmarks' / 'pages' / 'easy_form.html'}"
+    ctx = await browser.new_context(viewport={"width": 1280, "height": 800})
+    page = await ctx.new_page()
+    await page.goto(url)
+
+    def _center(box):
+        return (int(box["x"] + box["width"] / 2), int(box["y"] + box["height"] / 2))
+
+    email = _center(await page.locator("#email").bounding_box())
+    pw = _center(await page.locator("#pw").bounding_box())
+    await ctx.close()
+
+    script = [
+        Action(type=ActionType.WRITE, x=email[0], y=email[1], text="me@work.com", caption="type email"),
+        Action(type=ActionType.WRITE, x=pw[0], y=pw[1], text="hunter2pass", caption="type password"),
+    ]
+
     def factory(persona, holo, task):
-        return StubPersonaAgent(
-            persona, [Action(type=ActionType.ANSWER, text="done", caption="done")]
-        )
+        return StubPersonaAgent(persona, list(script))
 
     report = await run_benchmark(
         case_ids=["easy"],
-        persona_ids=["power-user", "tremor"],
+        persona_ids=["power-user"],
         artifact_dir=tmp_path,
         agent_factory=factory,
         browser=browser,
     )
     (case,) = report["cases"]
     assert case["completion_rate"] == 1.0
-    assert case["mean_steps_to_success"] == 1.0
+    assert case["mean_steps_to_success"] == 2.0
 
 
 async def test_scoreboard_renders(browser, tmp_path):

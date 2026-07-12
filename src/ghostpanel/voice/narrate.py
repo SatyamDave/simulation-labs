@@ -53,9 +53,10 @@ def template_exit_interview(
     )
 
     if captions:
-        # Compress consecutive repeats ("clicking X, then clicking X, ..." →
-        # "clicking X again and again") — that's how a person tells it. Captions
-        # are gerund phrases, so "I tried clicking…" reads naturally.
+        # Captions are gerund phrases ("Clicking at (960, 312)", "Typing 'x'"),
+        # so "I tried clicking…" reads naturally. Compress consecutive repeats
+        # ("clicking X, then clicking X, …" → "clicking X again and again") —
+        # that's how a person actually tells it.
         compressed: list[str] = []
         repeats = 1
         for caption, nxt in zip(captions, captions[1:] + [None]):

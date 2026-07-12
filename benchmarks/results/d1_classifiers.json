@@ -1,0 +1,94 @@
+{
+  "id": "d1_classifiers",
+  "title": "Outcome-classifier accuracy",
+  "kind": "offline",
+  "headline": "Stuck-detector: precision 100%, recall 100%, 0 false rage-quits on 125 progressing traces; frames-similar accuracy 100%; is_success all checks pass.",
+  "metrics": {
+    "stuck_precision": 1.0,
+    "stuck_recall": 1.0,
+    "stuck_f1": 1.0,
+    "frames_similar_acc": 1.0,
+    "stuck_false_quits": 0,
+    "stuck_n": 225,
+    "stuck_negatives": 125,
+    "frames_n": 120,
+    "is_success_ok": true
+  },
+  "table": [
+    {
+      "classifier": "is_stuck",
+      "TP": 100,
+      "FP": 0,
+      "FN": 0,
+      "TN": 125,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "classifier": "frames_similar",
+      "TP": 80,
+      "FP": 0,
+      "FN": 0,
+      "TN": 40,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "subtype": "close_but_reacted",
+      "n": 25,
+      "fired": 0,
+      "TP": 0,
+      "FP": 0,
+      "FN": 0,
+      "TN": 25
+    },
+    {
+      "subtype": "dead_spot_clicks",
+      "n": 50,
+      "fired": 50,
+      "TP": 50,
+      "FP": 0,
+      "FN": 0,
+      "TN": 0
+    },
+    {
+      "subtype": "distinct_progress",
+      "n": 45,
+      "fired": 0,
+      "TP": 0,
+      "FP": 0,
+      "FN": 0,
+      "TN": 45
+    },
+    {
+      "subtype": "exact_repeat",
+      "n": 50,
+      "fired": 50,
+      "TP": 50,
+      "FP": 0,
+      "FN": 0,
+      "TN": 0
+    },
+    {
+      "subtype": "moving_clicks",
+      "n": 35,
+      "fired": 0,
+      "TP": 0,
+      "FP": 0,
+      "FN": 0,
+      "TN": 35
+    },
+    {
+      "subtype": "too_short",
+      "n": 20,
+      "fired": 0,
+      "TP": 0,
+      "FP": 0,
+      "FN": 0,
+      "TN": 20
+    }
+  ],
+  "notes": "Offline, seeded (np.random.default_rng(0)). is_stuck over 225 labeled histories (positives: exact-repeat loops + jittered dead-spot clicks w/ '\u2014 nothing changed on screen'; negatives: distinct progress, moving clicks (>14px), close-but-reacted clicks, <3-step histories). frames_similar over 120 labeled PNG pairs (identical bytes, sigma=3 noise variants, distinct content). Noise sweep locates the similar->different flip. is_success: predicate True/False/async/raises propagate correctly and the default (no predicate) is always-False (anti-false-positive)."
+}

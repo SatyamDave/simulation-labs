@@ -1,0 +1,71 @@
+{
+  "id": "a2_tremor_wcag",
+  "title": "Tremor -> WCAG target-miss",
+  "kind": "offline",
+  "headline": "A hand tremor (sigma=14px) misses a WCAG-minimum 44px target 20.5% of the time; you need >=62px targets to hold miss-rate under 5%.",
+  "metrics": {
+    "n_trials_per_cell": 20000,
+    "viewport": [
+      1280,
+      800
+    ],
+    "wcag_aa_min_px": 44,
+    "wcag_aaa_min_px": 24,
+    "miss_44px_at_sigma14_pct": 20.5,
+    "miss_44px_at_sigma4_pct": 0.0,
+    "miss_24px_at_sigma14_pct": 60.9,
+    "min_safe_size_at_sigma14_px": 62,
+    "mean_radial_err_sigma14_px": 17.59
+  },
+  "table": [
+    {
+      "tremor_sigma_px": 0,
+      "miss_44px_pct": 0.0,
+      "miss_24px_pct": 0.0,
+      "mean_radial_err_px": 0.0
+    },
+    {
+      "tremor_sigma_px": 2,
+      "miss_44px_pct": 0.0,
+      "miss_24px_pct": 0.0,
+      "mean_radial_err_px": 2.53
+    },
+    {
+      "tremor_sigma_px": 4,
+      "miss_44px_pct": 0.0,
+      "miss_24px_pct": 0.3,
+      "mean_radial_err_px": 5.0
+    },
+    {
+      "tremor_sigma_px": 6,
+      "miss_44px_pct": 0.1,
+      "miss_24px_pct": 7.4,
+      "mean_radial_err_px": 7.55
+    },
+    {
+      "tremor_sigma_px": 8,
+      "miss_44px_pct": 1.0,
+      "miss_24px_pct": 22.8,
+      "mean_radial_err_px": 10.08
+    },
+    {
+      "tremor_sigma_px": 10,
+      "miss_44px_pct": 4.8,
+      "miss_24px_pct": 37.6,
+      "mean_radial_err_px": 12.53
+    },
+    {
+      "tremor_sigma_px": 14,
+      "miss_44px_pct": 20.5,
+      "miss_24px_pct": 60.9,
+      "mean_radial_err_px": 17.59
+    },
+    {
+      "tremor_sigma_px": 20,
+      "miss_44px_pct": 45.1,
+      "miss_24px_pct": 77.8,
+      "mean_radial_err_px": 25.05
+    }
+  ],
+  "notes": "Model aims at target centre; jitter_coords (production tremor actuation) adds N(0,sigma) px on each axis, rounds and clamps. A miss = landing outside the square target box on either axis. Real personas: grandma-72 sigma=4, impatient-mobile sigma=6, tremor sigma=14; others 0. 20k trials/sigma, shared across target sizes, seed=default_rng(0). sigma=0 verified as exact identity (0% miss)."
+}

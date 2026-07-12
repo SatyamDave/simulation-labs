@@ -220,9 +220,6 @@ class PlaywrightSessionRunner:
                     step_index=step,
                     url=url,
                 )
-                # Wall-time the decision only to record it on the StepRecord.
-                # This latency is OUR infra time (Holo inference + rate-limiter
-                # queue) and is deliberately EXCLUDED from the persona sim clock.
                 decide_t0 = time.monotonic()
                 action = await agent.decide(obs, history)
                 decide_ms = int((time.monotonic() - decide_t0) * 1000)
