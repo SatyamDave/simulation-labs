@@ -1,0 +1,54 @@
+{
+  "_comment": "Sample RunReport matching shared/ghostpanel_contracts RunReport. Agent 4 (frontend) uses this to build/verify the report view with NO backend running. Keep field names in sync with contracts.py — if they drift, contracts.py wins.",
+  "run_id": "demo-run-0001",
+  "target_url": "http://localhost:8137/fixtures/hostile_form.html",
+  "task": "Create an account and start the free trial.",
+  "contract_version": "1.0.0",
+  "completion_rate": 0.333,
+  "generated_at": "2026-07-11T23:30:00Z",
+  "survival": [
+    {"persona_id": "power-user", "persona_name": "Alex (power user)", "outcome": "success", "steps_survived": 7, "completed": true},
+    {"persona_id": "ai-agent", "persona_name": "Agent (headless AI)", "outcome": "success", "steps_survived": 6, "completed": true},
+    {"persona_id": "grandma-72", "persona_name": "Margaret, 72", "outcome": "stuck", "steps_survived": 4, "completed": false},
+    {"persona_id": "low-vision", "persona_name": "Sam (low vision)", "outcome": "stuck", "steps_survived": 3, "completed": false},
+    {"persona_id": "tremor", "persona_name": "Dev (hand tremor)", "outcome": "step_budget", "steps_survived": 12, "completed": false},
+    {"persona_id": "impatient-mobile", "persona_name": "Priya (impatient, mobile)", "outcome": "time_budget", "steps_survived": 5, "completed": false}
+  ],
+  "heatmap_points": [
+    {"x": 300, "y": 145, "weight": 1.0, "persona_id": "grandma-72"},
+    {"x": 292, "y": 150, "weight": 1.0, "persona_id": "low-vision"},
+    {"x": 170, "y": 372, "weight": 1.0, "persona_id": "tremor"},
+    {"x": 158, "y": 148, "weight": 1.0, "persona_id": "impatient-mobile"}
+  ],
+  "results": [
+    {
+      "persona_id": "grandma-72",
+      "outcome": "stuck",
+      "failure_coords": [300, 145],
+      "failure_step": 4,
+      "failure_reason": "Clicked the blue 'Explore plans' decoy three times expecting it to create the account.",
+      "duration_s": 41.2,
+      "video_path": "artifacts/demo-run-0001/grandma-72.webm",
+      "transcript": "I kept pressing the big blue button because that's usually the one you press, but it just kept talking about plans. I never found where to actually make my account.",
+      "audio_path": "artifacts/demo-run-0001/grandma-72.wav",
+      "steps": [
+        {"persona_id": "grandma-72", "step": 0, "latency_ms": 900, "note": "", "thumbnail_b64": "", "action": {"type": "click", "x": 158, "y": 372, "caption": "Accept cookies", "raw": "Click(158, 372)"}},
+        {"persona_id": "grandma-72", "step": 1, "latency_ms": 850, "note": "", "thumbnail_b64": "", "action": {"type": "write", "x": 210, "y": 250, "text": "margaret@aol.com", "caption": "Type email", "raw": "Write(...)"}},
+        {"persona_id": "grandma-72", "step": 2, "latency_ms": 830, "note": "", "thumbnail_b64": "", "action": {"type": "click", "x": 300, "y": 145, "caption": "Click 'Explore plans' (decoy)", "raw": "Click(300, 145)"}},
+        {"persona_id": "grandma-72", "step": 3, "latency_ms": 810, "note": "", "thumbnail_b64": "", "action": {"type": "click", "x": 300, "y": 145, "caption": "Click 'Explore plans' again", "raw": "Click(300, 145)"}}
+      ]
+    },
+    {
+      "persona_id": "power-user",
+      "outcome": "success",
+      "failure_coords": null,
+      "failure_step": null,
+      "failure_reason": "",
+      "duration_s": 18.6,
+      "video_path": "artifacts/demo-run-0001/power-user.webm",
+      "transcript": "Straightforward once I scrolled to find the promo field. The submit button being grey was odd but I found it.",
+      "audio_path": "artifacts/demo-run-0001/power-user.wav",
+      "steps": []
+    }
+  ]
+}
