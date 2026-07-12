@@ -4,6 +4,7 @@
 - ``WS   /ws/runs/{id}``    replay buffered events, then stream live RunEvents
 - ``GET  /runs/{id}/report`` the cached RunReport JSON
 - ``GET  /runs``           list of runs (id, target, completion_rate, status)
+- ``GET  /personas``       the full persona roster (launch-form source of truth)
 - ``GET  /healthz``        liveness
 
 Artifacts (``/artifacts``) and the built frontend (``/``) are mounted in
@@ -16,6 +17,8 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
+
+from ghostpanel.engine.personas import load_personas
 
 router = APIRouter()
 
@@ -36,6 +39,12 @@ class StartRunResponse(BaseModel):
 @router.get("/healthz")
 async def healthz() -> dict:
     return {"status": "ok"}
+
+
+@router.get("/personas")
+async def list_personas() -> list[dict]:
+    """The full persona roster — the launch form's live source of truth."""
+    return [p.model_dump(mode="json") for p in load_personas(None)]
 
 
 @router.post("/runs", response_model=StartRunResponse)
