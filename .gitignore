@@ -1,0 +1,33 @@
+# --- secrets ---
+.env
+*.pem
+
+# --- python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# --- node / frontend (web/, Agent 4) ---
+node_modules/
+web/dist/
+web/.vite/
+*.local
+
+# --- runtime artifacts (video receipts, audio, generated reports) ---
+artifacts/
+*.webm
+*.wav
+!fixtures/**/*.wav
+
+# --- os / editor ---
+.DS_Store
+.idea/
+.vscode/

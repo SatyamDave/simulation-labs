@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuantumLeap — Sign Up</title>
+<!--
+  A DELIBERATELY HOSTILE signup flow, bundled so every agent can verify its
+  module fully offline (no live website / no network needed).
+  It packs the failure modes Ghostpanel personas are built to expose:
+    * 10px, #b8b8b8-on-#fff legal text (low-vision persona can't read it)
+    * a cookie wall that steals the first click
+    * the primary CTA styled to look secondary; the decoy styled to look primary
+    * error state communicated ONLY by red border (colour-blind persona misses it)
+    * a required field revealed only after scrolling (impatient persona quits)
+    * a hamburger menu hiding the real "Create account" on mobile widths
+  Serve with:  python -m http.server 8137  (then http://localhost:8137/fixtures/hostile_form.html)
+-->
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; margin: 0; color: #222; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid #eee; }
+  .brand { font-weight:700; font-size:18px; }
+  .hamburger { display:none; font-size:22px; cursor:pointer; }
+  nav a { margin-left:18px; color:#444; text-decoration:none; font-size:14px; }
+  main { max-width:420px; margin:40px auto; padding:0 20px; }
+  h1 { font-size:22px; }
+  label { display:block; font-size:13px; margin:14px 0 4px; }
+  input { width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; }
+  input.err { border-color:#e02424; }           /* colour-ONLY error signal */
+  .legal { color:#b8b8b8; font-size:10px; line-height:1.5; margin:14px 0; }  /* unreadable */
+  .actions { display:flex; gap:10px; margin-top:22px; }
+  /* CTA that ACTUALLY submits looks secondary */
+  .btn-real { background:#f2f2f2; color:#555; border:1px solid #ddd; padding:10px 16px; border-radius:6px; cursor:pointer; font-size:14px; }
+  /* Decoy ("Explore plans") looks like the primary button */
+  .btn-decoy { background:#3b5bdb; color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; }
+  #cookie { position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; z-index:10; }
+  #cookie .card { background:#fff; padding:24px; border-radius:10px; max-width:340px; }
+  #promo { display:none; }                        /* required field revealed on scroll */
+  #ok { display:none; padding:16px; background:#e6f6ec; border-radius:8px; margin-top:16px; color:#136f38; }
+  .spacer { height:520px; }                        /* forces a scroll to reach promo+submit */
+  @media (max-width:480px){ nav{display:none;} .hamburger{display:block;} }
+</style>
+</head>
+<body>
+  <div id="cookie">
+    <div class="card">
+      <p style="font-size:14px;">We value your privacy. We use cookies to leap quantumly.</p>
+      <button onclick="document.getElementById('cookie').remove()" class="btn-decoy">Accept all</button>
+    </div>
+  </div>
+
+  <header>
+    <div class="brand">QuantumLeap</div>
+    <div class="hamburger" onclick="document.getElementById('m').style.display='block'">☰</div>
+    <nav id="m"><a href="#">Product</a><a href="#">Pricing</a><a href="#" id="nav-signup">Create account</a></nav>
+  </header>
+
+  <main>
+    <h1>Start your free trial</h1>
+    <form id="f" onsubmit="return submitForm(event)">
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@work.com" />
+
+      <label for="pw">Password</label>
+      <input id="pw" type="password" placeholder="At least 12 characters" />
+
+      <p class="legal">By continuing you agree to the Terms, the Data Processing Addendum,
+        the Acceptable Use Policy, and consent to receive product communications. A verification
+        step and a promo code (revealed below) are required to complete registration.</p>
+
+      <div class="spacer"></div>
+
+      <label for="promo" id="promoLabel" style="display:none;">Promo code (required)</label>
+      <input id="promo" placeholder="required to continue" />
+
+      <div class="actions">
+        <button type="button" class="btn-decoy" onclick="alert('Explore our plans!')">Explore plans</button>
+        <button type="submit" class="btn-real">Create account</button>
+      </div>
+    </form>
+    <div id="ok">✓ Account created. Welcome to QuantumLeap.</div>
+  </main>
+
+  <script>
+    // Reveal the required promo field only once the user scrolls (impatience trap).
+    addEventListener('scroll', () => {
+      document.getElementById('promo').style.display = 'block';
+      document.getElementById('promoLabel').style.display = 'block';
+    });
+    function submitForm(e){
+      e.preventDefault();
+      const email = document.getElementById('email');
+      const promo = document.getElementById('promo');
+      let bad = false;
+      [email, promo].forEach(el => {
+        if(!el.value){ el.classList.add('err'); bad = true; }  // red-border-ONLY error
+        else el.classList.remove('err');
+      });
+      if(bad) return false;
+      document.getElementById('f').style.display='none';
+      document.getElementById('ok').style.display='block';   // success predicate: #ok visible
+      return false;
+    }
+  </script>
+</body>
+</html>
