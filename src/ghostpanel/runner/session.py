@@ -27,7 +27,7 @@ from ghostpanel_contracts import (
     StepRecord,
 )
 
-from .detect import SuccessPredicate, is_stuck, is_success
+from .detect import NO_CHANGE_NOTE, SuccessPredicate, frames_similar, is_stuck, is_success
 from .execute import execute_action
 from .policy import RequestPolicy
 from .thumbnail import to_thumb_data_uri
@@ -37,6 +37,34 @@ from .thumbnail import to_thumb_data_uri
 # ghostpanel.report.insights.POLICY_BLOCKED_NOTE), so nothing may be appended;
 # the blocked METHOD + host travel in the 🛡 StepEvent caption instead.
 _POLICY_BLOCKED_NOTE = "policy_blocked"
+
+# --- Simulated persona clock -------------------------------------------------
+# `deadline_s` models the PERSONA's patience, so it must count only time the user
+# would actually experience: page loads, waits, acting — plus a fixed per-step
+# "read the page and decide" cost. Holo inference latency and the shared
+# rate-limiter queue are OUR infra time; charging them to the persona made every
+# run end in `time_budget` whenever the API was slow or the swarm was queued.
+_THINK_TIME_S = 4.0
+# Post-action pause so the next screenshot captures a settled page, not a frame
+# mid-navigation (the model otherwise reasons about half-loaded pages).
+_SETTLE_MS = 500
+_SETTLE_LOAD_TIMEOUT_MS = 5_000
+# Runaway wall-clock guard for the whole session. Generous on purpose: at free-tier
+# RPM a full swarm legitimately takes tens of minutes. Hitting it is an infra
+# failure (ERROR), never a persona verdict.
+_WALL_CAP_S = 7_200.0
+
+
+async def _settle(page) -> None:
+    """Give the page a beat to react to the last action before screenshotting."""
+    try:
+        await page.wait_for_load_state("domcontentloaded", timeout=_SETTLE_LOAD_TIMEOUT_MS)
+    except Exception:
+        pass
+    try:
+        await page.wait_for_timeout(_SETTLE_MS)
+    except Exception:
+        pass
 
 
 def _default_caption(action: Action) -> str:
@@ -108,6 +136,7 @@ class PlaywrightSessionRunner:
             "failure_step": None,
             "failure_reason": "",
             "current_step": 0,  # read by the policy route handler
+            "sim_s": 0.0,  # persona-experienced seconds (see module docnotes)
         }
 
         video_dir = self.artifact_dir / run_id
@@ -166,18 +195,34 @@ class PlaywrightSessionRunner:
             await context.route("**/*", _enforce)
 
         async def _loop() -> None:
+            prev_png: Optional[bytes] = None
+            prev_url = ""
             for step in range(persona.max_steps):
                 state["current_step"] = step
                 png = await page.screenshot()
+                url = page.url
+                # If the last action left the screen visually identical, say so in
+                # its history entry — the model stops repeating dud actions, and
+                # the stuck detector can catch jittered clicks on a dead spot.
+                if (
+                    prev_png is not None
+                    and history
+                    and url == prev_url
+                    and NO_CHANGE_NOTE not in history[-1]
+                    and frames_similar(prev_png, png)
+                ):
+                    history[-1] += NO_CHANGE_NOTE
+                prev_png, prev_url = png, url
+
                 obs = Observation(
                     raw_png=png,
                     viewport=persona.viewport,
                     step_index=step,
-                    url=page.url,
+                    url=url,
                 )
-                decide_t0 = time.perf_counter()
+                decide_t0 = time.monotonic()
                 action = await agent.decide(obs, history)
-                latency_ms = int((time.perf_counter() - decide_t0) * 1000)
+                decide_ms = int((time.monotonic() - decide_t0) * 1000)
                 caption = action.caption or _default_caption(action)
                 thumb = to_thumb_data_uri(png)
 
@@ -187,7 +232,7 @@ class PlaywrightSessionRunner:
                         step=step,
                         action=action,
                         thumbnail_b64=thumb,
-                        latency_ms=latency_ms,
+                        latency_ms=decide_ms,
                     )
                 )
                 await sink.emit(
@@ -236,12 +281,25 @@ class PlaywrightSessionRunner:
                     state["failure_reason"] = f"repeated action: {caption}"
                     return
 
-                # --- actuate ---
+                # --- actuate (real page time is charged to the persona clock) ---
                 exec_action = action
                 if action.type == ActionType.RESTART:
                     exec_action = action.model_copy(update={"url": target_url})
+                exec_t0 = time.monotonic()
                 await execute_action(page, exec_action)
+                await _settle(page)
                 history.append(caption)
+
+                state["sim_s"] += _THINK_TIME_S + (time.monotonic() - exec_t0)
+
+                # Re-check success on the page this action produced, so completing
+                # the flow on the final step/second still counts as a completion.
+                if await is_success(page, self.success_predicate):
+                    state["outcome"] = PersonaOutcome.SUCCESS
+                    return
+                if state["sim_s"] >= persona.deadline_s:
+                    state["outcome"] = PersonaOutcome.TIME_BUDGET
+                    return
 
             state["outcome"] = PersonaOutcome.STEP_BUDGET
 
@@ -250,9 +308,10 @@ class PlaywrightSessionRunner:
             video = page.video
             await sink.emit(PersonaStarted(run_id=run_id, persona_id=persona.id))
             try:
-                await asyncio.wait_for(_loop(), timeout=persona.deadline_s)
+                await asyncio.wait_for(_loop(), timeout=_WALL_CAP_S)
             except asyncio.TimeoutError:
-                state["outcome"] = PersonaOutcome.TIME_BUDGET
+                state["outcome"] = PersonaOutcome.ERROR
+                state["failure_reason"] = "wall-clock safety cap hit (infra, not persona patience)"
         except Exception as exc:  # infra failure — not a real "abandon"
             state["outcome"] = PersonaOutcome.ERROR
             state["failure_reason"] = f"{type(exc).__name__}: {exc}"[:200]
@@ -286,7 +345,10 @@ class PlaywrightSessionRunner:
                         video_path = None
 
         outcome = state["outcome"] or PersonaOutcome.ERROR
-        duration_s = time.monotonic() - start
+        # Report the persona-experienced duration (what the deadline measures), not
+        # wall clock — wall time is dominated by API queueing and would tell the
+        # user "Margaret spent 4 minutes" when she simulated 40 seconds.
+        duration_s = state["sim_s"] if state["sim_s"] > 0 else time.monotonic() - start
 
         await sink.emit(
             PersonaFinished(

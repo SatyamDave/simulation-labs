@@ -57,8 +57,14 @@ Guidelines:
 - If a cookie banner, consent prompt, or modal dialog covers the page, DISMISS it
   first (e.g. click its accept/close button) before doing anything else.
 - Make real progress toward the task each step: fill required fields, then submit.
-- If your previous action did not change the screen, DO NOT repeat it — try a
-  different element, scroll to reveal more, or a different approach.
+- Fill ONE field per action. write(x, y, text) clicks the field at (x, y) first,
+  so aim at the CENTER of the input box. Use realistic values: a plausible email
+  address, a strong password (letters+digits+symbol), an available-looking username.
+- If the field or button you need is not visible in the screenshot, scroll(down)
+  to reveal it — never click where you merely guess it might be.
+- A history entry marked "nothing changed on screen" means that action had NO
+  effect (the click missed, or the control is inert). Do NOT repeat it — aim at a
+  different position, pick a different element, or scroll.
 - To finish a signup/checkout you usually must click the button that performs the
   action (e.g. "Create account", "Sign up"), not a promotional or secondary button.
 - Only use answer() when the task is genuinely complete (e.g. a success/confirmation
