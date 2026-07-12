@@ -1,0 +1,14 @@
+{
+  "id": "impatient-mobile",
+  "name": "Priya (impatient, mobile)",
+  "blurb": "On a phone, in a hurry — abandons the moment a flow feels slow.",
+  "language": "en",
+  "viewport": { "width": 390, "height": 844 },
+  "blur_sigma": 0.0,
+  "downscale_factor": 1.0,
+  "tremor_sigma_px": 6.0,
+  "max_steps": 8,
+  "deadline_s": 30.0,
+  "literacy_note": "You are in a hurry on a small phone screen. If the next step is not obvious, you abandon the task.",
+  "active_perturbations": ["small_viewport", "impatience", "tremor"]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "colorblind",
+  "name": "Jordan (deuteranopia)",
+  "blurb": "Red/green colour-blind — colour-only cues and error states vanish.",
+  "language": "en",
+  "blur_sigma": 0.0,
+  "downscale_factor": 1.0,
+  "cvd_type": "deutan",
+  "cvd_severity": 0.9,
+  "tremor_sigma_px": 0.0,
+  "max_steps": 30,
+  "deadline_s": 120.0,
+  "literacy_note": "",
+  "active_perturbations": ["cvd"]
+}

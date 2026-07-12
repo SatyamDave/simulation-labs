@@ -131,10 +131,13 @@ Read `shared/ghostpanel_contracts/contracts.py` for field-level docs. Highlights
   edge and y num pixels from the top edge."*
 - **Navigation** action space to parse: click / write / scroll / go_back / refresh / wait /
   goto / restart / answer (map to `ActionType`).
-- **smart_resize gotcha:** returned coords assume the image dims Holo tokenized. **Keep image
-  dimensions constant** and you need no remap. Blur/CVD change pixel *values* → safe. Downscale
-  = resize down **then back up to original size** (in place) → dims unchanged → safe. If you
-  ever change dims, track the scale and multiply coords back.
+- **COORDINATE SPACE (verified live):** the hosted Holo3.1 API returns coords **normalized to a
+  0–1000 grid**, NOT absolute pixels. `LiveHoloClient` denormalizes them to true pixels
+  (`x/1000*w`, `y/1000*h`) internally — downstream code (runner) receives true viewport pixels and
+  executes verbatim. Confirmed: a button at true centre (547,430) in a 1280×800 shot came back as
+  Click(426,536) → 545,429. Also keep image **dimensions constant** through perturbation (blur/CVD
+  change pixel values only; downscale = resize down then back up in place) so the denormalization
+  target stays the real viewport size. `FakeHoloClient` returns pixel coords directly (no denorm).
 - Refs: `hub.hcompany.ai/quickstart`, `github.com/hcompai/hai-cookbook` (`utils/localization.py`,
   `utils/navigation.py`), `github.com/hcompai/surfer-h-cli` (agent-loop reference).
 

@@ -1,0 +1,13 @@
+{
+  "id": "power-user",
+  "name": "Alex (power user)",
+  "blurb": "The control — no impairments, patient, fluent. Baseline for comparison.",
+  "language": "en",
+  "blur_sigma": 0.0,
+  "downscale_factor": 1.0,
+  "tremor_sigma_px": 0.0,
+  "max_steps": 40,
+  "deadline_s": 240.0,
+  "literacy_note": "",
+  "active_perturbations": []
+}

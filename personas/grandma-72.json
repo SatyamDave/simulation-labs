@@ -1,0 +1,13 @@
+{
+  "id": "grandma-72",
+  "name": "Margaret, 72",
+  "blurb": "Reads every label literally, mistrusts icons, gives up quickly.",
+  "language": "en",
+  "blur_sigma": 1.2,
+  "downscale_factor": 1.0,
+  "tremor_sigma_px": 4.0,
+  "max_steps": 12,
+  "deadline_s": 90.0,
+  "literacy_note": "Read the screen literally. Do not assume an icon is a menu. Do not guess UI conventions; only click things whose purpose is written in plain words.",
+  "active_perturbations": ["blur", "low_literacy", "tremor"]
+}

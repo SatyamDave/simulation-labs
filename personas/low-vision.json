@@ -1,0 +1,13 @@
+{
+  "id": "low-vision",
+  "name": "Sam (low vision)",
+  "blurb": "Low visual acuity — small text and thin contrast are unreadable.",
+  "language": "en",
+  "blur_sigma": 3.5,
+  "downscale_factor": 0.4,
+  "tremor_sigma_px": 0.0,
+  "max_steps": 25,
+  "deadline_s": 150.0,
+  "literacy_note": "",
+  "active_perturbations": ["blur", "downscale"]
+}
