@@ -49,12 +49,14 @@ def template_exit_interview(
     )
 
     if captions:
+        # Captions are gerund phrases ("Clicking at (960, 312)", "Typing 'x'"),
+        # so "I tried clicking…" reads naturally; "I tried to clicking…" did not.
         if len(captions) == 1:
-            steps_sentence = f"I tried to {captions[0].lower()}"
+            steps_sentence = f"I tried {captions[0].lower()}"
         else:
             body = ", then ".join(c.lower() for c in captions[:-1])
             steps_sentence = (
-                f"First I tried to {body}, then {captions[-1].lower()}"
+                f"First I tried {body}, then {captions[-1].lower()}"
             )
     else:
         steps_sentence = "I looked around the page"
