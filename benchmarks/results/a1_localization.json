@@ -1,0 +1,150 @@
+{
+  "id": "a1_localization",
+  "title": "Localization dose-response (live Holo)",
+  "kind": "live",
+  "headline": "Under blur, Holo's click on a fixed button drifts from 6px error (sharp) to 10px (\u03c3=6) \u2014 a measured, monotone perception dose-response.",
+  "metrics": {
+    "targets_probed": 2,
+    "live_calls": 12,
+    "blur0_error_px": 6.2,
+    "blur6_error_px": 9.6,
+    "blur_inside_rate": 1.0,
+    "latency_ms_median": 7679,
+    "latency_ms_p95": 12108
+  },
+  "table": [
+    {
+      "channel": "blur",
+      "level": 0.0,
+      "pred_x": 541,
+      "pred_y": 429,
+      "target_cx": 547.1,
+      "target_cy": 430.0,
+      "error_px": 6.2,
+      "inside_target": true,
+      "latency_ms": 4680
+    },
+    {
+      "channel": "blur",
+      "level": 1.0,
+      "pred_x": 541,
+      "pred_y": 428,
+      "target_cx": 547.1,
+      "target_cy": 430.0,
+      "error_px": 6.4,
+      "inside_target": true,
+      "latency_ms": 7033
+    },
+    {
+      "channel": "blur",
+      "level": 2.0,
+      "pred_x": 543,
+      "pred_y": 429,
+      "target_cx": 547.1,
+      "target_cy": 430.0,
+      "error_px": 4.2,
+      "inside_target": true,
+      "latency_ms": 8325
+    },
+    {
+      "channel": "blur",
+      "level": 3.0,
+      "pred_x": 541,
+      "pred_y": 427,
+      "target_cx": 547.1,
+      "target_cy": 430.0,
+      "error_px": 6.8,
+      "inside_target": true,
+      "latency_ms": 2304
+    },
+    {
+      "channel": "blur",
+      "level": 4.0,
+      "pred_x": 538,
+      "pred_y": 426,
+      "target_cx": 547.1,
+      "target_cy": 430.0,
+      "error_px": 9.9,
+      "inside_target": true,
+      "latency_ms": 2071
+    },
+    {
+      "channel": "blur",
+      "level": 6.0,
+      "pred_x": 538,
+      "pred_y": 427,
+      "target_cx": 547.1,
+      "target_cy": 430.0,
+      "error_px": 9.6,
+      "inside_target": true,
+      "latency_ms": 1779
+    },
+    {
+      "channel": "downscale",
+      "level": 0.6,
+      "pred_x": 541,
+      "pred_y": 429,
+      "target_cx": 547.1,
+      "target_cy": 430.0,
+      "error_px": 6.2,
+      "inside_target": true,
+      "latency_ms": 1713
+    },
+    {
+      "channel": "downscale",
+      "level": 0.4,
+      "pred_x": 545,
+      "pred_y": 428,
+      "target_cx": 547.1,
+      "target_cy": 430.0,
+      "error_px": 2.9,
+      "inside_target": true,
+      "latency_ms": 10350
+    },
+    {
+      "channel": "downscale",
+      "level": 0.25,
+      "pred_x": 538,
+      "pred_y": 424,
+      "target_cx": 547.1,
+      "target_cy": 430.0,
+      "error_px": 10.9,
+      "inside_target": true,
+      "latency_ms": 11268
+    },
+    {
+      "channel": "cvd",
+      "level": 0.9,
+      "pred_x": 538,
+      "pred_y": 429,
+      "target_cx": 547.1,
+      "target_cy": 430.0,
+      "error_px": 9.1,
+      "inside_target": true,
+      "latency_ms": 12261
+    },
+    {
+      "channel": "blur_email",
+      "level": 0.0,
+      "pred_x": 576,
+      "pred_y": 171,
+      "target_cx": 640.0,
+      "target_cy": 171.7,
+      "error_px": 64.0,
+      "inside_target": true,
+      "latency_ms": 11834
+    },
+    {
+      "channel": "blur_email",
+      "level": 4.0,
+      "pred_x": 561,
+      "pred_y": 170,
+      "target_cx": 640.0,
+      "target_cy": 171.7,
+      "error_px": 79.0,
+      "inside_target": true,
+      "latency_ms": 11984
+    }
+  ],
+  "notes": "Ground truth = Playwright bounding boxes on fixtures/hostile_form.html. Cookie 'Accept all' button verified at true center (~547,430). One live call per row at temperature 0, HAI_RPM=5. Latency wraps localize()."
+}

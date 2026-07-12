@@ -1,0 +1,143 @@
+{
+  "id": "c3_overhead",
+  "title": "Perturbation compute overhead",
+  "kind": "offline",
+  "headline": "Full perception perturbation adds a median of 61.4 ms/frame at 1280x800 \u2014 under 3.07% of a single ~2s Holo inference call.",
+  "metrics": {
+    "fixture_px": "640x480",
+    "fullsize_px": "1280x800",
+    "iters": 80,
+    "warmup": 10,
+    "reference_inference_ms": 2000.0,
+    "full_pipeline_ms_median": 61.351,
+    "full_pipeline_ms_p95": 62.79,
+    "full_pipeline_pct_of_inference": 3.0676,
+    "real_personas_ms_median_1280x800": 5.065,
+    "blur_ms_median": 11.307,
+    "downscale_ms_median": 4.564,
+    "cvd_ms_median": 39.267
+  },
+  "table": [
+    {
+      "persona": "ai-agent",
+      "resolution": "640x480",
+      "perceive_ms_median": 1.058,
+      "perceive_ms_p95": 1.119
+    },
+    {
+      "persona": "colorblind",
+      "resolution": "640x480",
+      "perceive_ms_median": 13.062,
+      "perceive_ms_p95": 13.998
+    },
+    {
+      "persona": "grandma-72",
+      "resolution": "640x480",
+      "perceive_ms_median": 4.641,
+      "perceive_ms_p95": 4.794
+    },
+    {
+      "persona": "impatient-mobile",
+      "resolution": "640x480",
+      "perceive_ms_median": 1.098,
+      "perceive_ms_p95": 1.155
+    },
+    {
+      "persona": "low-vision",
+      "resolution": "640x480",
+      "perceive_ms_median": 6.456,
+      "perceive_ms_p95": 6.643
+    },
+    {
+      "persona": "non-native",
+      "resolution": "640x480",
+      "perceive_ms_median": 1.125,
+      "perceive_ms_p95": 1.296
+    },
+    {
+      "persona": "power-user",
+      "resolution": "640x480",
+      "perceive_ms_median": 1.12,
+      "perceive_ms_p95": 1.295
+    },
+    {
+      "persona": "tremor",
+      "resolution": "640x480",
+      "perceive_ms_median": 1.104,
+      "perceive_ms_p95": 1.188
+    },
+    {
+      "persona": "ai-agent",
+      "resolution": "1280x800",
+      "perceive_ms_median": 5.042,
+      "perceive_ms_p95": 5.494
+    },
+    {
+      "persona": "colorblind",
+      "resolution": "1280x800",
+      "perceive_ms_median": 43.964,
+      "perceive_ms_p95": 46.374
+    },
+    {
+      "persona": "grandma-72",
+      "resolution": "1280x800",
+      "perceive_ms_median": 16.698,
+      "perceive_ms_p95": 17.335
+    },
+    {
+      "persona": "impatient-mobile",
+      "resolution": "1280x800",
+      "perceive_ms_median": 5.062,
+      "perceive_ms_p95": 5.442
+    },
+    {
+      "persona": "low-vision",
+      "resolution": "1280x800",
+      "perceive_ms_median": 21.963,
+      "perceive_ms_p95": 22.788
+    },
+    {
+      "persona": "non-native",
+      "resolution": "1280x800",
+      "perceive_ms_median": 4.993,
+      "perceive_ms_p95": 5.229
+    },
+    {
+      "persona": "power-user",
+      "resolution": "1280x800",
+      "perceive_ms_median": 5.042,
+      "perceive_ms_p95": 5.257
+    },
+    {
+      "persona": "tremor",
+      "resolution": "1280x800",
+      "perceive_ms_median": 5.068,
+      "perceive_ms_p95": 5.318
+    },
+    {
+      "persona": "full-pipeline",
+      "resolution": "1280x800",
+      "perceive_ms_median": 61.351,
+      "perceive_ms_p95": 62.79
+    },
+    {
+      "persona": "[channel] blur (\u03c3=3.5)",
+      "resolution": "1280x800",
+      "perceive_ms_median": 11.307,
+      "perceive_ms_p95": 11.57
+    },
+    {
+      "persona": "[channel] downscale (\u00d70.4)",
+      "resolution": "1280x800",
+      "perceive_ms_median": 4.564,
+      "perceive_ms_p95": 4.709
+    },
+    {
+      "persona": "[channel] cvd (deutan,0.9)",
+      "resolution": "1280x800",
+      "perceive_ms_median": 39.267,
+      "perceive_ms_p95": 39.978
+    }
+  ],
+  "notes": "perf_counter timing; median + p95 over 80 iterations after 10 warmup runs. Timings are machine-dependent. Isolated channels run on an already-decoded PIL image (PNG decode+encode excluded) at the runtime size so each transform's cost stands alone; full perceive() includes PNG decode+encode. The 2s inference reference is an estimate to be confirmed by the live latency benchmark. The full-pipeline persona is a synthetic worst case with all three perception channels enabled at once."
+}

@@ -1,0 +1,132 @@
+{
+  "id": "c2_throughput",
+  "title": "Swarm throughput vs rate limit",
+  "kind": "analytic",
+  "headline": "At the free tier (5 RPM) a full 8-persona x max-steps run takes ~41 min (205 API calls); the demo-4 preset is ~17 min worst-case / ~10 min expected -- which is why the live demo runs 4 personas, not 8.",
+  "metrics": {
+    "_THINK_TIME_S": 4.0,
+    "_WALL_CAP_S": 7200.0,
+    "HAI_RPM_free_tier": 5.0,
+    "completion_frac": 0.6,
+    "page_s_est": 1.0,
+    "per_step_sim_s": 5.0,
+    "throughput_steps_per_min_equals_rpm": true,
+    "full8_api_calls_worst": 205,
+    "full8_api_calls_expected": 123,
+    "demo4_api_calls_worst": 85,
+    "demo4_api_calls_expected": 51,
+    "wall_min_full8_worst_at_5rpm": 41.0,
+    "wall_min_demo4_worst_at_5rpm": 17.0,
+    "wall_min_demo4_expected_at_5rpm": 10.2,
+    "playbook_8x30_shorthand_min": 48.0,
+    "sim_steps_to_abandon": {
+      "ai-agent": 40,
+      "colorblind": 24,
+      "grandma-72": 12,
+      "impatient-mobile": 6,
+      "low-vision": 25,
+      "non-native": 20,
+      "power-user": 40,
+      "tremor": 30
+    }
+  },
+  "table": [
+    {
+      "preset": "full 8",
+      "rpm": 5,
+      "api_calls_worst": 205,
+      "api_calls_expected": 123,
+      "wall_min_worst": 41.0,
+      "wall_min_expected": 24.6
+    },
+    {
+      "preset": "full 8",
+      "rpm": 10,
+      "api_calls_worst": 205,
+      "api_calls_expected": 123,
+      "wall_min_worst": 20.5,
+      "wall_min_expected": 12.3
+    },
+    {
+      "preset": "full 8",
+      "rpm": 30,
+      "api_calls_worst": 205,
+      "api_calls_expected": 123,
+      "wall_min_worst": 6.83,
+      "wall_min_expected": 4.1
+    },
+    {
+      "preset": "full 8",
+      "rpm": 60,
+      "api_calls_worst": 205,
+      "api_calls_expected": 123,
+      "wall_min_worst": 3.42,
+      "wall_min_expected": 2.05
+    },
+    {
+      "preset": "demo 4",
+      "rpm": 5,
+      "api_calls_worst": 85,
+      "api_calls_expected": 51,
+      "wall_min_worst": 17.0,
+      "wall_min_expected": 10.2
+    },
+    {
+      "preset": "demo 4",
+      "rpm": 10,
+      "api_calls_worst": 85,
+      "api_calls_expected": 51,
+      "wall_min_worst": 8.5,
+      "wall_min_expected": 5.1
+    },
+    {
+      "preset": "demo 4",
+      "rpm": 30,
+      "api_calls_worst": 85,
+      "api_calls_expected": 51,
+      "wall_min_worst": 2.83,
+      "wall_min_expected": 1.7
+    },
+    {
+      "preset": "demo 4",
+      "rpm": 60,
+      "api_calls_worst": 85,
+      "api_calls_expected": 51,
+      "wall_min_worst": 1.42,
+      "wall_min_expected": 0.85
+    },
+    {
+      "preset": "single baseline",
+      "rpm": 5,
+      "api_calls_worst": 40,
+      "api_calls_expected": 24,
+      "wall_min_worst": 8.0,
+      "wall_min_expected": 4.8
+    },
+    {
+      "preset": "single baseline",
+      "rpm": 10,
+      "api_calls_worst": 40,
+      "api_calls_expected": 24,
+      "wall_min_worst": 4.0,
+      "wall_min_expected": 2.4
+    },
+    {
+      "preset": "single baseline",
+      "rpm": 30,
+      "api_calls_worst": 40,
+      "api_calls_expected": 24,
+      "wall_min_worst": 1.33,
+      "wall_min_expected": 0.8
+    },
+    {
+      "preset": "single baseline",
+      "rpm": 60,
+      "api_calls_worst": 40,
+      "api_calls_expected": 24,
+      "wall_min_worst": 0.67,
+      "wall_min_expected": 0.4
+    }
+  ],
+  "notes": "MODEL: total_api_calls = sum(persona steps); wall_min = calls / RPM. One Holo navigate call per step, shared token-bucket limiter (capacity=rpm, refill rpm/60 tok/s). Worst case = every persona to its full max_steps (grandma-72=12, impatient-mobile=8, low-vision=25, non-native=20, colorblind=30, tremor=30, power-user=40, ai-agent=40); expected = 60% of max_steps. SANITY vs DEMO_PLAYBOOK.md: full-8 worst-case = 41 min matches its \"~40 min for 8x30\" (its 8x30=48 min shorthand; real max_steps sum =205 calls gives 41 min -- close agreement). The playbook's \"~3-6 min for 4\" is its THREE fast-failing personas (grandma-72, impatient-mobile, low-vision) which complete/abandon early; this preset's demo-4 swaps in power-user (a full-40 baseline), so its worst-case rises to ~17 min / ~10 min expected -- same order, higher because power-user runs long. SIM-CLOCK INDEPENDENCE: per-step simulated cost = _THINK_TIME_S(4.0) + page(~1s) = 5s, so a persona hits TIME_BUDGET after deadline_s/per_step steps REGARDLESS of RPM/API latency (Holo queue is excluded from patience, commit 416e488). E.g. impatient-mobile (deadline_s=30) abandons after ~6 steps whether the API runs at 5 or 60 RPM -- RPM only changes how long WE wait for those steps, never the verdict. THROUGHPUT: steps/minute == RPM by construction."
+}
