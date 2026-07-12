@@ -1,0 +1,9 @@
+{"event": "run_started", "run_id": "demo-run-0001", "target_url": "http://localhost:8137/fixtures/hostile_form.html", "task": "Create an account and start the free trial.", "personas": [{"id": "grandma-72", "name": "Margaret, 72", "blurb": "First-timer, expects the biggest button to be the answer"}, {"id": "low-vision", "name": "Sam (low vision)", "blurb": "Can't read small grey text"}, {"id": "tremor", "name": "Dev (hand tremor)", "blurb": "Misses small tap targets"}, {"id": "impatient-mobile", "name": "Priya (impatient, mobile)", "blurb": "Abandons after a few seconds"}, {"id": "power-user", "name": "Alex (power user)", "blurb": "Baseline"}, {"id": "ai-agent", "name": "Agent (headless AI)", "blurb": "Is your site agent-ready?"}]}
+{"event": "persona_started", "run_id": "demo-run-0001", "persona_id": "grandma-72"}
+{"event": "persona_started", "run_id": "demo-run-0001", "persona_id": "low-vision"}
+{"event": "step", "run_id": "demo-run-0001", "persona_id": "grandma-72", "step": 0, "caption": "Accept cookies", "thumbnail_b64": "", "x": 158, "y": 372}
+{"event": "step", "run_id": "demo-run-0001", "persona_id": "grandma-72", "step": 2, "caption": "Click 'Explore plans' (decoy)", "thumbnail_b64": "", "x": 300, "y": 145}
+{"event": "step", "run_id": "demo-run-0001", "persona_id": "low-vision", "step": 1, "caption": "Squinting at legal text", "thumbnail_b64": "", "x": 292, "y": 250}
+{"event": "persona_finished", "run_id": "demo-run-0001", "persona_id": "grandma-72", "outcome": "stuck", "failure_coords": [300, 145], "failure_reason": "Clicked the decoy button repeatedly", "steps_survived": 4}
+{"event": "persona_finished", "run_id": "demo-run-0001", "persona_id": "power-user", "outcome": "success", "failure_coords": null, "failure_reason": "", "steps_survived": 7}
+{"event": "run_finished", "run_id": "demo-run-0001", "report_url": "/runs/demo-run-0001/report", "completion_rate": 0.333}
