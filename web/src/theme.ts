@@ -1,33 +1,33 @@
 // Simulation Labs functional palette + perturbation labels.
-// Per web/DESIGN_SYSTEM.md the UI is achromatic; the ONLY chromatic accents
-// are functional: emerald-500 for success/survived, red-500 for
-// abandonment/failure. Infra errors are neutral gray (excluded from survival
-// stats, so they must not read as a human abandon).
+// Per web/DESIGN_SYSTEM.md (v2 — Instrument Panel) every color is a state:
+// amber = running/live, emerald = survived, red = died/abandoned, neutral =
+// infra error (excluded from survival stats, must not read as a human abandon).
 
 import type { PersonaConfig, PersonaOutcome, PerturbationKind } from "./types";
 
-// Hex values (Tailwind emerald-500 / red-500 / neutral-500) for the places
-// that need inline style values: chart fills, heatmap radial gradients.
-export const SUCCESS_HEX = "#10B981";
-export const FAIL_HEX = "#EF4444";
-export const NEUTRAL_HEX = "#737373";
+// Literal hex values (dark-panel variants) for the few places that need to
+// compose alpha suffixes inline: heatmap radial gradients over screenshots.
+export const SUCCESS_HEX = "#2FD08C";
+export const FAIL_HEX = "#FF4D4D";
+export const NEUTRAL_HEX = "#8B93A5";
 
-// Outcome -> chart color. success is the only "good" outcome; every non-error
-// outcome is a genuine abandonment (red); error is infra (neutral).
+// Outcome -> chart color. CSS variables so charts stay AA in both themes
+// (light mode darkens the functional hues). success is the only "good"
+// outcome; every non-error outcome is a genuine abandonment; error is infra.
 export const OUTCOME_COLOR: Record<PersonaOutcome, string> = {
-  success: SUCCESS_HEX,
-  step_budget: FAIL_HEX,
-  time_budget: FAIL_HEX,
-  stuck: FAIL_HEX,
-  error: NEUTRAL_HEX,
+  success: "var(--ok)",
+  step_budget: "var(--fail)",
+  time_budget: "var(--fail)",
+  stuck: "var(--fail)",
+  error: "var(--idle)",
 };
 
 // The same mapping as Tailwind utility classes, for markup-level styling.
 export const OUTCOME_TEXT_CLASS: Record<PersonaOutcome, string> = {
-  success: "text-emerald-500",
-  step_budget: "text-red-500",
-  time_budget: "text-red-500",
-  stuck: "text-red-500",
+  success: "text-ok",
+  step_budget: "text-fail",
+  time_budget: "text-fail",
+  stuck: "text-fail",
   error: "text-muted-foreground",
 };
 

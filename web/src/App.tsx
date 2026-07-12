@@ -37,7 +37,7 @@ function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
     >
       {dark ? (
         /* sun */
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -47,7 +47,7 @@ function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
         </svg>
       ) : (
         /* moon */
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -60,34 +60,52 @@ function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
   );
 }
 
-const WS_LABEL: Record<WsStatus, string> = {
-  idle: "idle",
-  connecting: "connecting",
-  open: "streaming",
-  closed: "closed",
-  error: "error",
-};
+/** Header status cluster: run-state lamp + mono label. */
+function StatusCluster({ mode, wsStatus }: { mode: Mode; wsStatus: WsStatus }) {
+  let label: string;
+  let tone: "live" | "idle" | "fail";
+  if (mode === "live") {
+    if (wsStatus === "open") {
+      label = "live · streaming";
+      tone = "live";
+    } else if (wsStatus === "connecting") {
+      label = "live · connecting";
+      tone = "live";
+    } else if (wsStatus === "error") {
+      label = "live · error";
+      tone = "fail";
+    } else {
+      label = "live · closed";
+      tone = "idle";
+    }
+  } else if (mode === "offline") {
+    label = "replay";
+    tone = "live";
+  } else if (mode === "report") {
+    label = "report";
+    tone = "idle";
+  } else {
+    label = "standby";
+    tone = "idle";
+  }
 
-function WsIndicator({ status }: { status: WsStatus }) {
+  const pulsing = tone === "live";
+  const dotCls =
+    tone === "live" ? "bg-live" : tone === "fail" ? "bg-fail" : "border border-idle/50";
+
   return (
     <span className="flex items-center gap-2">
-      {status === "open" || status === "connecting" ? (
+      {pulsing ? (
         <motion.span
-          className={`w-2 h-2 rounded-full ${
-            status === "open" ? "bg-emerald-500" : "bg-muted-foreground"
-          }`}
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotCls}`}
+          animate={{ opacity: [1, 0.35, 1] }}
+          transition={{ duration: 1.6, repeat: Infinity }}
         />
       ) : (
-        <span
-          className={`w-2 h-2 rounded-full ${
-            status === "idle" ? "bg-muted-foreground/40" : "bg-red-500"
-          }`}
-        />
+        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotCls}`} />
       )}
-      <span className="text-sm font-mono text-muted-foreground">
-        live · {WS_LABEL[status]}
+      <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground whitespace-nowrap">
+        {label}
       </span>
     </span>
   );
@@ -147,26 +165,27 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <div className="min-h-screen bg-background text-foreground flex flex-col">
-        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/40">
-          <div className="container mx-auto px-6 py-4 max-w-5xl flex items-center justify-between gap-4">
+        <header className="sticky top-0 z-50 bg-background border-b border-hairline">
+          <div className="container mx-auto px-6 py-3 max-w-6xl flex items-center justify-between gap-4">
             <div className="flex items-baseline gap-4 min-w-0">
               <button
                 type="button"
-                className="text-lg font-mono font-medium hover:opacity-70 transition-opacity whitespace-nowrap"
+                className="text-base font-mono font-medium hover:opacity-70 transition-opacity whitespace-nowrap"
                 onClick={reset}
                 title="Back to launch"
               >
                 [simulation labs]
               </button>
-              <span className="hidden md:inline text-sm font-mono text-muted-foreground truncate">
+              <span className="hidden md:inline text-xs font-mono text-muted-foreground truncate">
                 behavioral user simulation
               </span>
             </div>
-            <nav className="flex items-center gap-4 sm:gap-6">
+            <nav className="flex items-center gap-4 sm:gap-5">
+              <StatusCluster mode={mode} wsStatus={wsStatus} />
               {mode !== "launch" && (
                 <button
                   type="button"
-                  className="text-sm px-4 py-2 bg-foreground text-background rounded-full font-medium hover:opacity-90 transition-opacity"
+                  className="px-3 py-1.5 rounded-md border border-border font-mono text-[11px] uppercase tracking-widest hover:border-foreground/40 transition-colors"
                   onClick={reset}
                 >
                   New run
@@ -188,28 +207,18 @@ export default function App() {
           )}
 
           {mode !== "launch" && (
-            <div className="container mx-auto max-w-5xl px-6 py-12">
+            <div className="container mx-auto max-w-6xl px-6 py-10">
               {mode === "offline" && <OfflineDemo onExit={reset} />}
 
               {mode === "live" && (
                 <div className="flex flex-col gap-6">
-                  <div className="flex items-center gap-6 flex-wrap">
-                    <button
-                      type="button"
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      onClick={reset}
-                    >
-                      ← New run
-                    </button>
-                    <WsIndicator status={wsStatus} />
-                    {loadingReport && (
-                      <span className="text-sm font-mono text-muted-foreground">
-                        loading report…
-                      </span>
-                    )}
-                  </div>
+                  {loadingReport && (
+                    <span className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
+                      loading report…
+                    </span>
+                  )}
                   {error && (
-                    <p className="text-sm text-red-500 border border-red-500/30 bg-red-500/5 rounded-2xl px-5 py-3">
+                    <p className="font-mono text-xs text-fail border border-fail/30 bg-fail/10 rounded-md px-3 py-2.5">
                       {error}
                     </p>
                   )}
@@ -228,8 +237,8 @@ export default function App() {
           )}
         </main>
 
-        <footer className="border-t border-border/40 pt-12 pb-8 px-6 mt-16">
-          <div className="container mx-auto max-w-5xl">
+        <footer className="border-t border-hairline pt-10 pb-8 px-6 mt-16">
+          <div className="container mx-auto max-w-6xl">
             <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-10">
               <div>
                 <span className="font-mono text-sm">[simulation labs]</span>
@@ -239,7 +248,7 @@ export default function App() {
                 </p>
               </div>
             </div>
-            <div className="border-t border-border/40 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
+            <div className="border-t border-hairline pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-mono text-muted-foreground">
               <p>© 2026 Simulation Labs, Inc.</p>
               <p>Powered by H Company Holo &amp; Gradium</p>
             </div>

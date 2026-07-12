@@ -20,11 +20,16 @@ export function SurvivalCurve({ survival }: Props) {
   const rows = [...survival].sort((a, b) => b.steps_survived - a.steps_survived);
   const maxSteps = Math.max(1, ...rows.map((r) => r.steps_survived));
   const present = new Set(rows.map((r) => r.outcome));
+  // Hairline grid ticks at each step (skip if too dense to read).
+  const ticks =
+    maxSteps <= 24
+      ? Array.from({ length: maxSteps }, (_, i) => ((i + 1) / maxSteps) * 100)
+      : [25, 50, 75, 100];
 
   return (
-    <figure className="p-6 rounded-2xl border border-border bg-background m-0">
-      <figcaption className="mb-6">
-        <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-1">
+    <figure className="p-5 rounded-lg border border-border bg-panel m-0">
+      <figcaption className="mb-5">
+        <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">
           Survival curve
         </p>
         <p className="text-sm text-muted-foreground">
@@ -33,7 +38,7 @@ export function SurvivalCurve({ survival }: Props) {
       </figcaption>
 
       <div
-        className="flex flex-col gap-3"
+        className="flex flex-col gap-2.5"
         role="img"
         aria-label="Steps survived per persona"
       >
@@ -42,59 +47,33 @@ export function SurvivalCurve({ survival }: Props) {
           const color = OUTCOME_COLOR[r.outcome];
           return (
             <div
-              className="grid grid-cols-[minmax(120px,190px)_1fr] gap-3 items-center max-sm:grid-cols-1 max-sm:gap-1"
+              className="grid grid-cols-[minmax(110px,170px)_1fr] gap-3 items-center max-sm:grid-cols-1 max-sm:gap-1"
               key={r.persona_id}
               title={`${r.persona_name || r.persona_id}: ${
                 r.steps_survived
               } steps — ${OUTCOME_LABELS[r.outcome]}`}
             >
-              <div className="flex items-center gap-2 text-sm font-medium truncate">
-                {r.completed ? (
-                  <svg
-                    className="w-4 h-4 text-emerald-500 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-label="Completed"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="w-4 h-4 text-red-500 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-label="Abandoned"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                )}
-                <span className="truncate">{r.persona_name || r.persona_id}</span>
-              </div>
-              <div className="relative flex items-center gap-3 rounded-lg bg-muted/50 min-h-7">
+              <span className="font-mono text-xs truncate">
+                {r.persona_name || r.persona_id}
+              </span>
+              <div className="relative min-h-6 flex items-center">
+                {/* hairline grid ticks */}
+                {ticks.map((t) => (
+                  <span
+                    key={t}
+                    className="absolute top-0 bottom-0 w-px bg-hairline"
+                    style={{ left: `${t}%` }}
+                    aria-hidden="true"
+                  />
+                ))}
                 <div
-                  className="h-5 rounded-md flex items-center justify-end px-2 min-w-6 transition-all duration-700"
-                  style={{ width: `${Math.max(pct, 4)}%`, background: color }}
-                >
-                  <span className="text-xs font-medium text-background tabular-nums">
-                    {r.steps_survived}
-                  </span>
-                </div>
+                  className="relative h-4 rounded-[2px] transition-all duration-700 min-w-1"
+                  style={{ width: `${Math.max(pct, 2)}%`, background: color }}
+                />
                 <span
-                  className={`text-xs font-medium whitespace-nowrap ${OUTCOME_TEXT_CLASS[r.outcome]}`}
+                  className={`relative font-mono text-[11px] whitespace-nowrap pl-2 tabular-nums ${OUTCOME_TEXT_CLASS[r.outcome]}`}
                 >
-                  {OUTCOME_LABELS[r.outcome]}
+                  {r.steps_survived} · {OUTCOME_LABELS[r.outcome].toLowerCase()}
                 </span>
               </div>
             </div>
@@ -102,14 +81,14 @@ export function SurvivalCurve({ survival }: Props) {
         })}
       </div>
 
-      <div className="flex flex-wrap gap-4 mt-6 pt-4 border-t border-border/40">
+      <div className="flex flex-wrap gap-4 mt-5 pt-4 border-t border-hairline">
         {LEGEND_ORDER.filter((o) => present.has(o)).map((o) => (
           <span
-            className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+            className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
             key={o}
           >
             <span
-              className="w-2.5 h-2.5 rounded-full"
+              className="w-2 h-2 rounded-[2px]"
               style={{ background: OUTCOME_COLOR[o] }}
             />
             {OUTCOME_LABELS[o]}

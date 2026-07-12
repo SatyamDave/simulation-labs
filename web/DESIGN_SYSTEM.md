@@ -1,5 +1,142 @@
 # [simulation labs] Design System — Comprehensive Specification
 
+## v2 — Instrument Panel (supersedes where in conflict)
+
+> **Concept: instrument panel, not landing page.** Simulation Labs is a lab
+> bench where specimens (personas) run and flatline. The UI is a precision
+> monitoring console, not SaaS marketing. Everything below in this v2 section
+> **supersedes** the v1 spec wherever the two conflict; v1 remains as
+> reference for anything v2 does not address.
+
+### What v2 explicitly relaxes from v1
+
+1. **System-fonts-only is repealed.** v2 loads two Google fonts (below).
+   The v1 "no custom web fonts" anti-pattern no longer applies.
+2. **The single-accent (emerald-only) rule is repealed.** v2 uses a
+   four-value *functional state palette* — amber, emerald, red, neutral.
+   These are states, not accents; the "no decorative color" principle stays
+   absolute (a color may only appear when it encodes the state it names).
+3. Pill-shaped (`rounded-full`) buttons/inputs are replaced by small-radius
+   instrument controls (`--radius: 6px`; `rounded-md`/`rounded-lg`).
+   `rounded-full` survives only for status lamp dots.
+4. Ultra-light (300) display type is replaced by the display voice below.
+5. Background blobs, shimmer borders, glass-blur header, and hover-lift on
+   non-interactive cards are removed. Motion is entrances (once), `whileTap`,
+   status-lamp pulses, and the vital line itself.
+
+### Color tokens
+
+Dark is the primary look ("graphite-blue void"); light is "lab paper". The
+`.dark` class mechanism, theme toggle, and pre-paint script are unchanged.
+
+| Token | Dark (default) | Light ("lab paper") |
+|---|---|---|
+| `--background` | `#0A0C0F` | `#F7F8FA` |
+| `--panel` | `#11141A` | `#FFFFFF` |
+| `--panel-raised` | `#171B23` | `#FDFDFE` |
+| `--hairline` | `#1A1F29` | `#ECEFF3` |
+| `--border` | `#232935` | `#E3E6EC` |
+| `--foreground` (text) | `#E8EAF0` | `#14171C` |
+| `--muted-foreground` (dim) | `#8B93A5` | `#5C6577` |
+
+**Functional state palette — every color means something:**
+
+| State | Token | Dark | Light (AA-darkened) | Meaning |
+|---|---|---|---|---|
+| RUNNING / live | `--live` (amber) | `#FFB224` | `#A36A00` | control-panel "active" lamp, live stream, armed roster lamps, launch button |
+| SURVIVED | `--ok` (emerald) | `#2FD08C` | `#0E8F5B` | task completed |
+| DIED / abandoned | `--fail` (red) | `#FF4D4D` | `#D92D2D` | genuine human abandon |
+| infra error | `--idle` (neutral) | `#8B93A5` | `#5C6577` | excluded from survival stats |
+
+Washes are made with `/10`–`/15` opacity of the state color (e.g.
+`bg-fail/10`). **No other hues, ever.** Tailwind utilities: `text-live`,
+`bg-ok`, `border-fail`, `text-idle`, `text-on-live` (text on an amber fill).
+`theme.ts` exports `OUTCOME_COLOR` as CSS `var()` strings so charts stay AA
+in both themes.
+
+### Typography
+
+Two Google fonts (loaded in `index.html`; keep the theme pre-paint script and
+favicon beside the `<link>`s):
+
+- **Archivo (variable: wght + wdth)** — display AND body.
+  - Display voice (`.font-display`): weight **600**, `font-stretch: 118%`
+    (semi-expanded — instrumentation signage), tight leading (`1.05`),
+    `-0.015em` tracking, sentence case. Used for headlines and the big
+    completion metric.
+  - Body: 400, normal width. Persona names on cards: Archivo 500.
+- **IBM Plex Mono** — ALL data, labels, eyebrows, coordinates, metrics,
+  console lines, telemetry readings, buttons that arm/act. Eyebrows/labels
+  are `text-[9px]`–`text-xs` uppercase `tracking-widest`. Numbers always
+  `tabular-nums`.
+
+### The signature: the vital-sign line (`VitalLine.tsx`)
+
+A per-persona EKG strip (~24–28px tall, full tile width, pinned to the card
+bottom) — the element the page is remembered by:
+
+- **running** — repeating heartbeat pulse scrolling leftward in amber
+  (CSS `translateX` loop of exactly one 120-unit cycle; 1.15s/cycle).
+- **success** — settles into a calm, gentler pulse in emerald (2.8s/cycle).
+- **abandoned** — FLATLINE: flat red line with a small break at the death
+  step (`deathFrac = steps_survived / max_steps`), one collapsing blip before
+  the break, dimmed dead-flat tail after it. Animation stops dead.
+- **pending** — faint neutral baseline (standby).
+
+Implementation: inline SVG. Live states use a fixed-scale viewBox with
+`preserveAspectRatio="xMinYMid slice"` so the waveform never stretches;
+flatline uses `preserveAspectRatio="none"` (a horizontal line is invariant
+under stretch) + `vector-effect: non-scaling-stroke`. Reduced motion freezes
+each state to a legible static frame. One aggregate vital line lives in the
+run telemetry strip and under the report's completion metric.
+
+### Instrument patterns
+
+- **Telemetry strip** (live run header): ONE horizontal instrument bar, mono
+  + `tabular-nums`: `SURVIVED 2 · ABANDONED 4 · RUNNING 2 · 6/8 FINISHED`
+  with numbers in their state colors, the aggregate vital line, and
+  task/target beneath in mono. Never metric cards.
+- **Specimen card** (persona tile): identity row (status lamp + Archivo-500
+  name + tiny mono perturbation labels) → bezel viewport → console lines →
+  vital line.
+- **Bezel viewport** (`.viewport-bezel`): screenshot in a thin-bordered,
+  inset-shadowed frame on `bg-background` so letterboxing looks intentional;
+  scanline overlay on top.
+- **Console line**: mono `> …` line under the viewport; amber blinking caret
+  while running (`.caret-blink`).
+- **Death treatment**: never wash the tile red. Desaturate the final
+  screenshot (`grayscale(0.8)`), 2px red viewport border, red corner tag
+  `DIED · STEP 4`, calibration crosshair at `failure_coords` (full-width +
+  full-height red hairlines + center ring) with the mono coord chip riding
+  the top edge of the vertical hairline (flips side near the right edge; the
+  epitaph lives *below* the viewport as a red console line, so they can never
+  collide).
+- **Success treatment**: emerald corner tag `SURVIVED · STEP 7`, 1px emerald
+  viewport border, no desaturation.
+- **Mission config** (launch): two-column console on `md+` — thesis left,
+  launch panel right as a raised bezel card (`bg-panel-raised`, 1px border,
+  mono corner label `MISSION CONFIG`). Roster entries are channel strips
+  with amber "armed" lamps. The launch button is the one amber fill on the
+  page (`bg-live text-on-live`, mono uppercase).
+- **Header**: `[simulation labs]` mono wordmark, right-aligned mono status
+  cluster (state lamp + `STANDBY / LIVE · STREAMING / REPLAY / REPORT`),
+  hairline underneath, solid background (no glass blur).
+
+### Still in force from v1
+
+No emoji anywhere. Sentence-case copy, plain verbs. No decorative color or
+gradients. Inline stroke SVG icons. `viewport={{ once: true }}` on all
+in-view entrances. `MotionConfig reducedMotion="user"` plus the global
+reduced-motion CSS kill-switch. Generous `px-6` section padding (containers
+are now `max-w-6xl`).
+
+---
+
+*The remainder of this document is the original v1 spec, kept as reference.
+Where it conflicts with v2 above, v2 wins.*
+
+---
+
 A precise, opinionated design specification extracted from the production [simulation labs] landing page. This document is the single source of truth for all visual decisions. When building UI for Simulation Labs, follow these patterns exactly — do not improvise or add generic "AI-generated" flourishes.
 
 ---

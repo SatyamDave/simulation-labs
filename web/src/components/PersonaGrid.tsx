@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import type { LiveRunState, Viewport } from "../types";
+import type { LiveRunState, TileStatus, Viewport } from "../types";
 import { tallies } from "../runReducer";
 import { PersonaTile } from "./PersonaTile";
+import { VitalLine } from "./VitalLine";
 
 interface Props {
   state: LiveRunState;
@@ -10,32 +11,28 @@ interface Props {
   reportReady?: boolean;
 }
 
-function Stat({
-  value,
+function Reading({
   label,
+  value,
   tone,
 }: {
-  value: string | number;
   label: string;
-  tone?: "good" | "bad";
+  value: string | number;
+  tone?: "ok" | "fail" | "live";
 }) {
+  const cls =
+    tone === "ok"
+      ? "text-ok"
+      : tone === "fail"
+        ? "text-fail"
+        : tone === "live"
+          ? "text-live"
+          : "text-foreground";
   return (
-    <div className="px-5 py-3 rounded-2xl border border-border bg-background text-center min-w-24">
-      <p
-        className={`text-3xl font-light tabular-nums leading-none ${
-          tone === "good"
-            ? "text-emerald-500"
-            : tone === "bad"
-              ? "text-red-500"
-              : ""
-        }`}
-      >
-        {value}
-      </p>
-      <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mt-2">
-        {label}
-      </p>
-    </div>
+    <span className="whitespace-nowrap">
+      <span className="text-muted-foreground">{label} </span>
+      <span className={`${cls} font-medium`}>{value}</span>
+    </span>
   );
 }
 
@@ -46,42 +43,58 @@ export function PersonaGrid({
   reportReady,
 }: Props) {
   const t = tallies(state);
-  const progress = t.total ? Math.round((t.done / t.total) * 100) : 0;
+  const finished = state.status === "finished";
+
+  // Aggregate vital sign for the whole run: amber while anything is alive,
+  // emerald once finished with survivors, flatline if everyone died.
+  const aggStatus: TileStatus =
+    t.total === 0
+      ? "pending"
+      : finished || t.done === t.total
+        ? t.survived > 0
+          ? "success"
+          : "abandoned"
+        : "running";
 
   return (
     <section className="flex flex-col gap-6">
-      <div className="flex justify-between items-end gap-6 flex-wrap">
-        <div className="min-w-0">
-          <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">
-            Task
-          </p>
-          <h2 className="text-2xl md:text-3xl font-light tracking-tight">
-            {state.task || "—"}
-          </h2>
-          <p className="text-sm font-mono text-muted-foreground mt-2 break-all">
-            {state.targetUrl}
-          </p>
-        </div>
-
-        <div className="flex gap-6 flex-wrap">
-          <Stat value={t.survived} label="survived" tone="good" />
-          <Stat value={t.dead} label="abandoned" tone="bad" />
-          <Stat
-            value={t.running > 0 ? t.running : "—"}
-            label={t.running > 0 ? "still trying" : "all done"}
+      {/* Telemetry strip — one instrument bar, not four boxes */}
+      <div className="rounded-lg border border-border bg-panel overflow-hidden">
+        <div className="flex items-center gap-x-5 gap-y-1 flex-wrap px-4 py-2.5 font-mono text-xs uppercase tracking-wider tabular-nums border-b border-hairline">
+          <Reading label="survived" value={t.survived} tone="ok" />
+          <span className="text-hairline" aria-hidden="true">
+            ·
+          </span>
+          <Reading label="abandoned" value={t.dead} tone="fail" />
+          <span className="text-hairline" aria-hidden="true">
+            ·
+          </span>
+          <Reading
+            label="running"
+            value={t.running}
+            tone={t.running > 0 ? "live" : undefined}
           />
-          <Stat value={`${t.done}/${t.total}`} label="finished" />
+          <span className="ml-auto text-muted-foreground">
+            <span className="text-foreground font-medium">
+              {t.done}/{t.total}
+            </span>{" "}
+            finished
+          </span>
+        </div>
+        <VitalLine status={aggStatus} height={28} />
+        <div className="px-4 py-2 font-mono text-xs text-muted-foreground border-t border-hairline flex flex-wrap gap-x-4 gap-y-0.5 min-w-0">
+          <span className="truncate">
+            <span className="uppercase tracking-wider text-[10px]">task</span>{" "}
+            <span className="text-foreground">{state.task || "—"}</span>
+          </span>
+          <span className="truncate">
+            <span className="uppercase tracking-wider text-[10px]">target</span>{" "}
+            {state.targetUrl || "—"}
+          </span>
         </div>
       </div>
 
-      <div className="h-1.5 rounded-full bg-border/50 overflow-hidden">
-        <div
-          className="h-full rounded-full bg-foreground transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
         {state.order.map((id, i) => {
           const live = state.personas[id];
           if (!live) return null;
@@ -97,20 +110,13 @@ export function PersonaGrid({
       </div>
 
       {reportReady && onSeeReport && (
-        <div className="flex justify-center pt-6">
+        <div className="flex justify-center pt-4">
           <motion.button
-            className="px-8 py-4 bg-foreground text-background rounded-full font-medium text-lg flex items-center gap-2"
-            whileHover={{ scale: 1.02 }}
+            className="px-6 py-3 rounded-md bg-foreground text-background font-mono text-sm uppercase tracking-wider"
             whileTap={{ scale: 0.98 }}
             onClick={onSeeReport}
           >
-            View the report
-            <motion.span
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              →
-            </motion.span>
+            View the report →
           </motion.button>
         </div>
       )}

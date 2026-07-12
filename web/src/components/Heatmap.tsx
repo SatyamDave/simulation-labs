@@ -30,9 +30,9 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
   const maxW = Math.max(1, ...points.map((p) => p.weight ?? 1));
 
   return (
-    <figure className="p-6 rounded-2xl border border-border bg-background m-0">
-      <figcaption className="mb-6">
-        <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-1">
+    <figure className="p-5 rounded-lg border border-border bg-panel m-0">
+      <figcaption className="mb-5">
+        <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">
           Abandonment heatmap
         </p>
         <p className="text-sm text-muted-foreground">
@@ -41,7 +41,7 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
       </figcaption>
 
       <div
-        className="relative w-full rounded-xl overflow-hidden border border-border bg-muted/30"
+        className="viewport-bezel relative w-full rounded-md overflow-hidden border border-border bg-background"
         style={{ aspectRatio: `${space.width} / ${space.height}` }}
       >
         <img
@@ -52,7 +52,7 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
             if (useLive) setLiveFailed(true);
           }}
         />
-        <span className="absolute top-2.5 left-2.5 z-10 text-[10px] font-mono uppercase tracking-wider text-muted-foreground bg-background/80 backdrop-blur-sm border border-border rounded-md px-2 py-0.5">
+        <span className="absolute top-2 left-2 z-10 text-[9px] font-mono uppercase tracking-widest text-muted-foreground bg-background/85 border border-border rounded-sm px-1.5 py-0.5">
           {useLive ? "Live target page" : "Sample page"}
         </span>
         {points.map((p, i) => {
@@ -81,7 +81,7 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
           return (
             <svg
               key={`dot-${p.persona_id}-${i}`}
-              className="absolute w-3.5 h-3.5 -translate-x-1/2 -translate-y-1/2 text-red-500 cursor-help"
+              className="absolute w-3.5 h-3.5 -translate-x-1/2 -translate-y-1/2 text-fail cursor-help"
               style={{ left: `${left}%`, top: `${top}%` }}
               fill="none"
               stroke="currentColor"
@@ -98,10 +98,10 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
           );
         })}
       </div>
-      <p className="mt-4 text-xs text-muted-foreground">
-        <span className="tabular-nums">{points.length}</span> abandonment{" "}
-        {points.length === 1 ? "point" : "points"} · each mark is a persona that
-        gave up here
+      <p className="mt-4 font-mono text-[11px] text-muted-foreground tabular-nums">
+        {points.length} abandonment{" "}
+        {points.length === 1 ? "point" : "points"} · each mark is a persona
+        that gave up here
       </p>
     </figure>
   );

@@ -6,6 +6,7 @@ import { API_BASE, artifactUrl } from "../api";
 import { OUTCOME_TEXT_CLASS } from "../theme";
 import { SurvivalCurve } from "./SurvivalCurve";
 import { Heatmap } from "./Heatmap";
+import { VitalLine } from "./VitalLine";
 
 interface Props {
   report: RunReport;
@@ -67,33 +68,41 @@ export function ReportView({ report, coordSpace, live, onBack }: Props) {
   return (
     <div className="flex flex-col gap-8">
       <motion.header
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col gap-6"
       >
         {onBack && (
           <button
             type="button"
-            className="self-start text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="self-start font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
             onClick={onBack}
           >
             ← Back to grid
           </button>
         )}
         <div>
-          <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-4">
+          <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-4">
             Run report
           </p>
-          <div className="flex items-center gap-8 flex-wrap">
-            <p
-              className={`text-6xl md:text-8xl font-light tracking-tight tabular-nums leading-none ${
-                pct > 50 ? "text-emerald-500" : "text-red-500"
-              }`}
-            >
-              {pct}%
-            </p>
-            <div className="min-w-0">
-              <h1 className="text-2xl md:text-3xl font-light tracking-tight leading-snug">
+          <div className="flex items-start gap-8 flex-wrap">
+            <div className="shrink-0">
+              <p
+                className={`font-display text-6xl md:text-8xl tabular-nums leading-none ${
+                  pct > 50 ? "text-ok" : "text-fail"
+                }`}
+              >
+                {pct}%
+              </p>
+              <VitalLine
+                status={pct > 50 ? "success" : "abandoned"}
+                deathFrac={Math.max(pct / 100, 0.12)}
+                height={24}
+                className="mt-2"
+              />
+            </div>
+            <div className="min-w-0 pt-1">
+              <h1 className="font-display text-2xl md:text-3xl leading-snug">
                 <span className="tabular-nums">
                   {survived} of {total}
                 </span>{" "}
@@ -103,7 +112,10 @@ export function ReportView({ report, coordSpace, live, onBack }: Props) {
                 <span className="tabular-nums">{total - survived}</span>{" "}
                 abandoned the flow. Here is exactly where, and why.
               </p>
-              <p className="text-sm font-mono text-muted-foreground mt-2 break-all">
+              <p className="text-xs font-mono text-muted-foreground mt-2 break-all">
+                <span className="uppercase tracking-widest text-[10px]">
+                  target
+                </span>{" "}
                 {report.target_url}
               </p>
             </div>
@@ -113,7 +125,7 @@ export function ReportView({ report, coordSpace, live, onBack }: Props) {
 
       {verdict && <AgentReadiness verdict={verdict} />}
 
-      <div className="grid md:grid-cols-2 gap-6 items-start">
+      <div className="grid md:grid-cols-2 gap-5 items-start">
         <SurvivalCurve survival={report.survival} />
         <Heatmap
           points={report.heatmap_points}
@@ -123,14 +135,14 @@ export function ReportView({ report, coordSpace, live, onBack }: Props) {
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 14 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">
+        <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-2">
           Receipts
         </p>
-        <h2 className="text-2xl md:text-3xl font-light tracking-tight">
+        <h2 className="font-display text-2xl md:text-3xl">
           Exit interviews &amp; video receipts
         </h2>
         <p className="text-sm text-muted-foreground leading-relaxed mt-2">
@@ -138,7 +150,7 @@ export function ReportView({ report, coordSpace, live, onBack }: Props) {
           interview, and the moment they quit.
         </p>
       </motion.div>
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-5">
         {results.map((r, i) => (
           <ResultCard
             key={r.persona_id}
@@ -161,29 +173,27 @@ function AgentReadiness({ verdict }: { verdict: AgentVerdict }) {
   const pass = verdict.status === "pass";
   return (
     <motion.section
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className={`flex items-center gap-6 p-6 rounded-2xl border ${
-        pass
-          ? "border-emerald-500/30 bg-emerald-500/5"
-          : "border-red-500/30 bg-red-500/5"
+      className={`flex items-center gap-6 p-5 rounded-lg border ${
+        pass ? "border-ok/40 bg-ok/10" : "border-fail/40 bg-fail/10"
       } max-sm:flex-col max-sm:items-start`}
     >
       <span
-        className={`shrink-0 px-4 py-2 rounded-full text-sm font-mono uppercase tracking-wider ${
-          pass ? "bg-emerald-500" : "bg-red-500"
-        } text-white`}
+        className={`shrink-0 px-3 py-1.5 rounded-md font-mono text-xs uppercase tracking-widest ${
+          pass ? "bg-ok" : "bg-fail"
+        } text-background`}
       >
         {pass ? "Pass" : "Fail"}
       </span>
       <div className="min-w-0">
-        <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
+        <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
           Agent-readiness verdict
         </p>
         <p
-          className={`text-xl md:text-2xl font-light tracking-tight mt-1 ${
-            pass ? "text-emerald-500" : "text-red-500"
+          className={`font-display text-xl md:text-2xl mt-1 ${
+            pass ? "text-ok" : "text-fail"
           }`}
         >
           {pass
@@ -230,116 +240,72 @@ function ResultCard({
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 14 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      whileHover={{ y: -8, transition: { duration: 0.2 } }}
-      className="p-6 rounded-2xl border border-border bg-background hover:border-foreground/30 hover:shadow-lg hover:shadow-foreground/5 transition-all duration-300 flex flex-col gap-4"
+      transition={{ delay: index * 0.07 }}
+      className="rounded-lg border border-border bg-panel overflow-hidden flex flex-col"
     >
-      <header className="flex items-center gap-3">
+      <header className="flex items-center gap-2 px-4 py-3 border-b border-hairline">
         <span
-          className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-            success ? "bg-emerald-500/10" : "bg-red-500/10"
+          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+            success ? "bg-ok" : "bg-fail"
           }`}
+          aria-hidden="true"
+        />
+        <span className="text-sm font-medium truncate">{name}</span>
+        <span
+          className={`ml-auto font-mono text-[10px] uppercase tracking-widest whitespace-nowrap ${OUTCOME_TEXT_CLASS[result.outcome]}`}
         >
-          {success ? (
-            <svg
-              className="w-5 h-5 text-emerald-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          ) : (
-            <svg
-              className="w-5 h-5 text-red-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+          {success ? "survived" : "died"}
+          {result.failure_step != null && !success && (
+            <> · step {result.failure_step}</>
           )}
+          {result.duration_s ? (
+            <>
+              {" "}
+              · {result.duration_s.toFixed(1)}s
+            </>
+          ) : null}
         </span>
-        <div className="min-w-0">
-          <p className="font-medium truncate">{name}</p>
-          <p
-            className={`text-xs mt-0.5 ${OUTCOME_TEXT_CLASS[result.outcome]}`}
-          >
-            {OUTCOME_LABELS[result.outcome]}
-            {result.failure_step != null && !success && (
-              <>
-                {" "}
-                · gave up at step{" "}
-                <span className="tabular-nums">{result.failure_step}</span>
-              </>
-            )}
-            {result.duration_s ? (
-              <>
-                {" "}
-                · <span className="tabular-nums">
-                  {result.duration_s.toFixed(1)}
-                </span>
-                s
-              </>
-            ) : null}
-          </p>
-        </div>
       </header>
 
-      {!success && result.failure_reason && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 text-sm leading-relaxed text-muted-foreground">
-          <p className="text-[10px] font-mono uppercase tracking-wider text-red-500 mb-1.5">
-            Why they quit
-          </p>
-          {result.failure_reason}
-          {result.failure_coords && (
-            <span className="font-mono text-xs text-red-500 whitespace-nowrap ml-1.5">
-              @ {result.failure_coords[0]},{result.failure_coords[1]}
+      <div className="flex flex-col gap-4 p-4">
+        {!success && result.failure_reason && (
+          <p className="font-mono text-xs leading-relaxed text-fail flex items-baseline gap-1.5">
+            <span className="shrink-0" aria-hidden="true">
+              &gt;
             </span>
-          )}
-        </div>
-      )}
+            <span>
+              {OUTCOME_LABELS[result.outcome].toLowerCase()} —{" "}
+              “{result.failure_reason}”
+              {result.failure_coords && (
+                <span className="whitespace-nowrap">
+                  {" "}
+                  @ {result.failure_coords[0]},{result.failure_coords[1]}
+                </span>
+              )}
+            </span>
+          </p>
+        )}
 
-      <div className="flex flex-col gap-4">
         <div>
           {video && videoOk ? (
             <video
-              className="w-full rounded-xl bg-muted/30 block aspect-[16/10]"
+              className={`viewport-bezel w-full rounded-md bg-background block aspect-[16/10] border ${
+                success ? "border-ok" : "border-fail"
+              }`}
               controls
               preload="metadata"
               onError={() => setVideoOk(false)}
               src={video}
             />
           ) : (
-            <div className="rounded-xl border border-dashed border-border bg-muted/30 aspect-[16/10] flex flex-col items-center justify-center gap-2 text-muted-foreground">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
-              <p className="text-sm">Video receipt</p>
-              <p className="text-xs">
+            <div className="viewport-bezel rounded-md border border-dashed border-border bg-background aspect-[16/10] flex flex-col items-center justify-center gap-1.5 text-muted-foreground">
+              <p className="font-mono text-[10px] uppercase tracking-widest">
+                Video receipt
+              </p>
+              <p className="font-mono text-[10px]">
                 {video ? "unavailable (needs backend)" : "not recorded"}
               </p>
             </div>
@@ -347,7 +313,7 @@ function ResultCard({
         </div>
 
         <div>
-          <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-2">
+          <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest mb-2">
             Exit interview{" "}
             <span className="normal-case tracking-normal">
               — in {name}'s cloned voice
@@ -362,16 +328,20 @@ function ResultCard({
               src={audio}
             />
           ) : (
-            <p className="rounded-xl border border-dashed border-border bg-muted/30 px-4 py-2.5 text-xs text-muted-foreground text-center mb-3">
+            <p className="rounded-md border border-dashed border-border bg-background px-3 py-2 font-mono text-[10px] text-muted-foreground text-center mb-3">
               Audio {audio ? "unavailable (needs backend)" : "not recorded"}
             </p>
           )}
           {result.transcript ? (
-            <blockquote className="border-l-2 border-foreground/10 pl-5 text-sm leading-relaxed">
+            <blockquote
+              className={`border-l-2 pl-4 text-sm leading-relaxed ${
+                success ? "border-ok/40" : "border-fail/40"
+              }`}
+            >
               “{result.transcript}”
             </blockquote>
           ) : (
-            <p className="border-l-2 border-foreground/10 pl-5 text-sm text-muted-foreground">
+            <p className="border-l-2 border-hairline pl-4 text-sm text-muted-foreground">
               No transcript recorded.
             </p>
           )}

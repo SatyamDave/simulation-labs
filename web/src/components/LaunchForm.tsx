@@ -44,7 +44,10 @@ const EXAMPLES: {
 ];
 
 const INPUT_CLASS =
-  "w-full px-5 py-4 text-base bg-background border border-border rounded-full outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/40";
+  "w-full px-3 py-2.5 font-mono text-sm bg-background border border-border rounded-md outline-none focus:border-live/60 focus:ring-2 focus:ring-live/15 transition-colors placeholder:text-muted-foreground/40";
+
+const FIELD_LABEL =
+  "text-[10px] font-mono text-muted-foreground uppercase tracking-widest";
 
 export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
   const [url, setUrl] = useState("https://github.com/signup");
@@ -81,74 +84,64 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
   const canLaunch = url.trim() && task.trim() && selected.length > 0 && !busy;
 
   return (
-    <section className="px-6 pt-20 pb-24 relative overflow-hidden">
-      {/* Animated background blobs (spec: Background & Decorative Effects) */}
-      <div className="absolute inset-0 -z-10">
+    <section className="px-6 pt-14 pb-20 md:pt-20">
+      <div className="container mx-auto max-w-6xl grid md:grid-cols-[minmax(0,10fr)_minmax(0,11fr)] gap-10 lg:gap-16 items-start">
+        {/* Left column — the thesis */}
         <motion.div
-          className="absolute top-1/4 -left-1/4 w-1/2 h-1/2 rounded-full bg-primary/5 blur-3xl"
-          animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-primary/5 blur-3xl"
-          animate={{ x: [0, -50, 0], y: [0, -30, 0] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </div>
-
-      <div className="container mx-auto max-w-4xl">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          {/* Eyebrow with live dot */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex items-center gap-2 mb-6"
-          >
-            <motion.div
-              className="w-2 h-2 rounded-full bg-emerald-500"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
+          <div className="flex items-center gap-2 mb-6">
+            <motion.span
+              className="w-1.5 h-1.5 rounded-full bg-live"
+              animate={{ opacity: [1, 0.35, 1] }}
+              transition={{ duration: 1.6, repeat: Infinity }}
             />
-            <p className="text-sm font-mono text-muted-foreground">
+            <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
               Behavioral user simulation
             </p>
-          </motion.div>
+          </div>
 
-          {/* Two-tone headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-5xl md:text-7xl font-light tracking-tight leading-[1.1] mb-8"
-          >
-            <span>See who fails your site,</span>
+          <h1 className="font-display text-4xl md:text-5xl lg:text-[3.4rem] leading-[1.05] mb-6">
+            See who fails your site,
             <br />
-            <span className="text-muted-foreground">before your users do.</span>
-          </motion.h1>
+            <span className="text-muted-foreground">
+              before your users do.
+            </span>
+          </h1>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-xl text-muted-foreground max-w-xl leading-relaxed mb-12"
-          >
+          <p className="text-base md:text-lg text-muted-foreground max-w-lg leading-relaxed mb-8">
             A swarm of computer-use agents (H Company Holo) with{" "}
             <span className="text-foreground">mechanically degraded</span>{" "}
-            perception and actuation attempts real tasks on any live site — and
-            reports the exact point where real users give up.
-          </motion.p>
+            perception and actuation attempts real tasks on your live site —
+            and reports the exact pixel where each one gives up.
+          </p>
+
+          <div className="border-t border-hairline pt-5">
+            <p className={`${FIELD_LABEL} mb-3`}>
+              Mechanical fidelity, not roleplay
+            </p>
+            <dl className="font-mono text-xs text-muted-foreground grid grid-cols-[auto_auto_1fr] gap-x-3 gap-y-1.5">
+              <dt className="text-foreground">blur</dt>
+              <dd aria-hidden="true">→</dd>
+              <dd>low vision</dd>
+              <dt className="text-foreground">coordinate noise</dt>
+              <dd aria-hidden="true">→</dd>
+              <dd>hand tremor</dd>
+              <dt className="text-foreground">tight budgets</dt>
+              <dd aria-hidden="true">→</dd>
+              <dd>impatience</dd>
+            </dl>
+          </div>
         </motion.div>
 
+        {/* Right column — mission config bezel */}
         <motion.form
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="flex flex-col gap-8"
+          transition={{ duration: 0.5, delay: 0.12 }}
+          className="rounded-lg border border-border bg-panel-raised overflow-hidden"
           onSubmit={(e) => {
             e.preventDefault();
             if (canLaunch)
@@ -159,195 +152,157 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
               });
           }}
         >
-          <div className="flex flex-col gap-3">
-            <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-              Target URL
+          <div className="flex items-center justify-between px-5 py-2.5 border-b border-hairline">
+            <span className={FIELD_LABEL}>Mission config</span>
+            <span
+              className="font-mono text-[10px] text-muted-foreground/60 tabular-nums"
+              aria-hidden="true"
+            >
+              SL-01
             </span>
-            <input
-              className={INPUT_CLASS}
-              type="text"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://github.com/signup"
-              autoComplete="off"
-              spellCheck={false}
-            />
-            <div className="flex flex-wrap gap-3">
-              {EXAMPLES.map((ex) => (
-                <motion.button
-                  type="button"
-                  key={ex.url}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all border-border hover:border-border/80 text-muted-foreground hover:text-foreground flex items-center gap-2 ${
-                    ex.torture ? "border-dashed" : ""
-                  }`}
-                  onClick={() => {
-                    setUrl(ex.url);
-                    setTask(ex.task);
-                  }}
-                  title={ex.url}
-                >
-                  {ex.label}
-                  {ex.torture && (
-                    <span className="text-xs font-mono uppercase tracking-wider">
-                      torture test
-                    </span>
-                  )}
-                </motion.button>
-              ))}
-            </div>
           </div>
 
-          <label className="flex flex-col gap-3">
-            <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-              Task
-            </span>
-            <input
-              className={INPUT_CLASS}
-              type="text"
-              value={task}
-              onChange={(e) => setTask(e.target.value)}
-              placeholder="Create a new account and reach the verification step."
-            />
-          </label>
-
-          <div className="flex flex-col gap-3">
-            <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-              The panel{" "}
-              <span className="text-foreground tabular-nums">
-                {selected.length}/{catalog.length} selected
-              </span>
-            </span>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {catalog.map((p) => {
-                const on = selected.includes(p.id);
-                const badges = perturbationBadges(p);
-                return (
-                  <motion.button
+          <div className="flex flex-col gap-6 p-5">
+            <div className="flex flex-col gap-2">
+              <span className={FIELD_LABEL}>Target URL</span>
+              <input
+                className={INPUT_CLASS}
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://github.com/signup"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              <div className="flex flex-wrap gap-2">
+                {EXAMPLES.map((ex) => (
+                  <button
                     type="button"
-                    key={p.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`px-4 py-3 rounded-xl border text-left transition-all ${
-                      on
-                        ? "border-primary bg-primary/10"
-                        : "border-border hover:border-border/80"
+                    key={ex.url}
+                    className={`px-2.5 py-1.5 rounded-sm border font-mono text-[11px] transition-colors border-border hover:border-foreground/30 text-muted-foreground hover:text-foreground flex items-center gap-2 ${
+                      ex.torture ? "border-dashed" : ""
                     }`}
-                    onClick={() => toggle(p.id)}
-                    aria-pressed={on}
+                    onClick={() => {
+                      setUrl(ex.url);
+                      setTask(ex.task);
+                    }}
+                    title={ex.url}
                   >
-                    <span className="flex items-center justify-between gap-2">
-                      <span
-                        className={`text-sm font-medium truncate ${
-                          on ? "text-primary" : "text-foreground"
-                        }`}
-                      >
-                        {p.name}
+                    {ex.label}
+                    {ex.torture && (
+                      <span className="text-[9px] uppercase tracking-widest">
+                        torture test
                       </span>
-                      {on ? (
-                        <svg
-                          className="w-4 h-4 text-emerald-500 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="w-4 h-4 text-muted-foreground/40 shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 4v16m8-8H4"
-                          />
-                        </svg>
-                      )}
-                    </span>
-                    <span className="block text-xs text-muted-foreground truncate mt-0.5">
-                      {p.blurb}
-                    </span>
-                    <span className="flex flex-wrap gap-2 mt-2 min-h-4">
-                      {badges.length ? (
-                        badges.map((b) => (
-                          <span
-                            key={b.kind}
-                            title={b.title}
-                            className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider"
-                          >
-                            {b.text}
-                          </span>
-                        ))
-                      ) : (
-                        <span
-                          className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider"
-                          title="No perturbation — baseline"
-                        >
-                          baseline
-                        </span>
-                      )}
-                    </span>
-                  </motion.button>
-                );
-              })}
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              <span className="text-foreground font-medium">
-                Mechanical fidelity, not roleplay:
-              </span>{" "}
-              blur = low vision · coordinate noise = tremor · tight budgets =
-              impatience
-            </p>
-          </div>
 
-          {error && (
-            <p className="text-sm text-red-500 border border-red-500/30 bg-red-500/5 rounded-2xl px-5 py-3">
-              {error}
-            </p>
-          )}
+            <label className="flex flex-col gap-2">
+              <span className={FIELD_LABEL}>Task</span>
+              <input
+                className={INPUT_CLASS}
+                type="text"
+                value={task}
+                onChange={(e) => setTask(e.target.value)}
+                placeholder="Create a new account and reach the verification step."
+              />
+            </label>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <motion.button
-              type="submit"
-              className="px-8 py-4 bg-foreground text-background rounded-full font-medium text-lg disabled:opacity-50"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={!canLaunch}
-            >
-              {busy ? "Starting simulation…" : "Run simulation"}
-            </motion.button>
-            <motion.button
-              type="button"
-              className="px-8 py-4 text-muted-foreground hover:text-foreground transition-colors text-lg flex items-center gap-2"
-              whileHover={{ x: 5 }}
-              onClick={onOfflineDemo}
-            >
-              Offline demo
-              <motion.span
-                animate={{ x: [0, 5, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
+            <div className="flex flex-col gap-2">
+              <span className={FIELD_LABEL}>
+                Specimen roster{" "}
+                <span className="text-foreground tabular-nums normal-case tracking-normal">
+                  {selected.length}/{catalog.length} armed
+                </span>
+              </span>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {catalog.map((p) => {
+                  const on = selected.includes(p.id);
+                  const badges = perturbationBadges(p);
+                  return (
+                    <motion.button
+                      type="button"
+                      key={p.id}
+                      whileTap={{ scale: 0.98 }}
+                      className={`px-3 py-2.5 rounded-md border text-left transition-colors ${
+                        on
+                          ? "border-border bg-background"
+                          : "border-hairline bg-transparent opacity-60 hover:opacity-100"
+                      }`}
+                      onClick={() => toggle(p.id)}
+                      aria-pressed={on}
+                    >
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium truncate">
+                          {p.name}
+                        </span>
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                            on ? "bg-live" : "border border-idle/50"
+                          }`}
+                          aria-hidden="true"
+                        />
+                      </span>
+                      <span className="block text-xs text-muted-foreground truncate mt-0.5">
+                        {p.blurb}
+                      </span>
+                      <span className="flex flex-wrap gap-x-2 mt-1.5 min-h-3.5">
+                        {badges.length ? (
+                          badges.map((b) => (
+                            <span
+                              key={b.kind}
+                              title={b.title}
+                              className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest"
+                            >
+                              {b.text}
+                            </span>
+                          ))
+                        ) : (
+                          <span
+                            className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest"
+                            title="No perturbation — baseline"
+                          >
+                            baseline
+                          </span>
+                        )}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {error && (
+              <p className="font-mono text-xs text-fail border border-fail/30 bg-fail/10 rounded-md px-3 py-2.5">
+                {error}
+              </p>
+            )}
+
+            <div className="flex flex-col gap-3">
+              <motion.button
+                type="submit"
+                className="w-full py-3 rounded-md bg-live text-on-live font-mono text-sm font-medium uppercase tracking-widest disabled:opacity-50"
+                whileTap={{ scale: 0.99 }}
+                disabled={!canLaunch}
               >
-                →
-              </motion.span>
-            </motion.button>
+                {busy ? "Starting simulation…" : "Run simulation"}
+              </motion.button>
+              <button
+                type="button"
+                className="self-center font-mono text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest"
+                onClick={onOfflineDemo}
+              >
+                Offline demo →
+              </button>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Works on any live URL — public sites, staging, or the bundled
+                hostile form. No backend? The offline demo replays a full run
+                from local fixtures.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed max-w-xl">
-            Works on any live URL — public sites, staging, or the bundled
-            hostile form. No backend? The{" "}
-            <span className="text-foreground font-medium">Offline demo</span>{" "}
-            replays a full run from local fixtures — completely self-contained.
-          </p>
         </motion.form>
       </div>
     </section>
