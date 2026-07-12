@@ -168,6 +168,21 @@ def parse_action(text: str, w: int, h: int, normalize: bool = False) -> Action:
         if parsed is not None:
             return parsed
 
+    # 1b. Malformed-JSON click salvage. The live model sometimes drops the "y"
+    # key — observed verbatim: {"action": "click", "x": 426, 536} — which fails
+    # json.loads and has no Click(x, y) form. If the blob names a click-like
+    # action, take its first two numbers as the (x, y) pair.
+    if obj is None and m is not None:
+        blob = m.group(0)
+        if re.search(r'"action"\s*:\s*"(?:left_)?(?:click|tap)"', blob, re.I):
+            nums = re.findall(r"-?\d+(?:\.\d+)?", blob)
+            if len(nums) >= 2:
+                x, y = (_denormalize if normalize else _clamp)(
+                    int(round(float(nums[0]))), int(round(float(nums[1]))), w, h
+                )
+                return Action(type=ActionType.CLICK, x=x, y=y,
+                              caption=_caption_for(ActionType.CLICK, x=x, y=y), raw=raw)
+
     # 2. Try Click(x, y) short form.
     click = parse_click(raw)
     if click is not None:
