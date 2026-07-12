@@ -1,0 +1,10 @@
+{
+  "id": "non-native",
+  "name": "Luca (non-native EN)",
+  "blurb": "Italian speaker on an English site - idioms, puns and jargon do not land.",
+  "language": "it",
+  "max_steps": 20,
+  "deadline_s": 150.0,
+  "literacy_note": "English is not your first language. You only understand plain, simple English. Ignore idioms, wordplay and marketing jargon - if a label is not plain English, treat it as unclear and prefer elements with simple, literal labels.",
+  "active_perturbations": ["low_literacy"]
+}

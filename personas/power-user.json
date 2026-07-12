@@ -1,0 +1,9 @@
+{
+  "id": "power-user",
+  "name": "Alex (baseline)",
+  "blurb": "The control: perfect vision, steady hands, endless patience.",
+  "language": "en",
+  "max_steps": 30,
+  "deadline_s": 300.0,
+  "active_perturbations": []
+}
