@@ -91,15 +91,53 @@ def test_decide_tremor_moves_coords():
     assert moved
 
 
-def test_rate_limiter_allows_burst_then_blocks(monkeypatch):
+def test_rate_limiter_paces_evenly_with_tiny_burst():
+    # The hosted API has NO burst allowance (429 + retry-after on bursts), so the
+    # bucket must hold at most 2 tokens regardless of RPM.
     async def run():
-        rl = RateLimiter(rpm=60)  # 1 token/sec, capacity 60
-        # capacity full -> many acquires should be instant
-        for _ in range(60):
-            await rl.acquire()
+        rl = RateLimiter(rpm=60)
+        assert rl._capacity <= 2.0
+        await rl.acquire()
+        await rl.acquire()
         # bucket now near empty; internal tokens < 1
         assert rl._tokens < 1.0
     asyncio.run(run())
+
+
+def test_transport_downscale_shrinks_and_reports_scale():
+    from ghostpanel.engine.perturbation import transport_downscale
+    from PIL import Image
+    import io
+
+    buf = io.BytesIO()
+    Image.new("RGB", (1280, 800), (200, 200, 200)).save(buf, format="PNG")
+    small, scale = transport_downscale(buf.getvalue(), 1024)
+    assert scale == 1024 / 1280
+    assert Image.open(io.BytesIO(small)).size == (1024, 640)
+
+    # No-op when already narrow enough — identical bytes, scale 1.0.
+    same, scale2 = transport_downscale(buf.getvalue(), 1280)
+    assert scale2 == 1.0 and same == buf.getvalue()
+
+
+def test_decide_rescales_downscaled_coords_to_viewport(monkeypatch):
+    # Viewport 1280x800, transport cap 1024 -> scale 0.8. A click at (400, 240)
+    # in SENT-image space must come back as (500, 300) in viewport space.
+    from PIL import Image
+    import io
+
+    monkeypatch.setenv("HAI_IMG_MAX_W", "1024")
+    buf = io.BytesIO()
+    Image.new("RGB", (1280, 800), (230, 230, 230)).save(buf, format="PNG")
+    obs = Observation(
+        raw_png=buf.getvalue(),
+        viewport=Viewport(width=1280, height=800),
+        step_index=0,
+    )
+    fake = FakeHoloClient([Action(type=ActionType.CLICK, x=400, y=240, caption="c")])
+    agent = HoloPersonaAgent(PersonaConfig(id="p", name="P"), fake, task="t")
+    act = asyncio.run(agent.decide(obs, []))
+    assert (act.x, act.y) == (500, 300)
 
 
 # ---- parser tests ----

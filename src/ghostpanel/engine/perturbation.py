@@ -120,6 +120,30 @@ def perceive(png_bytes: bytes, persona: PersonaConfig) -> bytes:
     return buf.getvalue()
 
 
+def transport_downscale(png_bytes: bytes, max_w: int) -> tuple[bytes, float]:
+    """Shrink the frame SENT to the model when wider than ``max_w`` (aspect kept).
+
+    Returns ``(png_bytes, scale)`` where ``scale = sent_w / original_w`` (1.0 when
+    no resize happened). UNLIKE the perception transforms above this intentionally
+    changes dimensions: vision-token count scales with pixel area, so a smaller
+    frame is materially faster/cheaper per Holo call. It is safe because the live
+    API returns 0-1000 NORMALIZED coords which the client denormalizes against the
+    image it was sent — the persona agent divides by ``scale`` to get back to true
+    viewport pixels. (FakeHoloClient paths never downscale: viewports in tests are
+    narrower than the default cap.)
+    """
+    img = Image.open(io.BytesIO(png_bytes))
+    img.load()
+    w, h = img.size
+    if max_w <= 0 or w <= max_w:
+        return png_bytes, 1.0
+    scale = max_w / w
+    small = img.convert("RGB").resize((max_w, max(1, round(h * scale))), Image.LANCZOS)
+    buf = io.BytesIO()
+    small.save(buf, format="PNG")
+    return buf.getvalue(), scale
+
+
 def actuate(
     action: Action,
     persona: PersonaConfig,

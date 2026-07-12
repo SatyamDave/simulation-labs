@@ -13,10 +13,16 @@ it reaches the live model even through the persona-free navigate() signature.
 
 from __future__ import annotations
 
+import os
 
 from ghostpanel_contracts import Action, HoloClient, Observation, PersonaConfig
 
-from .perturbation import actuate, perceive
+from .perturbation import actuate, perceive, transport_downscale
+
+# Widest frame we SEND to the model (env HAI_IMG_MAX_W). Vision tokens scale with
+# pixel area, so capping the transport size cuts per-call inference latency; the
+# 0-1000 normalized coords Holo returns are rescaled back to the true viewport.
+_DEFAULT_TRANSPORT_MAX_W = 1024
 
 
 class HoloPersonaAgent:
@@ -36,6 +42,12 @@ class HoloPersonaAgent:
         self.persona = persona
         self.holo = holo
         self.task = task or ""
+        try:
+            self._transport_max_w = int(
+                os.environ.get("HAI_IMG_MAX_W", _DEFAULT_TRANSPORT_MAX_W)
+            )
+        except ValueError:
+            self._transport_max_w = _DEFAULT_TRANSPORT_MAX_W
 
     def _effective_task(self, history: list[str]) -> str:
         task = self.task
@@ -58,18 +70,28 @@ class HoloPersonaAgent:
         return task
 
     async def decide(self, obs: Observation, history: list[str]) -> Action:
-        # 1. Degrade the screenshot (same dimensions out).
+        # 1. Degrade the screenshot (same dimensions out), then shrink the frame
+        #    for transport — fewer vision tokens, faster inference.
         degraded = perceive(obs.raw_png, self.persona)
+        send_png, scale = transport_downscale(degraded, self._transport_max_w)
 
-        # 2. Ask Holo for the next action (coords in image/viewport pixels).
+        # 2. Ask Holo for the next action (coords in sent-image pixels).
         # The current URL rides in the task text (navigate() has no page argument)
         # so the model can tell whether its actions are actually going anywhere.
         task = self._effective_task(history)
         if obs.url:
             task = f"{task}\n\nCurrent page URL: {obs.url}"
-        raw_action = await self.holo.navigate(degraded, task, history)
+        raw_action = await self.holo.navigate(send_png, task, history)
 
-        # 3. Apply tremor jitter + clamp to the true viewport.
+        # 3. Map sent-image coords back to the true viewport, then apply tremor
+        #    jitter + clamp.
+        if scale != 1.0 and raw_action.x is not None and raw_action.y is not None:
+            raw_action = raw_action.model_copy(
+                update={
+                    "x": int(round(raw_action.x / scale)),
+                    "y": int(round(raw_action.y / scale)),
+                }
+            )
         w = obs.viewport.width
         h = obs.viewport.height
         final = actuate(raw_action, self.persona, w, h)

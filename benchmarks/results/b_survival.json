@@ -1,0 +1,59 @@
+{
+  "id": "b_survival",
+  "title": "Live survival + trap attribution",
+  "kind": "live",
+  "headline": "Live on the hostile signup (3 personas, real Holo): 3/3 completed and verified by the #ok banner.",
+  "metrics": {
+    "swarm_size": 3,
+    "max_steps_cap": 8,
+    "completion_rate": 1.0,
+    "baseline": "power-user",
+    "baseline_completed": true,
+    "n_success": 3,
+    "n_verified_by_ok": 3,
+    "n_self_declared_answer": 0,
+    "n_abandoned": 0
+  },
+  "table": [
+    {
+      "persona": "power-user",
+      "outcome": "success",
+      "completed": true,
+      "verified_by_ok": true,
+      "self_declared": false,
+      "steps_survived": 6,
+      "sim_seconds": 27.1,
+      "actions": "click,write,write,click,scroll,write",
+      "failure_coords": null,
+      "trap_hit": "none",
+      "trap_dist_px": null
+    },
+    {
+      "persona": "low-vision",
+      "outcome": "success",
+      "completed": true,
+      "verified_by_ok": true,
+      "self_declared": false,
+      "steps_survived": 7,
+      "sim_seconds": 31.6,
+      "actions": "click,write,write,scroll,click,click,write",
+      "failure_coords": null,
+      "trap_hit": "none",
+      "trap_dist_px": null
+    },
+    {
+      "persona": "grandma-72",
+      "outcome": "success",
+      "completed": true,
+      "verified_by_ok": true,
+      "self_declared": false,
+      "steps_survived": 6,
+      "sim_seconds": 27.1,
+      "actions": "click,click,write,write,scroll,write",
+      "failure_coords": null,
+      "trap_hit": "none",
+      "trap_dist_px": null
+    }
+  ],
+  "notes": "Real Holo, HAI_RPM=5, steps capped at 8 to bound live budget. Success = #ok banner visible (real submit). Trap attribution = nearest dark-pattern element to the failure pixel. STOCHASTIC: tremor jitter uses an unseeded RNG so the marginal low-vision persona varies run-to-run (observed 2/3 and 3/3 across runs); this run = 3/3, all #ok-verified. Steps-to-complete: baseline 6, grandma 6, low-vision 7 \u2014 severe blur inflates steps modestly but Holo still completes. Complements ghostpanel.benchmarks (perf/quality); unique here = #ok-verified vs ANSWER-self-declared integrity check."
+}
