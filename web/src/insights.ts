@@ -423,7 +423,7 @@ export function computeFallbackInsights(report: RunReport): RunInsights {
         persona_id: s.persona_id,
         persona_name: s.persona_name || s.persona_id,
         ...rule,
-        evidence: evidenceFor(s, res, badge.label),
+        evidence: evidenceFor(s, res, badge.title),
         failure_step: res?.failure_step ?? null,
       });
     }

@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 from pathlib import Path
 
-import pytest
 
 from ghostpanel.engine.holo_client import (
     FakeHoloClient,
@@ -148,3 +147,16 @@ def test_parse_action_goto():
     act = parse_action('{"action":"goto","url":"https://x.com"}', 640, 480)
     assert act.type == ActionType.GOTO and act.url == "https://x.com"
     assert act.x is None
+
+
+def test_parse_action_malformed_click_missing_y_key():
+    """Live Holo sometimes drops the "y" key (observed verbatim from the API).
+    The salvage path must recover the pair instead of center-clicking."""
+    raw = '\n\n{"action": "click", "x": 426, 536}'
+    act = parse_action(raw, 1280, 800, normalize=True)
+    assert act.type == ActionType.CLICK
+    # 426/1000*1280=545, 536/1000*800=429 (denormalized like well-formed output)
+    assert (act.x, act.y) == (545, 429)
+    # Well-formed pixel-space salvage (normalize=False) passes through clamped.
+    act2 = parse_action('{"action":"tap", "x": 12, 34}', 640, 480)
+    assert act2.type == ActionType.CLICK and (act2.x, act2.y) == (12, 34)

@@ -82,7 +82,7 @@ const CAPTIONS: Record<string, string[]> = {
     "Scrolling to the promo field",
     "Entering the promo code",
     "Finding the grey submit button",
-    "Account created ✓",
+    "Account created",
   ],
   "ai-agent": [
     "Parsing the DOM",
@@ -90,7 +90,7 @@ const CAPTIONS: Record<string, string[]> = {
     "Filling email + password",
     "Resolving the promo field",
     "Submitting the form",
-    "Task complete ✓",
+    "Task complete",
   ],
 };
 

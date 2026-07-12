@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { MotionConfig } from "framer-motion";
 import { LaunchForm, type LaunchValues } from "./components/LaunchForm";
 import { PersonaGrid } from "./components/PersonaGrid";
 import { ReportView } from "./components/ReportView";
@@ -12,6 +13,55 @@ import type { RunReport } from "./types";
 
 type Mode = "launch" | "live" | "report" | "offline" | "index" | "compare";
 
+/** Dark mode on a `.dark` html class; initial value set pre-paint in index.html. */
+function useTheme(): { dark: boolean; toggle: () => void } {
+  const [dark, setDark] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+  const toggle = useCallback(() => {
+    setDark((prev) => {
+      const next = !prev;
+      document.documentElement.classList.toggle("dark", next);
+      localStorage.setItem("theme", next ? "dark" : "light");
+      return next;
+    });
+  }, []);
+  return { dark, toggle };
+}
+
+function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-hover transition-colors"
+    >
+      {dark ? (
+        /* sun */
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M12 3v2m0 14v2M5.6 5.6l1.4 1.4m9.9 9.9l1.4 1.4M3 12h2m14 0h2M5.6 18.4l1.4-1.4m9.9-9.9l1.4-1.4M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+          />
+        </svg>
+      ) : (
+        /* moon */
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+          />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 export default function App() {
   const [mode, setMode] = useState<Mode>("launch");
   const [runId, setRunId] = useState<string | null>(null);
@@ -19,8 +69,9 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingReport, setLoadingReport] = useState(false);
+  const { dark, toggle } = useTheme();
 
-  const { state, wsStatus } = useRunStream(mode === "live" ? runId : null);
+  const { state } = useRunStream(mode === "live" ? runId : null);
 
   async function handleLaunch(v: LaunchValues) {
     setError(null);
@@ -34,7 +85,7 @@ export default function App() {
       setError(
         `Couldn't reach the backend (${String(
           err
-        )}). Try the Offline demo — it needs no server.`
+        )}). Try the offline demo — it needs no server.`
       );
     } finally {
       setBusy(false);
@@ -49,7 +100,7 @@ export default function App() {
       setReport(r);
       setMode("report");
     } catch (err) {
-      setError(`Couldn't load report: ${String(err)}`);
+      setError(`Couldn't load the report: ${String(err)}`);
     } finally {
       setLoadingReport(false);
     }
@@ -63,84 +114,82 @@ export default function App() {
   }
 
   return (
-    <div className="app">
-      <div className="brandbar">
-        <svg
-          className="brandbar__mark"
-          viewBox="0 0 32 32"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect width="32" height="32" rx="8" fill="#12141c" />
-          <circle
-            cx="16"
-            cy="16"
-            r="9.5"
-            fill="none"
-            stroke="#7c8cff"
-            strokeWidth="2"
-            opacity="0.45"
-          />
-          <circle cx="16" cy="16" r="4" fill="#7c8cff" />
-        </svg>
-        <span className="brandbar__word">
-          Simulation <b>Labs</b>
-        </span>
-        <span className="brandbar__tag">Behavioral User Simulation</span>
-      </div>
-
-      {mode === "launch" && (
-        <LaunchForm
-          onLaunch={handleLaunch}
-          onOfflineDemo={() => setMode("offline")}
-          onIndex={() => setMode("index")}
-          busy={busy}
-          error={error}
-        />
-      )}
-
-      {mode === "offline" && <OfflineDemo onExit={reset} />}
-
-      {mode === "index" && <IndexView onBack={reset} />}
-
-      {mode === "live" && (
-        <div className="live">
-          <div className="live__bar">
-            <button className="btn btn--ghost btn--sm" onClick={reset}>
-              ← New run
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <header className="sticky top-0 z-50 bg-background border-b border-border">
+          <div className="mx-auto max-w-6xl px-6 h-12 flex items-center justify-between">
+            <button
+              type="button"
+              className="font-mono text-sm hover:opacity-70 transition-opacity"
+              onClick={reset}
+              title="Back to start"
+            >
+              simulation labs
             </button>
-            <span className={`ws ws--${wsStatus}`}>
-              <span className="ws__dot" /> live · {wsStatus}
-            </span>
-            {loadingReport && <span className="live__loading">loading report…</span>}
+            <ThemeToggle dark={dark} toggle={toggle} />
           </div>
-          {error && <div className="launch__error live__error">⚠ {error}</div>}
-          <PolicyPanel />
-          <PersonaGrid
-            state={state}
-            reportReady={state.status === "finished"}
-            onSeeReport={openLiveReport}
-          />
-        </div>
-      )}
+        </header>
 
-      {mode === "report" && report && (
-        <ReportView
-          report={report}
-          live
-          onBack={() => setMode("live")}
-          onCompare={() => setMode("compare")}
-        />
-      )}
+        <main className="flex-1">
+          {mode === "launch" && (
+            <LaunchForm
+              onLaunch={handleLaunch}
+              onOfflineDemo={() => setMode("offline")}
+              onIndex={() => setMode("index")}
+              busy={busy}
+              error={error}
+            />
+          )}
 
-      {mode === "compare" && report && (
-        <CompareView baseReport={report} onBack={() => setMode("report")} />
-      )}
+          {mode !== "launch" && (
+            <div className="mx-auto max-w-6xl px-6 py-10">
+              {mode === "offline" && <OfflineDemo onExit={reset} />}
 
-      <footer className="app__foot">
-        <b>Simulation Labs</b> · Behavioral user simulation · Powered by
-        H&nbsp;Company Holo &amp; Gradium
-      </footer>
-    </div>
+              {mode === "index" && <IndexView onBack={reset} />}
+
+              {mode === "live" && (
+                <div className="flex flex-col gap-6">
+                  {loadingReport && (
+                    <p className="text-sm text-muted-foreground">
+                      Loading the report…
+                    </p>
+                  )}
+                  {error && <p className="text-sm text-fail">{error}</p>}
+                  <PolicyPanel />
+                  <PersonaGrid
+                    state={state}
+                    reportReady={state.status === "finished"}
+                    onSeeReport={openLiveReport}
+                  />
+                </div>
+              )}
+
+              {mode === "report" && report && (
+                <ReportView
+                  report={report}
+                  live
+                  onBack={() => setMode("live")}
+                  onCompare={() => setMode("compare")}
+                />
+              )}
+
+              {mode === "compare" && report && (
+                <CompareView
+                  baseReport={report}
+                  onBack={() => setMode("report")}
+                />
+              )}
+            </div>
+          )}
+        </main>
+
+        <footer className="border-t border-border mt-24 py-8 px-6">
+          <div className="mx-auto max-w-6xl flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            <span className="font-mono">simulation labs</span>
+            <span>Powered by H Company Holo &amp; Gradium · © 2026</span>
+          </div>
+        </footer>
+      </div>
+    </MotionConfig>
   );
 }

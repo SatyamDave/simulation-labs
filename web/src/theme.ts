@@ -1,86 +1,70 @@
-// Simulation Labs palette. Refined enterprise-dark surface (Linear / Vercel /
-// Stripe register). Colors are the validated dark-mode steps from the dataviz
-// reference palette (colorblind-safe, checked against a dark surface). Outcomes
-// use the reserved STATUS palette (state, not identity); personas use the
-// categorical palette (identity).
+// Simulation Labs functional palette + perturbation labels.
+// Per web/DESIGN_SYSTEM.md (v3 — Quiet workspace) every color is a state and
+// stays quiet — text, small dots, hairlines only: orange = running/live,
+// green = survived, red = died/abandoned, neutral = infra error (excluded
+// from survival stats, must not read as a human abandon).
 
 import type { PersonaConfig, PersonaOutcome, PerturbationKind } from "./types";
 
-// Surfaces / ink (dark mode)
-export const SURFACE = "#101218";
-export const SURFACE_RAISED = "#171a22";
-export const PLANE = "#090a0e";
-export const INK = "#f4f5f8";
-export const INK_2 = "#b3b8c4";
-export const INK_MUTED = "#757b8a";
-export const HAIRLINE = "rgba(255,255,255,0.08)";
-export const GRID = "#242833";
+// Literal hex values for the few places that need to compose alpha suffixes
+// inline: heatmap radial gradients over screenshots.
+export const SUCCESS_HEX = "#448361";
+export const FAIL_HEX = "#D44C47";
+export const NEUTRAL_HEX = "#787774";
 
-// Categorical (identity) — dark-mode steps, fixed order, never cycled.
-export const CATEGORICAL = [
-  "#3987e5", // blue
-  "#199e70", // aqua
-  "#c98500", // yellow
-  "#008300", // green
-  "#9085e9", // violet
-  "#e66767", // red
-  "#d55181", // magenta
-  "#d95926", // orange
-] as const;
-
-// Status (state) — reserved, never themed. Outcomes map here.
-export const STATUS = {
-  good: "#22b364",
-  warning: "#fab219",
-  serious: "#ec835a",
-  critical: "#e5484d",
-  neutral: "#757b8a",
-} as const;
-
-// Outcome -> status color. success is the only "good" outcome.
+// Outcome -> chart color. CSS variables so charts stay AA in both themes
+// (light mode darkens the functional hues). success is the only "good"
+// outcome; every non-error outcome is a genuine abandonment; error is infra.
 export const OUTCOME_COLOR: Record<PersonaOutcome, string> = {
-  success: STATUS.good,
-  step_budget: STATUS.warning,
-  time_budget: STATUS.serious,
-  stuck: STATUS.critical,
-  error: STATUS.neutral,
+  success: "var(--ok)",
+  step_budget: "var(--fail)",
+  time_budget: "var(--fail)",
+  stuck: "var(--fail)",
+  error: "var(--idle)",
 };
 
-// Brand accent (single, confident) + the reserved fail red used on the heatmap.
-export const ACCENT = "#7c8cff";
-export const GHOST = ACCENT; // retained export name; now the brand accent
-export const BLOOD = "#e5484d";
+// The same mapping as Tailwind utility classes, for markup-level styling.
+export const OUTCOME_TEXT_CLASS: Record<PersonaOutcome, string> = {
+  success: "text-ok",
+  step_budget: "text-fail",
+  time_budget: "text-fail",
+  stuck: "text-fail",
+  error: "text-muted-foreground",
+};
 
-export function personaColor(index: number): string {
-  return CATEGORICAL[index % CATEGORICAL.length];
-}
-
-// Color-stepped 0-100 score (status palette — state, not identity).
-// Shared by the report hero, the compare view, and the leaderboard.
+// Color-stepped 0-100 score (functional tokens — state, not identity).
+// Shared by the report hero, the compare view, and the run index.
 export function scoreColor(score: number): string {
-  return score >= 70 ? STATUS.good : score >= 40 ? STATUS.warning : STATUS.critical;
+  return score >= 70 ? "var(--ok)" : score >= 40 ? "var(--live)" : "var(--fail)";
 }
+
+// Chart series colors for the stepped survival curves (quiet, theme-safe):
+// the current run draws in text color, a comparison baseline recedes to gray.
+export const SERIES_CURRENT = "var(--foreground)";
+export const SERIES_BASELINE = "var(--idle)";
 
 // ---------------------------------------------------------------------------
-// Perturbation badges — the "which channels are degraded" chips on a tile.
-// Prefer the persona's declared active_perturbations; if absent (sparse
-// fixtures only carry id/name/blurb), infer from the numeric fields, then
-// fall back to id keywords so the offline demo still shows meaningful badges.
+// Perturbation labels — the "which channels are degraded" chips on a tile.
+// Tiny lowercase mono structural labels (spec: labels — no icons, no emoji).
+// Prefer the persona's declared active_perturbations; if
+// absent (sparse fixtures only carry id/name/blurb), infer from the numeric
+// fields, then fall back to id keywords so the offline demo still shows
+// meaningful labels.
 // ---------------------------------------------------------------------------
 export interface Badge {
-  icon: string;
-  label: string;
   kind: PerturbationKind;
+  text: string; // rendered as-is — keep lowercase
+  title: string;
 }
 
-const BADGE_META: Record<PerturbationKind, { icon: string; label: string }> = {
-  blur: { icon: "👁️", label: "Low vision (blur)" },
-  downscale: { icon: "🔍", label: "Low acuity" },
-  cvd: { icon: "🎨", label: "Color-vision deficiency" },
-  tremor: { icon: "✋", label: "Hand tremor" },
-  small_viewport: { icon: "📱", label: "Small viewport" },
-  impatience: { icon: "⏱️", label: "Impatient" },
-  low_literacy: { icon: "📖", label: "Low digital literacy" },
+const BADGE_META: Record<PerturbationKind, { text: string; title: string }> = {
+  blur: { text: "blur", title: "Low vision (blur)" },
+  downscale: { text: "downscale", title: "Low acuity" },
+  cvd: { text: "cvd", title: "Color-vision deficiency" },
+  tremor: { text: "tremor", title: "Hand tremor" },
+  small_viewport: { text: "viewport", title: "Small viewport" },
+  impatience: { text: "impatient", title: "Impatient" },
+  low_literacy: { text: "literal", title: "Low digital literacy" },
 };
 
 export function perturbationBadges(p: PersonaConfig): Badge[] {
@@ -110,7 +94,17 @@ export function perturbationBadges(p: PersonaConfig): Badge[] {
     }
   }
 
-  return [...kinds].map((k) => ({ kind: k, ...BADGE_META[k] }));
+  return [...kinds].map((k) => {
+    // Small viewport reads best as the actual dims (e.g. "390x844").
+    if (k === "small_viewport" && p.viewport) {
+      return {
+        kind: k,
+        text: `${p.viewport.width}x${p.viewport.height}`,
+        title: BADGE_META[k].title,
+      };
+    }
+    return { kind: k, ...BADGE_META[k] };
+  });
 }
 
 // CSS filter that visually hints a persona's perception impairment on the tile

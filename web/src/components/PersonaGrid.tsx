@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import type { LiveRunState, Viewport } from "../types";
 import { tallies } from "../runReducer";
 import { PersonaTile } from "./PersonaTile";
@@ -9,6 +10,39 @@ interface Props {
   reportReady?: boolean;
 }
 
+function Dot({
+  tone,
+  pulse,
+}: {
+  tone: "ok" | "fail" | "live" | "idle";
+  pulse?: boolean;
+}) {
+  const cls =
+    tone === "ok"
+      ? "bg-ok"
+      : tone === "fail"
+        ? "bg-fail"
+        : tone === "live"
+          ? "bg-live"
+          : "bg-idle/40";
+  if (pulse) {
+    return (
+      <motion.span
+        className={`w-1.5 h-1.5 rounded-full shrink-0 ${cls}`}
+        animate={{ opacity: [1, 0.35, 1] }}
+        transition={{ duration: 1.6, repeat: Infinity }}
+        aria-hidden="true"
+      />
+    );
+  }
+  return (
+    <span
+      className={`w-1.5 h-1.5 rounded-full shrink-0 ${cls}`}
+      aria-hidden="true"
+    />
+  );
+}
+
 export function PersonaGrid({
   state,
   coordSpace,
@@ -16,68 +50,56 @@ export function PersonaGrid({
   reportReady,
 }: Props) {
   const t = tallies(state);
-  const progress = t.total ? Math.round((t.done / t.total) * 100) : 0;
 
   return (
-    <section className="grid-wrap">
-      <div className="grid-head">
-        <div className="grid-head__meta">
-          <div className="grid-head__task">
-            <span className="grid-head__label">TASK</span>
-            <span className="grid-head__task-text">{state.task || "—"}</span>
-          </div>
-          <div className="grid-head__url">{state.targetUrl}</div>
-        </div>
-
-        <div className="grid-head__stats">
-          <div className="stat stat--alive">
-            <div className="stat__num">{t.survived}</div>
-            <div className="stat__lbl">survived</div>
-          </div>
-          <div className="stat stat--dead">
-            <div className="stat__num">{t.dead}</div>
-            <div className="stat__lbl">abandoned</div>
-          </div>
-          <div className="stat">
-            <div className="stat__num">
-              {t.running > 0 ? t.running : t.done === t.total ? "✓" : "…"}
-            </div>
-            <div className="stat__lbl">
-              {t.running > 0 ? "still trying" : "all done"}
-            </div>
-          </div>
-          <div className="stat stat--total">
-            <div className="stat__num">
-              {t.done}/{t.total}
-            </div>
-            <div className="stat__lbl">finished</div>
-          </div>
-        </div>
+    <section className="flex flex-col gap-6">
+      {/* Telemetry: one quiet line */}
+      <div className="flex items-center gap-x-3 gap-y-1 flex-wrap font-mono text-xs text-muted-foreground tabular-nums min-w-0">
+        <span className="inline-flex items-center gap-1.5">
+          <Dot tone="ok" />
+          {t.survived} survived
+        </span>
+        <span aria-hidden="true">·</span>
+        <span className="inline-flex items-center gap-1.5">
+          <Dot tone="fail" />
+          {t.dead} abandoned
+        </span>
+        {t.running > 0 && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Dot tone="live" pulse />
+              {t.running} running
+            </span>
+          </>
+        )}
+        <span aria-hidden="true">·</span>
+        <span>
+          {t.done}/{t.total} finished
+        </span>
+        {state.targetUrl && (
+          <span className="ml-auto truncate max-sm:hidden">
+            {state.targetUrl}
+          </span>
+        )}
       </div>
 
-      <div className="progress">
-        <div className="progress__bar" style={{ width: `${progress}%` }} />
-      </div>
-
-      <div className="grid">
-        {state.order.map((id, i) => {
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {state.order.map((id) => {
           const live = state.personas[id];
           if (!live) return null;
-          return (
-            <PersonaTile
-              key={id}
-              live={live}
-              index={i}
-              coordSpace={coordSpace}
-            />
-          );
+          return <PersonaTile key={id} live={live} coordSpace={coordSpace} />;
         })}
       </div>
 
       {reportReady && onSeeReport && (
-        <div className="grid-cta">
-          <button className="btn btn--primary btn--big" onClick={onSeeReport}>
-            View the report →
+        <div className="flex justify-center pt-4">
+          <button
+            type="button"
+            className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+            onClick={onSeeReport}
+          >
+            View the report
           </button>
         </div>
       )}

@@ -1,4 +1,4 @@
-// Stats dashboard for the report view: KPI stat-tile row, the TRUE stepped
+// Stats dashboard for the report view: KPI stat row, the TRUE stepped
 // survival curve (step-after line, inline SVG), actions-by-type breakdown and
 // the per-persona statistics table. All data comes from RunInsights — server
 // stats when present, the client-side fallback otherwise (see insights.ts).
@@ -12,11 +12,10 @@ import type {
 import type { PersonaConfig } from "../types";
 import { OUTCOME_LABELS } from "../types";
 import {
-  CATEGORICAL,
   OUTCOME_COLOR,
   perturbationBadges,
   scoreColor,
-  STATUS,
+  SERIES_CURRENT,
 } from "../theme";
 
 // ---------------------------------------------------------------------------
@@ -43,6 +42,59 @@ export function timeAgo(iso?: string | null): string {
   if (sec < 3600) return `${Math.round(sec / 60)}m ago`;
   if (sec < 86400) return `${Math.round(sec / 3600)}h ago`;
   return new Date(t).toLocaleDateString();
+}
+
+// One quiet metric: big tabular number over a dim label (shared with
+// CompareView's delta row). No card chrome — whitespace is the separator.
+export function StatTile({
+  label,
+  value,
+  color,
+  title,
+}: {
+  label: string;
+  value: string;
+  color?: string;
+  title?: string;
+}) {
+  return (
+    <div title={title}>
+      <p
+        className="text-2xl font-semibold tracking-tight tabular-nums"
+        style={color ? { color } : undefined}
+      >
+        {value}
+      </p>
+      <p className="font-mono text-[11px] text-muted-foreground mt-0.5">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+// Small titled figure wrapper for the charts below.
+function ChartFigure({
+  title,
+  sub,
+  children,
+}: {
+  title: string;
+  sub?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <figure>
+      <figcaption className="mb-3">
+        <span className="block text-sm font-medium">{title}</span>
+        {sub && (
+          <span className="block text-xs text-muted-foreground mt-0.5">
+            {sub}
+          </span>
+        )}
+      </figcaption>
+      {children}
+    </figure>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -149,15 +201,10 @@ export function SurvivalStepChart({
     .join("; ")}`;
 
   return (
-    <figure className="chart">
-      <figcaption className="chart__title">
-        {title}
-        {sub && <span className="chart__sub">{sub}</span>}
-      </figcaption>
+    <ChartFigure title={title} sub={sub}>
       <div className="stepchart">
         <svg
           ref={svgRef}
-          className="stepchart__svg"
           viewBox={`0 0 ${W} ${H}`}
           role="img"
           aria-label={label}
@@ -205,7 +252,7 @@ export function SurvivalStepChart({
             <path
               d={`${stepPath(drawn[0].points)} V ${y(0)} H ${x(drawn[0].points[0].step)} Z`}
               fill={drawn[0].color}
-              opacity={0.1}
+              opacity={0.06}
               stroke="none"
             />
           )}
@@ -228,16 +275,16 @@ export function SurvivalStepChart({
               d={stepPath(s.points)}
               fill="none"
               stroke={s.color}
-              strokeWidth={2}
+              strokeWidth={1.5}
               strokeLinejoin="round"
               strokeLinecap="round"
             />
           ))}
 
-          {/* end markers (surface ring) + direct end labels */}
+          {/* end markers (card ring) + direct end labels */}
           {ends.map((s) => (
             <g key={`e${s.label}`}>
-              <circle cx={s.ex} cy={s.ey} r={4} fill={s.color} className="stepchart__dot" />
+              <circle cx={s.ex} cy={s.ey} r={3.5} fill={s.color} className="stepchart__dot" />
               <text x={s.ex + 8} y={s.ey + 3.5} className="stepchart__endlabel">
                 {s.alive}
                 {drawn.length > 1 ? ` ${s.label}` : " left"}
@@ -252,7 +299,7 @@ export function SurvivalStepChart({
                 key={`h${s.label}`}
                 cx={x(hover.step)}
                 cy={y(aliveAt(s.points, hover.step))}
-                r={4}
+                r={3.5}
                 fill={s.color}
                 className="stepchart__dot"
               />
@@ -266,66 +313,82 @@ export function SurvivalStepChart({
               transform: `translateX(${hover.xPct > 60 ? "-108%" : "8px"})`,
             }}
           >
-            <div className="stepchart__tip-step">step {hover.step}</div>
+            <div className="text-foreground">step {hover.step}</div>
             {hover.entries.map((e) => (
-              <div key={e.label} className="stepchart__tip-row">
-                <span className="legend__swatch" style={{ background: e.color }} />
-                {e.label}: <b>{e.alive}</b>
+              <div key={e.label} className="flex items-center gap-1.5">
+                <span
+                  className="inline-block w-2.5 h-[3px] rounded-full shrink-0"
+                  style={{ background: e.color }}
+                  aria-hidden="true"
+                />
+                {e.label}: <b className="text-foreground">{e.alive}</b>
               </div>
             ))}
           </div>
         )}
       </div>
       {drawn.length > 1 && (
-        <div className="legend">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 font-mono text-[11px] text-muted-foreground">
           {drawn.map((s) => (
-            <span className="legend__item" key={s.label}>
-              <span className="legend__swatch" style={{ background: s.color }} />
+            <span className="inline-flex items-center gap-1.5" key={s.label}>
+              <span
+                className="inline-block w-2.5 h-[3px] rounded-full shrink-0"
+                style={{ background: s.color }}
+                aria-hidden="true"
+              />
               {s.label}
             </span>
           ))}
         </div>
       )}
-    </figure>
+    </ChartFigure>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Actions-by-type horizontal breakdown (nominal categories -> one hue).
+// Actions-by-type horizontal breakdown (nominal categories -> one quiet hue).
 // ---------------------------------------------------------------------------
 function ActionsBreakdown({ counts }: { counts: Record<string, number> }) {
   const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const max = Math.max(1, ...rows.map(([, n]) => n));
   return (
-    <figure className="chart">
-      <figcaption className="chart__title">
-        Actions by type
-        <span className="chart__sub">
-          what the swarm actually did, across every step
-        </span>
-      </figcaption>
+    <ChartFigure
+      title="Actions by type"
+      sub="what the swarm actually did, across every step"
+    >
       {rows.length === 0 ? (
-        <p className="report__empty">No per-step action records in this run.</p>
+        <p className="text-sm text-muted-foreground">
+          No per-step action records in this run.
+        </p>
       ) : (
-        <div className="abt" role="img" aria-label="Action counts by type">
+        <div
+          className="flex flex-col gap-2.5"
+          role="img"
+          aria-label="Action counts by type"
+        >
           {rows.map(([type, n]) => (
-            <div className="abt__row" key={type} title={`${type}: ${n}`}>
-              <span className="abt__label">{type.replace(/_/g, " ")}</span>
-              <span className="abt__track">
-                <span
-                  className="abt__fill"
-                  style={{
-                    width: `${(n / max) * 100}%`,
-                    background: CATEGORICAL[0],
-                  }}
+            <div
+              className="grid grid-cols-[minmax(70px,110px)_1fr_auto] items-center gap-3"
+              key={type}
+              title={`${type}: ${n}`}
+            >
+              <span className="font-mono text-xs text-muted-foreground truncate">
+                {type.replace(/_/g, " ")}
+              </span>
+              <div className="h-2 rounded-full bg-surface overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-idle/60"
+                  style={{ width: `${(n / max) * 100}%` }}
                 />
-                <span className="abt__val">{n}</span>
+              </div>
+              <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+                {n}
               </span>
             </div>
           ))}
         </div>
       )}
-    </figure>
+    </ChartFigure>
   );
 }
 
@@ -345,24 +408,31 @@ function badgesFor(p: PersonaStats) {
 
 function PersonaStatsTable({ personas }: { personas: PersonaStats[] }) {
   return (
-    <div className="insights__wcag">
-      <h3 className="insights__wcag-title">Per-persona statistics</h3>
-      <p className="insights__wcag-caption">
+    <div>
+      <h3 className="text-sm font-medium">Per-persona statistics</h3>
+      <p className="text-xs text-muted-foreground mt-1 mb-3">
         One row per synthetic user — degraded channels, outcome, effort and
         friction signals.
       </p>
-      <div className="insights__wcag-scroll">
-        <table className="insights__table">
+      <div className="gp-table-scroll">
+        <table className="gp-table">
           <thead>
             <tr>
-              <th>Persona</th>
-              <th>Perturbations</th>
-              <th>Outcome</th>
-              <th>Steps</th>
-              <th>Duration</th>
-              <th>Avg latency</th>
-              <th title="Longest run of identical actions">Rage clicks</th>
-              <th title="Actions blocked by the policy gateway">🛡 Blocked</th>
+              <th>persona</th>
+              <th>perturbations</th>
+              <th>outcome</th>
+              <th className="text-right">steps</th>
+              <th className="text-right">duration</th>
+              <th className="text-right">avg latency</th>
+              <th className="text-right" title="Longest run of identical actions">
+                rage clicks
+              </th>
+              <th
+                className="text-right"
+                title="Actions blocked by the policy gateway"
+              >
+                blocked
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -370,43 +440,37 @@ function PersonaStatsTable({ personas }: { personas: PersonaStats[] }) {
               const badges = badgesFor(p);
               return (
                 <tr key={p.persona_id}>
-                  <td className="insights__td-persona">{p.persona_name}</td>
-                  <td className="pstats__badges">
-                    {badges.length ? (
-                      badges.map((b) => (
-                        <span key={b.kind} className="badge" title={b.label}>
-                          {b.icon}
-                        </span>
-                      ))
-                    ) : (
-                      <span
-                        className="persona-chip__clean"
-                        title="No perturbation — baseline"
-                      >
-                        ◆
-                      </span>
-                    )}
+                  <td className="font-medium whitespace-nowrap">
+                    {p.persona_name}
                   </td>
-                  <td>
-                    <span
-                      className="pstats__outcome"
-                      style={{ color: OUTCOME_COLOR[p.outcome] }}
-                    >
-                      {OUTCOME_LABELS[p.outcome]}
-                    </span>
+                  <td className="font-mono text-[10px] text-muted-foreground">
+                    {badges.length
+                      ? badges.map((b) => b.text).join(" · ")
+                      : "baseline"}
                   </td>
-                  <td className="pstats__num">{p.steps_survived}</td>
-                  <td className="pstats__num">{fmtDuration(p.duration_s)}</td>
-                  <td className="pstats__num">{fmtMs(p.avg_latency_ms)}</td>
-                  <td className="pstats__num">
+                  <td
+                    className="whitespace-nowrap"
+                    style={{ color: OUTCOME_COLOR[p.outcome] }}
+                  >
+                    {OUTCOME_LABELS[p.outcome]}
+                  </td>
+                  <td className="text-right font-mono text-xs tabular-nums">
+                    {p.steps_survived}
+                  </td>
+                  <td className="text-right font-mono text-xs tabular-nums">
+                    {fmtDuration(p.duration_s)}
+                  </td>
+                  <td className="text-right font-mono text-xs tabular-nums">
+                    {fmtMs(p.avg_latency_ms)}
+                  </td>
+                  <td className="text-right font-mono text-xs tabular-nums">
                     {p.max_repeated_action >= 2 ? (
                       <span
-                        className="pstats__rage"
                         style={{
                           color:
                             p.max_repeated_action >= 3
-                              ? STATUS.critical
-                              : STATUS.warning,
+                              ? "var(--fail)"
+                              : "var(--live)",
                         }}
                         title={`${p.max_repeated_action}× the same action in a row`}
                       >
@@ -416,8 +480,8 @@ function PersonaStatsTable({ personas }: { personas: PersonaStats[] }) {
                       "—"
                     )}
                   </td>
-                  <td className="pstats__num">
-                    {p.blocked_actions > 0 ? `🛡 ${p.blocked_actions}` : "—"}
+                  <td className="text-right font-mono text-xs tabular-nums">
+                    {p.blocked_actions > 0 ? p.blocked_actions : "—"}
                   </td>
                 </tr>
               );
@@ -479,7 +543,7 @@ export function StatsPanel({ insights }: { insights: RunInsights }) {
       ? [
           {
             key: "blocked",
-            label: "🛡 policy-blocked",
+            label: "policy-blocked",
             value: String(r.blocked_actions),
             title: "Actions blocked at the network layer by the NemoClaw policy",
           },
@@ -504,32 +568,29 @@ export function StatsPanel({ insights }: { insights: RunInsights }) {
   ];
 
   return (
-    <section className="statsdash" aria-label="Run statistics">
-      <div className="statrow">
+    <div className="flex flex-col gap-10" aria-label="Run statistics">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-6">
         {tiles.map((t) => (
-          <div className="stat stat--tile" key={t.key} title={t.title}>
-            <div className="stat__num" style={t.color ? { color: t.color } : undefined}>
-              {t.value}
-            </div>
-            <div className="stat__lbl">{t.label}</div>
-          </div>
+          <StatTile
+            key={t.key}
+            label={t.label}
+            value={t.value}
+            color={t.color}
+            title={t.title}
+          />
         ))}
       </div>
 
-      <div className="report__charts">
-        {series.length > 0 && (
-          <SurvivalStepChart
-            title="Survival curve"
-            sub="personas still in the flow at each step (step-after)"
-            series={[
-              { label: "alive", color: CATEGORICAL[0], points: series },
-            ]}
-          />
-        )}
-        <ActionsBreakdown counts={r.actions_by_type} />
-      </div>
+      {series.length > 0 && (
+        <SurvivalStepChart
+          title="Survival curve"
+          sub="personas still in the flow at each step (step-after)"
+          series={[{ label: "alive", color: SERIES_CURRENT, points: series }]}
+        />
+      )}
+      <ActionsBreakdown counts={r.actions_by_type} />
 
       <PersonaStatsTable personas={stats.personas} />
-    </section>
+    </div>
   );
 }

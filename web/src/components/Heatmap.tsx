@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { HeatPoint, Viewport } from "../types";
-import { BLOOD } from "../theme";
+import { FAIL_HEX } from "../theme";
 
 const BASE = import.meta.env.BASE_URL || "/";
 const SAMPLE = `${BASE}fixtures/sample_screenshot.png`;
@@ -30,69 +30,63 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
   const maxW = Math.max(1, ...points.map((p) => p.weight ?? 1));
 
   return (
-    <figure className="chart">
-      <figcaption className="chart__title">
-        Abandonment heatmap
-        <span className="chart__sub">
-          where, on your actual page, users give up
-        </span>
-      </figcaption>
-
+    <div>
       <div
-        className="heatmap"
+        className="relative w-full rounded-xl overflow-hidden border border-border bg-surface"
         style={{ aspectRatio: `${space.width} / ${space.height}` }}
       >
         <img
-          className="heatmap__img"
+          className="block w-full h-full object-cover"
           src={img}
           alt="Target page"
           onError={() => {
             if (useLive) setLiveFailed(true);
           }}
         />
-        <div className="heatmap__scrim" />
-        <span className="heatmap__source">
-          {useLive ? "Live target page" : "Sample page"}
+        <span className="absolute top-2 left-2 z-10 font-mono text-[10px] text-muted-foreground bg-background/90 border border-border rounded px-1.5 py-0.5">
+          {useLive ? "live target page" : "sample page"}
         </span>
         {points.map((p, i) => {
           const left = (p.x / space.width) * 100;
           const top = (p.y / space.height) * 100;
           const w = p.weight ?? 1;
-          const size = 90 + (w / maxW) * 120;
+          const size = 64 + (w / maxW) * 96;
           return (
             <div
               key={`${p.persona_id}-${i}`}
-              className="heatmap__blob"
+              className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none mix-blend-multiply dark:mix-blend-screen"
               style={{
                 left: `${left}%`,
                 top: `${top}%`,
                 width: size,
                 height: size,
-                background: `radial-gradient(circle, ${BLOOD}cc 0%, ${BLOOD}66 35%, ${BLOOD}00 70%)`,
+                background: `radial-gradient(circle, ${FAIL_HEX}73 0%, ${FAIL_HEX}33 35%, ${FAIL_HEX}00 70%)`,
               }}
               title={`${p.persona_id || "abandon"} @ ${p.x},${p.y}`}
             />
           );
         })}
+        {/* Precise marks: the same small ring + dot as the death treatment */}
         {points.map((p, i) => {
           const left = (p.x / space.width) * 100;
           const top = (p.y / space.height) * 100;
           return (
             <div
-              key={`dot-${p.persona_id}-${i}`}
-              className="heatmap__x"
+              key={`mark-${p.persona_id}-${i}`}
+              className="absolute -translate-x-1/2 -translate-y-1/2 cursor-help"
               style={{ left: `${left}%`, top: `${top}%` }}
               title={`${p.persona_id || "abandon"} @ ${p.x},${p.y}`}
             >
-              ✕
+              <span className="block w-3.5 h-3.5 rounded-full border border-fail" />
+              <span className="absolute left-1/2 top-1/2 w-[3px] h-[3px] -ml-[1.5px] -mt-[1.5px] rounded-full bg-fail" />
             </div>
           );
         })}
       </div>
-      <div className="heatmap__caption">
+      <p className="mt-3 font-mono text-[11px] text-muted-foreground tabular-nums">
         {points.length} abandonment {points.length === 1 ? "point" : "points"} ·
-        each ✕ marks a persona that gave up here
-      </div>
-    </figure>
+        each mark is a persona that gave up here
+      </p>
+    </div>
   );
 }

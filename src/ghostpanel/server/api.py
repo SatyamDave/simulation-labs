@@ -7,6 +7,7 @@
 - ``GET  /runs``           list of runs (id, target, completion_rate, status)
 - ``GET  /policy``         NemoClaw policy relay (local file or live NVIDIA docs)
 - ``GET  /leaderboard``    the Ghostpanel Index — scores across past runs
+- ``GET  /personas``       the full persona roster (launch-form source of truth)
 - ``GET  /healthz``        liveness
 
 Artifacts (``/artifacts``) and the built frontend (``/``) are mounted in
@@ -26,6 +27,7 @@ import yaml
 from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
 
+from ghostpanel.engine.personas import load_personas
 from ghostpanel.runner.policy import RequestPolicy
 from ghostpanel_contracts import PersonaConfig, PersonaOutcome, PersonaResult
 
@@ -53,6 +55,12 @@ class StartRunResponse(BaseModel):
 @router.get("/healthz")
 async def healthz() -> dict:
     return {"status": "ok"}
+
+
+@router.get("/personas")
+async def list_personas() -> list[dict]:
+    """The full persona roster — the launch form's live source of truth."""
+    return [p.model_dump(mode="json") for p in load_personas(None)]
 
 
 @router.post("/runs", response_model=StartRunResponse)

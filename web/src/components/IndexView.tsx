@@ -2,6 +2,7 @@
 // on top ("hall of shame"). Behavioral agent-readiness: measured, not declared.
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { getLeaderboard, type LeaderboardEntry } from "../api";
 import { scoreColor } from "../theme";
 import { timeAgo } from "./StatsPanel";
@@ -19,9 +20,12 @@ function domainOf(url: string): string {
 }
 
 function Score({ value }: { value?: number | null }) {
-  if (value == null) return <span className="index__na">—</span>;
+  if (value == null) return <span className="text-muted-foreground">—</span>;
   return (
-    <span className="index__score" style={{ color: scoreColor(value) }}>
+    <span
+      className="font-medium tabular-nums"
+      style={{ color: scoreColor(value) }}
+    >
       {value}
     </span>
   );
@@ -54,83 +58,110 @@ export function IndexView({ onBack }: Props) {
   }, []);
 
   return (
-    <div className="report index">
-      <header className="report__head">
-        <div>
-          <button className="btn btn--ghost btn--sm" onClick={onBack}>
-            ← Back
-          </button>
-        </div>
-        <div>
-          <h2 className="report__section">📊 Ghostpanel Index</h2>
-          <p className="report__section-sub">
-            Behavioral agent-readiness — measured, not declared. Worst sites on
-            top.
-          </p>
-        </div>
+    <motion.div
+      className="mx-auto max-w-3xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+    >
+      <button
+        type="button"
+        className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-10"
+        onClick={onBack}
+      >
+        ← Back
+      </button>
+
+      <header>
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+          Run index
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Behavioral agent-readiness — measured, not declared. Worst sites on
+          top.
+        </p>
       </header>
 
-      {error && (
-        <div className="launch__error">
-          ⚠ Couldn't reach the backend ({error}). The Index needs a running
-          server.
-        </div>
-      )}
-
-      {!error && rows === null && <p className="report__empty">Loading runs…</p>}
-
-      {rows !== null && rows.length === 0 && (
-        <div className="index__empty">
-          <p>
-            No runs indexed yet. Point the swarm at a site and see who
-            survives.
+      <div className="border-t border-border mt-10 pt-10">
+        {error && (
+          <p className="text-sm text-fail">
+            Couldn't reach the backend ({error}). The index needs a running
+            server.
           </p>
-          <button className="btn btn--primary" onClick={onBack}>
-            Run a simulation →
-          </button>
-        </div>
-      )}
+        )}
 
-      {rows !== null && rows.length > 0 && (
-        <div className="chart">
-          <div className="insights__wcag-scroll">
-            <table className="insights__table index__table">
+        {!error && rows === null && (
+          <p className="text-sm text-muted-foreground">Loading runs…</p>
+        )}
+
+        {rows !== null && rows.length === 0 && (
+          <div className="py-8 text-center flex flex-col items-center gap-5">
+            <p className="text-sm text-muted-foreground">
+              No runs indexed yet. Point the swarm at a site and see who
+              survives.
+            </p>
+            <button
+              type="button"
+              className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+              onClick={onBack}
+            >
+              Run a simulation
+            </button>
+          </div>
+        )}
+
+        {rows !== null && rows.length > 0 && (
+          <div className="gp-table-scroll">
+            <table className="gp-table">
               <thead>
                 <tr>
-                  <th>Target</th>
-                  <th title="Composite survival score, 0–100">Score</th>
-                  <th title="Did an unimpaired AI agent finish?">
-                    Agent-ready
+                  <th>target</th>
+                  <th
+                    className="text-right"
+                    title="Composite survival score, 0–100"
+                  >
+                    score
                   </th>
-                  <th>Completion</th>
-                  <th>Personas</th>
-                  <th>When</th>
+                  <th
+                    className="text-right"
+                    title="Did an unimpaired AI agent finish?"
+                  >
+                    agent-ready
+                  </th>
+                  <th className="text-right">completion</th>
+                  <th className="text-right">personas</th>
+                  <th className="text-right">when</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.run_id}>
                     <td>
-                      <span className="index__domain">
+                      <span className="block text-sm font-medium">
                         {domainOf(r.target_url)}
                       </span>
-                      <span className="index__task" title={r.task}>
+                      <span
+                        className="block text-xs text-muted-foreground truncate max-w-[36ch]"
+                        title={r.task}
+                      >
                         {r.task}
                       </span>
                     </td>
-                    <td className="pstats__num">
+                    <td className="text-right font-mono text-xs">
                       <Score value={r.ghostpanel_score} />
                     </td>
-                    <td className="pstats__num">
+                    <td className="text-right font-mono text-xs">
                       <Score value={r.agent_readiness_score} />
                     </td>
-                    <td className="pstats__num">
+                    <td className="text-right font-mono text-xs tabular-nums">
                       {r.completion_rate != null
                         ? `${Math.round(r.completion_rate * 100)}%`
                         : "—"}
                     </td>
-                    <td className="pstats__num">{r.personas ?? "—"}</td>
-                    <td className="pstats__num index__when">
+                    <td className="text-right font-mono text-xs tabular-nums">
+                      {r.personas ?? "—"}
+                    </td>
+                    <td className="text-right font-mono text-xs text-muted-foreground whitespace-nowrap">
                       {timeAgo(r.generated_at)}
                     </td>
                   </tr>
@@ -138,8 +169,8 @@ export function IndexView({ onBack }: Props) {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </motion.div>
   );
 }

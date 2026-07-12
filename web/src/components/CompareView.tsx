@@ -1,9 +1,10 @@
 // Before/after comparison of two runs: pick another run from the server's
-// index, then a side-by-side of Simulation Scores (big delta arrow), overlaid
-// stepped survival curves (two validated categorical series), per-persona
-// outcome pairs (dead -> alive highlighted) and the findings-count delta.
+// index, then a side-by-side of Simulation Scores (with the delta), overlaid
+// stepped survival curves, per-persona outcome pairs (dead -> alive tagged)
+// and the findings-count delta.
 
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { getLeaderboard, getReport, type LeaderboardEntry } from "../api";
 import {
   computeFallbackInsights,
@@ -13,8 +14,13 @@ import {
 } from "../insights";
 import type { RunReport, SurvivalPoint } from "../types";
 import { OUTCOME_LABELS } from "../types";
-import { CATEGORICAL, OUTCOME_COLOR, scoreColor } from "../theme";
-import { SurvivalStepChart, timeAgo } from "./StatsPanel";
+import {
+  OUTCOME_COLOR,
+  scoreColor,
+  SERIES_BASELINE,
+  SERIES_CURRENT,
+} from "../theme";
+import { StatTile, SurvivalStepChart, timeAgo } from "./StatsPanel";
 
 interface Props {
   baseReport: RunReport; // "this run" (the report the user came from)
@@ -95,63 +101,77 @@ export function CompareView({ baseReport, onBack }: Props) {
   }
 
   return (
-    <div className="report cmp">
-      <header className="report__head">
-        <div className="cmp__bar">
-          <button className="btn btn--ghost btn--sm" onClick={onBack}>
-            ← Back to report
+    <motion.div
+      className="mx-auto max-w-3xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="flex items-center gap-6 mb-10">
+        <button
+          type="button"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          onClick={onBack}
+        >
+          ← Back to the report
+        </button>
+        {other && (
+          <button
+            type="button"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => setOther(null)}
+          >
+            compare with a different run →
           </button>
-          {other && (
-            <button
-              className="btn btn--ghost btn--sm"
-              onClick={() => setOther(null)}
-            >
-              ⇄ Compare with a different run
-            </button>
-          )}
-        </div>
-        <div>
-          <h2 className="report__section">Compare runs</h2>
-          <p className="report__section-sub">
-            Before/after for “{baseReport.task}” — did the fixes actually save
-            anyone?
-          </p>
-        </div>
+        )}
+      </div>
+
+      <header>
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+          Compare runs
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Before/after for “{baseReport.task}” — did the fixes actually save
+          anyone?
+        </p>
       </header>
 
       {!other ? (
-        <div className="chart cmp__picker">
-          <div className="chart__title">
-            Compare with another run
-            <span className="chart__sub">
-              pick the baseline to measure this run against
-            </span>
+        <section className="border-t border-border mt-10 pt-10">
+          <div className="mb-5">
+            <h2 className="text-lg font-semibold">Pick the baseline</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              The run you pick reads as “before”; this run is “after”.
+            </p>
           </div>
-          {listError && <div className="launch__error">⚠ {listError}</div>}
+          {listError && <p className="text-sm text-fail">{listError}</p>}
           {candidates === null && !listError && (
-            <p className="report__empty">Loading runs…</p>
+            <p className="text-sm text-muted-foreground">Loading runs…</p>
           )}
           {candidates !== null && candidates.length === 0 && (
-            <p className="report__empty">
+            <p className="text-sm text-muted-foreground">
               No other finished runs on this server yet — run another
               simulation first.
             </p>
           )}
           {candidates !== null && candidates.length > 0 && (
-            <div className="cmp__list">
+            <div className="flex flex-col gap-2">
               {candidates.map((c) => (
                 <button
+                  type="button"
                   key={c.run_id}
-                  className="cmp__cand"
+                  className="px-4 py-3 rounded-xl border border-border text-left hover:bg-hover transition-colors disabled:opacity-40 flex flex-wrap items-baseline gap-x-3 gap-y-1 min-w-0"
                   onClick={() => pick(c.run_id)}
                   disabled={loadingId !== null}
                   title={c.task}
                 >
-                  <span className="cmp__cand-domain">
+                  <span className="text-sm font-medium">
                     {domainOf(c.target_url)}
                   </span>
-                  <span className="cmp__cand-task">{c.task}</span>
-                  <span className="cmp__cand-meta">
+                  <span className="text-xs text-muted-foreground truncate">
+                    {c.task}
+                  </span>
+                  <span className="ml-auto font-mono text-[11px] text-muted-foreground whitespace-nowrap tabular-nums">
                     {c.ghostpanel_score != null && (
                       <b style={{ color: scoreColor(c.ghostpanel_score) }}>
                         {c.ghostpanel_score}
@@ -167,44 +187,40 @@ export function CompareView({ baseReport, onBack }: Props) {
               ))}
             </div>
           )}
-          {loadError && <div className="launch__error">⚠ {loadError}</div>}
-        </div>
+          {loadError && <p className="text-sm text-fail mt-4">{loadError}</p>}
+        </section>
       ) : (
         <SideBySide
           before={other}
           after={{ report: baseReport, insights: baseInsights }}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
 
 // ---------------------------------------------------------------------------
 // The actual side-by-side
 // ---------------------------------------------------------------------------
-function ScoreHero({
-  tag,
-  run,
-}: {
-  tag: string;
-  run: LoadedRun;
-}) {
+function ScoreHero({ tag, run }: { tag: string; run: LoadedRun }) {
   return (
-    <div className="insights__score">
-      <div className="insights__score-label">{tag} · Simulation Score</div>
-      <div
-        className="insights__score-num"
+    <div className="min-w-0">
+      <p className="font-mono text-[11px] text-muted-foreground">
+        {tag} · simulation score
+      </p>
+      <p
+        className="text-5xl font-semibold tracking-tight tabular-nums leading-none mt-2"
         style={{ color: scoreColor(run.insights.ghostpanel_score) }}
       >
         {run.insights.ghostpanel_score}
-        <span className="insights__score-denom">/100</span>
-      </div>
-      <div className="insights__score-sub">
+        <span className="text-xl text-muted-foreground font-normal">/100</span>
+      </p>
+      <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
         {domainOf(run.report.target_url)}
         {run.report.generated_at && <> · {timeAgo(run.report.generated_at)}</>}
         <br />
         {run.insights.summary}
-      </div>
+      </p>
     </div>
   );
 }
@@ -234,87 +250,87 @@ function SideBySide({ before, after }: { before: LoadedRun; after: LoadedRun }) 
 
   return (
     <>
-      <div className="cmp__heroes">
-        <ScoreHero tag="Before" run={before} />
-        <div
-          className={`cmp__delta ${
-            dScore > 0 ? "cmp__delta--up" : dScore < 0 ? "cmp__delta--down" : ""
-          }`}
-          title="Simulation Score change, before → after"
-        >
-          <span className="cmp__delta-arrow" aria-hidden="true">
-            {dScore > 0 ? "▲" : dScore < 0 ? "▼" : "＝"}
-          </span>
-          <span className="cmp__delta-num">
-            {dScore > 0 ? `+${dScore}` : dScore}
-          </span>
-          <span className="cmp__delta-lbl">score Δ</span>
+      <section className="border-t border-border mt-10 pt-10">
+        <div className="grid sm:grid-cols-[1fr_auto_1fr] items-start gap-8">
+          <ScoreHero tag="before" run={before} />
+          <div
+            className="self-center text-center"
+            title="Simulation Score change, before → after"
+          >
+            <p
+              className="text-2xl font-semibold tabular-nums"
+              style={{
+                color:
+                  dScore > 0
+                    ? "var(--ok)"
+                    : dScore < 0
+                      ? "var(--fail)"
+                      : undefined,
+              }}
+            >
+              {dScore > 0 ? `+${dScore}` : dScore}
+            </p>
+            <p className="font-mono text-[11px] text-muted-foreground mt-0.5">
+              score Δ
+            </p>
+          </div>
+          <ScoreHero tag="after" run={after} />
         </div>
-        <ScoreHero tag="After" run={after} />
-      </div>
+      </section>
 
-      <div className="statrow">
-        <div className="stat stat--tile">
-          <div
-            className="stat__num"
-            style={{
-              color:
-                dCompletion > 0
-                  ? OUTCOME_COLOR.success
-                  : dCompletion < 0
+      <section className="border-t border-border mt-12 pt-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-6">
+          <StatTile
+            label="completion Δ"
+            value={`${dCompletion > 0 ? `+${dCompletion}` : dCompletion}pp`}
+            color={
+              dCompletion > 0
+                ? OUTCOME_COLOR.success
+                : dCompletion < 0
                   ? OUTCOME_COLOR.stuck
-                  : undefined,
-            }}
-          >
-            {dCompletion > 0 ? `+${dCompletion}` : dCompletion}pp
-          </div>
-          <div className="stat__lbl">completion Δ</div>
-        </div>
-        <div className="stat stat--tile">
-          <div
-            className="stat__num"
-            style={{
-              // Fewer findings is the improvement.
-              color:
-                dFindings < 0
-                  ? OUTCOME_COLOR.success
-                  : dFindings > 0
+                  : undefined
+            }
+          />
+          <StatTile
+            label="accessibility findings Δ"
+            value={String(dFindings > 0 ? `+${dFindings}` : dFindings)}
+            // Fewer findings is the improvement.
+            color={
+              dFindings < 0
+                ? OUTCOME_COLOR.success
+                : dFindings > 0
                   ? OUTCOME_COLOR.stuck
-                  : undefined,
-            }}
-          >
-            {dFindings > 0 ? `+${dFindings}` : dFindings}
-          </div>
-          <div className="stat__lbl">accessibility findings Δ</div>
+                  : undefined
+            }
+          />
+          <StatTile
+            label="findings before → after"
+            value={`${before.insights.wcag_findings.length} → ${after.insights.wcag_findings.length}`}
+          />
         </div>
-        <div className="stat stat--tile">
-          <div className="stat__num">
-            {before.insights.wcag_findings.length} →{" "}
-            {after.insights.wcag_findings.length}
-          </div>
-          <div className="stat__lbl">findings before → after</div>
-        </div>
-      </div>
+      </section>
 
       {(beforeSeries.length > 0 || afterSeries.length > 0) && (
-        <SurvivalStepChart
-          title="Survival curves, overlaid"
-          sub="personas still in the flow at each step — before vs after"
-          series={[
-            { label: "before", color: CATEGORICAL[0], points: beforeSeries },
-            { label: "after", color: CATEGORICAL[1], points: afterSeries },
-          ]}
-        />
+        <section className="border-t border-border mt-12 pt-10">
+          <SurvivalStepChart
+            title="Survival curves, overlaid"
+            sub="personas still in the flow at each step — before vs after"
+            series={[
+              { label: "before", color: SERIES_BASELINE, points: beforeSeries },
+              { label: "after", color: SERIES_CURRENT, points: afterSeries },
+            ]}
+          />
+        </section>
       )}
 
-      <div className="chart">
-        <div className="chart__title">
-          Per-persona outcomes
-          <span className="chart__sub">
-            green rows are personas the changes brought back to life
-          </span>
+      <section className="border-t border-border mt-12 pt-10">
+        <div className="mb-5">
+          <h2 className="text-lg font-semibold">Per-persona outcomes</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            “saved” marks personas the changes brought back to life.
+          </p>
         </div>
-        <div className="cmp__pairs">
+        <div className="flex flex-col">
           {ids.map((id) => {
             const b = beforeById.get(id);
             const a = after.report.survival.find((s) => s.persona_id === id);
@@ -325,35 +341,38 @@ function SideBySide({ before, after }: { before: LoadedRun; after: LoadedRun }) 
             return (
               <div
                 key={id}
-                className={`cmp__pair ${gain ? "cmp__pair--gain" : ""} ${
-                  loss ? "cmp__pair--loss" : ""
-                }`}
+                className="grid grid-cols-[minmax(110px,160px)_1fr_auto_1fr_auto] items-baseline gap-3 py-2.5 border-b border-border last:border-b-0 max-sm:grid-cols-[1fr_auto_1fr_auto]"
               >
-                <span className="cmp__pair-name">
+                <span className="text-sm font-medium truncate max-sm:col-span-4">
                   {a?.persona_name || b?.persona_name || id}
                 </span>
                 <span
-                  className="cmp__pair-outcome"
+                  className="font-mono text-[11px] whitespace-nowrap"
                   style={b ? { color: OUTCOME_COLOR[b.outcome] } : undefined}
                 >
                   {b ? OUTCOME_LABELS[b.outcome] : "not in run"}
                 </span>
-                <span className="cmp__pair-arrow" aria-hidden="true">
+                <span
+                  className="font-mono text-[11px] text-muted-foreground"
+                  aria-hidden="true"
+                >
                   →
                 </span>
                 <span
-                  className="cmp__pair-outcome"
+                  className="font-mono text-[11px] whitespace-nowrap"
                   style={a ? { color: OUTCOME_COLOR[a.outcome] } : undefined}
                 >
                   {a ? OUTCOME_LABELS[a.outcome] : "not in run"}
                 </span>
-                {gain && <span className="cmp__pair-tag">saved</span>}
-                {loss && <span className="cmp__pair-tag cmp__pair-tag--loss">regressed</span>}
+                <span className="font-mono text-[11px] whitespace-nowrap justify-self-end">
+                  {gain && <span className="text-ok">saved</span>}
+                  {loss && <span className="text-fail">regressed</span>}
+                </span>
               </div>
             );
           })}
         </div>
-      </div>
+      </section>
     </>
   );
 }

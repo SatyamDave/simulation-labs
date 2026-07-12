@@ -124,3 +124,13 @@ def test_websocket_replays_events(client, target_url):
 
 def test_report_404_for_unknown_run(client):
     assert client.get("/runs/nope/report").status_code == 404
+
+
+def test_get_personas_returns_full_roster(client):
+    resp = client.get("/personas")
+    assert resp.status_code == 200
+    roster = resp.json()
+    assert isinstance(roster, list) and len(roster) >= 6
+    ids = [p["id"] for p in roster]
+    assert len(ids) == len(set(ids))
+    assert all("name" in p for p in roster)

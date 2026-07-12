@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import type { PersonaResult, RunReport, Viewport } from "../types";
 import { OUTCOME_LABELS } from "../types";
 import { API_BASE, artifactUrl } from "../api";
-import { OUTCOME_COLOR, scoreColor } from "../theme";
+import { OUTCOME_TEXT_CLASS, scoreColor } from "../theme";
 import {
   computeFallbackInsights,
   fetchInsights,
@@ -25,6 +26,15 @@ interface Props {
   onBack?: () => void;
   // Server-backed report screens offer "Compare with another run".
   onCompare?: () => void;
+}
+
+function SectionHeading({ title, sub }: { title: string; sub?: string }) {
+  return (
+    <div className="mb-5">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      {sub && <p className="text-sm text-muted-foreground mt-1">{sub}</p>}
+    </div>
+  );
 }
 
 export function ReportView({ report, coordSpace, live, onBack, onCompare }: Props) {
@@ -54,10 +64,7 @@ export function ReportView({ report, coordSpace, live, onBack, onCompare }: Prop
   }, [live, report.run_id]);
   // Server copy may predate the additive meta/stats/survival_series keys —
   // fill anything missing from the report so the dashboard always renders.
-  const insights = withDerivedStats(
-    serverInsights ?? fallbackInsights,
-    report
-  );
+  const insights = withDerivedStats(serverInsights ?? fallbackInsights, report);
 
   const liveBackdrop = live
     ? `${API_BASE}/artifacts/${report.run_id}/target.png`
@@ -74,187 +81,226 @@ export function ReportView({ report, coordSpace, live, onBack, onCompare }: Prop
   });
 
   return (
-    <div className="report">
-      <header className="report__head">
-        {(onBack || onCompare) && (
-          <div className="report__nav">
-            {onBack && (
-              <button className="btn btn--ghost btn--sm" onClick={onBack}>
-                ← Back to grid
-              </button>
-            )}
-            {onCompare && (
-              <button className="btn btn--ghost btn--sm" onClick={onCompare}>
-                ⇄ Compare with another run
-              </button>
-            )}
-          </div>
-        )}
-        <div className="report__headline">
-          <div className="report__pct" style={{ color: pct > 50 ? OUTCOME_COLOR.success : OUTCOME_COLOR.stuck }}>
-            {pct}%
-          </div>
-          <div className="report__headline-text">
-            <div className="report__headline-main">
-              {survived} of {total} personas completed “{report.task}”
-            </div>
-            <div className="report__headline-sub">
-              {total - survived} abandoned the flow. Here is exactly where, and
-              why.
-            </div>
-            <div className="report__url">{report.target_url}</div>
-          </div>
+    <motion.div
+      className="mx-auto max-w-3xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+    >
+      {(onBack || onCompare) && (
+        <div className="flex items-center gap-6 mb-10">
+          {onBack && (
+            <button
+              type="button"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              onClick={onBack}
+            >
+              ← Back to the grid
+            </button>
+          )}
+          {onCompare && (
+            <button
+              type="button"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              onClick={onCompare}
+              title="Before/after: overlay this run against another run on this server"
+            >
+              compare with another run →
+            </button>
+          )}
         </div>
+      )}
+
+      <header>
+        <p
+          className={`text-6xl md:text-7xl font-semibold tracking-tight tabular-nums leading-none ${
+            pct > 50 ? "text-ok" : "text-fail"
+          }`}
+        >
+          {pct}%
+        </p>
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mt-6">
+          <span className="tabular-nums">
+            {survived} of {total}
+          </span>{" "}
+          personas completed “{report.task}”
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          <span className="tabular-nums">{total - survived}</span> abandoned
+          the flow. Here is exactly where, and why.
+        </p>
+        <p className="font-mono text-xs text-muted-foreground mt-3 break-all">
+          {report.target_url}
+        </p>
       </header>
 
-      {live && <PolicyPanel />}
+      {live && (
+        <div className="mt-8">
+          <PolicyPanel />
+        </div>
+      )}
 
-      <InsightsPanel insights={insights} />
+      {insights.agent_readiness && (
+        <AgentReadinessLine agent={insights.agent_readiness} />
+      )}
 
-      <StatsPanel insights={insights} />
+      <section className="border-t border-border mt-10 pt-10">
+        <SectionHeading
+          title="Simulation score"
+          sub="Composite survival score for this flow, 0–100."
+        />
+        <p className="flex items-baseline gap-3">
+          <span
+            className="text-5xl font-semibold tracking-tight tabular-nums leading-none"
+            style={{ color: scoreColor(insights.ghostpanel_score) }}
+          >
+            {insights.ghostpanel_score}
+            <span className="text-xl text-muted-foreground font-normal">
+              /100
+            </span>
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {insights.summary}
+          </span>
+        </p>
+        <WcagEvidence findings={insights.wcag_findings} />
+      </section>
 
-      <div className="report__charts">
+      <section className="border-t border-border mt-12 pt-10">
+        <SectionHeading
+          title="Run statistics"
+          sub="Effort and friction signals across the whole swarm."
+        />
+        <StatsPanel insights={insights} />
+      </section>
+
+      <section className="border-t border-border mt-12 pt-10">
+        <SectionHeading
+          title="Per-persona outcome"
+          sub="How far each persona got before finishing or giving up."
+        />
         <SurvivalCurve survival={report.survival} />
+      </section>
+
+      <section className="border-t border-border mt-12 pt-10">
+        <SectionHeading
+          title="Where they gave up"
+          sub="Abandonment points on your actual page."
+        />
         <Heatmap
           points={report.heatmap_points}
           liveBackdrop={liveBackdrop}
           coordSpace={coordSpace}
         />
-      </div>
+      </section>
 
-      <h2 className="report__section">Exit interviews & video receipts</h2>
-      <p className="report__section-sub">
-        Grounded in each persona's real action trace — video, cloned-voice
-        interview, and the moment they quit.
-      </p>
-      <div className="report__results">
-        {results.map((r) => (
-          <ResultCard key={r.persona_id} result={r} name={nameOf(r.persona_id)} />
-        ))}
-        {results.length === 0 && (
-          <p className="report__empty">No per-persona receipts in this report.</p>
-        )}
-      </div>
+      <section className="border-t border-border mt-12 pt-10">
+        <SectionHeading
+          title="Exit interviews"
+          sub="Grounded in each persona's real action trace — video, cloned-voice interview, and the moment they quit."
+        />
+        <div className="grid sm:grid-cols-2 gap-4">
+          {results.map((r) => (
+            <ResultCard
+              key={r.persona_id}
+              result={r}
+              name={nameOf(r.persona_id)}
+            />
+          ))}
+          {results.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No per-persona receipts in this report.
+            </p>
+          )}
+        </div>
+      </section>
 
       <WhyItMatters />
-    </div>
+    </motion.div>
   );
 }
 
-// Report footer, small print: the market context in hard numbers, with the
-// source named inline for each claim.
-function WhyItMatters() {
-  return (
-    <details className="whyit">
-      <summary>Why this matters — the market in four numbers</summary>
-      <ul>
-        <li>
-          <b>2,019</b> US digital-accessibility lawsuits were filed in H1 2025
-          alone <span className="whyit__src">(UsableNet)</span>.
-        </li>
-        <li>
-          The <b>EU Accessibility Act</b> has been in force since June 2025 —
-          EN&nbsp;301&nbsp;549 conformity gives a legal presumption of
-          conformity <span className="whyit__src">(Directive (EU) 2019/882)</span>.
-        </li>
-        <li>
-          Prompt-based LLM personas reproduce real user actions at only{" "}
-          <b>11.86%</b> <span className="whyit__src">(arXiv 2503.20749)</span> —
-          Ghostpanel degrades the perception channel mechanically instead of
-          asking a model to roleplay.
-        </li>
-        <li>
-          Cloudflare's Agent Readiness Score scans what sites <i>declare</i>;
-          Ghostpanel measures what agents <b>survive</b>.
-        </li>
-      </ul>
-    </details>
-  );
-}
-
-function InsightsPanel({ insights }: { insights: RunInsights }) {
-  return (
-    <section className="insights">
-      <div className="insights__hero">
-        <div className="insights__score">
-          <div className="insights__score-label">Simulation Score</div>
-          <div
-            className="insights__score-num"
-            style={{ color: scoreColor(insights.ghostpanel_score) }}
-          >
-            {insights.ghostpanel_score}
-            <span className="insights__score-denom">/100</span>
-          </div>
-          <div className="insights__score-sub">{insights.summary}</div>
-        </div>
-        {insights.agent_readiness && (
-          <AgentReadinessStat agent={insights.agent_readiness} />
-        )}
-      </div>
-      <WcagEvidence findings={insights.wcag_findings} />
-    </section>
-  );
-}
-
-function AgentReadinessStat({ agent }: { agent: AgentReadiness }) {
+// One quiet verdict line: can a computer-use agent complete this flow at all?
+// Derived by insights.ts from the unimpaired "ai-agent" persona's outcome.
+function AgentReadinessLine({ agent }: { agent: AgentReadiness }) {
   const pass = agent.outcome === "success";
   return (
-    <div className={`verdict verdict--${pass ? "pass" : "fail"}`}>
-      <div className="verdict__seal">{pass ? "PASS" : "FAIL"}</div>
-      <div className="verdict__body">
-        <div className="verdict__label">Agent readiness</div>
-        <div className="verdict__head">Can an AI agent use your site?</div>
-        <div className="verdict__sub">
-          <b>
-            {agent.score}
-            /100
-          </b>{" "}
-          · {OUTCOME_LABELS[agent.outcome]} · {agent.steps} steps
-          {agent.note && <> — {agent.note}</>}
-        </div>
-      </div>
+    <div className="border-t border-border mt-10 pt-6 flex items-baseline gap-2.5">
+      <span
+        className={`w-1.5 h-1.5 rounded-full shrink-0 translate-y-[-1px] ${
+          pass ? "bg-ok" : "bg-fail"
+        }`}
+        aria-hidden="true"
+      />
+      <p className="text-sm leading-relaxed">
+        <span className="font-medium">
+          {pass
+            ? "An AI agent can complete this flow"
+            : "An AI agent cannot complete this flow"}
+        </span>{" "}
+        — {agent.note ||
+          `${OUTCOME_LABELS[agent.outcome].toLowerCase()} after ${
+            agent.steps
+          } steps.`}{" "}
+        <span className="font-mono text-xs text-muted-foreground whitespace-nowrap tabular-nums">
+          agent readiness {agent.score}/100
+        </span>
+      </p>
     </div>
   );
 }
 
 function WcagEvidence({ findings }: { findings: WcagFinding[] }) {
   return (
-    <div className="insights__wcag">
-      <h3 className="insights__wcag-title">Accessibility evidence</h3>
-      <p className="insights__wcag-caption">
+    <div className="mt-8">
+      <h3 className="text-sm font-medium">Accessibility evidence</h3>
+      <p className="text-xs text-muted-foreground mt-1 mb-3">
         Each row is evidenced by a video receipt and an exact failure pixel —
         WCAG 2.2 / EN 301 549 mapping.
       </p>
       {findings.length === 0 ? (
-        <div className="insights__wcag-clear">
-          ✓ No accessibility failures evidenced in this run.
-        </div>
+        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <span
+            className="w-1.5 h-1.5 rounded-full bg-ok shrink-0"
+            aria-hidden="true"
+          />
+          No accessibility failures evidenced in this run.
+        </p>
       ) : (
-        <div className="insights__wcag-scroll">
-          <table className="insights__table">
+        <div className="gp-table-scroll">
+          <table className="gp-table">
             <thead>
               <tr>
-                <th>Persona</th>
-                <th>WCAG 2.2 criterion</th>
-                <th>EN 301 549</th>
-                <th>Evidence</th>
+                <th>persona</th>
+                <th>wcag 2.2 criterion</th>
+                <th>en 301 549</th>
+                <th>evidence</th>
               </tr>
             </thead>
             <tbody>
               {findings.map((f, i) => (
                 <tr key={`${f.persona_id}-${f.criterion}-${i}`}>
-                  <td className="insights__td-persona">{f.persona_name}</td>
-                  <td className="insights__td-criterion">
-                    <span className="insights__crit">{f.criterion}</span>{" "}
-                    {f.name}
-                    <span className="insights__level">{f.level}</span>
+                  <td className="font-medium whitespace-nowrap">
+                    {f.persona_name}
                   </td>
-                  <td className="insights__td-en">{f.standard_ref}</td>
-                  <td className="insights__td-evidence">
+                  <td>
+                    <span className="font-mono text-xs tabular-nums">
+                      {f.criterion}
+                    </span>{" "}
+                    {f.name}{" "}
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {f.level}
+                    </span>
+                  </td>
+                  <td className="font-mono text-xs text-muted-foreground whitespace-nowrap tabular-nums">
+                    {f.standard_ref}
+                  </td>
+                  <td className="text-muted-foreground">
                     {f.evidence}
                     {f.failure_step != null && (
-                      <span className="insights__step">
-                        step {f.failure_step}
+                      <span className="font-mono text-[10px] whitespace-nowrap tabular-nums">
+                        {" "}
+                        · step {f.failure_step}
                       </span>
                     )}
                   </td>
@@ -268,86 +314,133 @@ function WcagEvidence({ findings }: { findings: WcagFinding[] }) {
   );
 }
 
-function ResultCard({ result, name }: { result: PersonaResult; name: string }) {
+// Report footer, small print: the market context in hard numbers, with the
+// source named inline for each claim.
+function WhyItMatters() {
+  return (
+    <details className="border-t border-border mt-12 pt-6 pb-2 group">
+      <summary className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer list-none">
+        Why this matters — the market in four numbers
+      </summary>
+      <ul className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground leading-relaxed list-disc pl-5">
+        <li>
+          <span className="font-medium text-foreground">2,019</span> US
+          digital-accessibility lawsuits were filed in H1 2025 alone{" "}
+          <span className="font-mono text-xs">(UsableNet)</span>.
+        </li>
+        <li>
+          The{" "}
+          <span className="font-medium text-foreground">
+            EU Accessibility Act
+          </span>{" "}
+          has been in force since June 2025 — EN&nbsp;301&nbsp;549 conformity
+          gives a legal presumption of conformity{" "}
+          <span className="font-mono text-xs">(Directive (EU) 2019/882)</span>.
+        </li>
+        <li>
+          Prompt-based LLM personas reproduce real user actions at only{" "}
+          <span className="font-medium text-foreground">11.86%</span>{" "}
+          <span className="font-mono text-xs">(arXiv 2503.20749)</span> —
+          Ghostpanel degrades the perception channel mechanically instead of
+          asking a model to roleplay.
+        </li>
+        <li>
+          Cloudflare's Agent Readiness Score scans what sites declare;
+          Ghostpanel measures what agents{" "}
+          <span className="font-medium text-foreground">survive</span>.
+        </li>
+      </ul>
+    </details>
+  );
+}
+
+function ResultCard({
+  result,
+  name,
+}: {
+  result: PersonaResult;
+  name: string;
+}) {
   const [videoOk, setVideoOk] = useState(true);
   const [audioOk, setAudioOk] = useState(true);
   const success = result.outcome === "success";
-  const color = OUTCOME_COLOR[result.outcome];
   const video = artifactUrl(result.video_path);
   const audio = artifactUrl(result.audio_path);
 
   return (
-    <article className="rcard" style={{ ["--accent" as string]: color }}>
-      <header className="rcard__head">
-        <span className="rcard__mark" style={{ background: color }}>
-          {success ? "✓" : "✕"}
+    <article className="rounded-xl border border-border bg-card flex flex-col overflow-hidden">
+      <header className="flex items-center gap-2 px-4 pt-3 pb-2 min-w-0">
+        <span
+          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+            success ? "bg-ok" : "bg-fail"
+          }`}
+          aria-hidden="true"
+        />
+        <span className="text-sm font-medium truncate">{name}</span>
+        <span
+          className={`ml-auto font-mono text-[11px] whitespace-nowrap tabular-nums ${OUTCOME_TEXT_CLASS[result.outcome]}`}
+        >
+          {success ? "survived" : "died"}
+          {result.failure_step != null && !success && (
+            <> · step {result.failure_step}</>
+          )}
+          {result.duration_s ? <> · {result.duration_s.toFixed(1)}s</> : null}
         </span>
-        <div className="rcard__id">
-          <div className="rcard__name">{name}</div>
-          <div className="rcard__outcome" style={{ color }}>
-            {OUTCOME_LABELS[result.outcome]}
-            {result.failure_step != null && !success && (
-              <> · gave up at step {result.failure_step}</>
-            )}
-            {result.duration_s ? (
-              <> · {result.duration_s.toFixed(1)}s</>
-            ) : null}
-          </div>
-        </div>
       </header>
 
-      {!success && result.failure_reason && (
-        <div className="rcard__reason">
-          <span className="rcard__reason-label">Why they quit</span>
-          {result.failure_reason}
-          {result.failure_coords && (
-            <span className="rcard__coords">
-              @ {result.failure_coords[0]},{result.failure_coords[1]}
-            </span>
-          )}
-        </div>
-      )}
+      <div className="flex flex-col gap-3 px-4 pb-4">
+        {!success && result.failure_reason && (
+          <p className="text-xs text-fail/80 leading-relaxed">
+            {OUTCOME_LABELS[result.outcome].toLowerCase()} — “
+            {result.failure_reason}”
+            {result.failure_coords && (
+              <span className="font-mono whitespace-nowrap tabular-nums">
+                {" "}
+                @ {result.failure_coords[0]},{result.failure_coords[1]}
+              </span>
+            )}
+          </p>
+        )}
 
-      <div className="rcard__body">
-        <div className="rcard__video">
-          {video && videoOk ? (
-            <video
-              controls
-              preload="metadata"
-              onError={() => setVideoOk(false)}
-              src={video}
-            />
-          ) : (
-            <div className="rcard__media-fallback">
-              🎬 Video receipt
-              <span>{video ? "unavailable (needs backend)" : "not recorded"}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="rcard__interview">
-          <div className="rcard__interview-label">
-            🎙 Exit interview{" "}
-            <span className="rcard__voice">in {name}'s cloned voice</span>
+        {video && videoOk ? (
+          <video
+            className="w-full rounded-lg border border-border bg-surface block aspect-[16/10]"
+            controls
+            preload="metadata"
+            onError={() => setVideoOk(false)}
+            src={video}
+          />
+        ) : (
+          <div className="rounded-lg border border-border bg-surface aspect-[16/10] flex items-center justify-center">
+            <p className="text-xs text-muted-foreground">
+              {video ? "Video needs the backend" : "No video recorded"}
+            </p>
           </div>
+        )}
+
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">
+            Exit interview — in {name}'s cloned voice
+          </p>
           {audio && audioOk ? (
             <audio
+              className="w-full mb-3"
               controls
               preload="none"
               onError={() => setAudioOk(false)}
               src={audio}
             />
           ) : (
-            <div className="rcard__audio-fallback">
-              🔇 Audio {audio ? "unavailable (needs backend)" : "not recorded"}
-            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              {audio ? "Audio needs the backend" : "No audio recorded"}
+            </p>
           )}
           {result.transcript ? (
-            <blockquote className="rcard__transcript">
+            <blockquote className="border-l-2 border-border pl-3 text-sm leading-relaxed">
               “{result.transcript}”
             </blockquote>
           ) : (
-            <p className="rcard__transcript rcard__transcript--empty">
+            <p className="border-l-2 border-border pl-3 text-sm text-muted-foreground">
               No transcript recorded.
             </p>
           )}

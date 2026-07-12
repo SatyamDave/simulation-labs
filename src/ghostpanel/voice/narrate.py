@@ -1,15 +1,19 @@
 """Turn a persona's real action trace into a first-person exit-interview line.
 
 `write_exit_interview` is the single entry point. WITH an Anthropic key it asks
-Claude for 1-3 first-person sentences grounded in the ordered step captions +
-outcome + failure_reason, in the persona's language. WITHOUT a key it falls back
-to a deterministic template that still references the actual captions/outcome, so
-tests and the demo never hard-fail on a missing key.
+Claude (Anthropic SDK) for 1-3 first-person sentences grounded in the ordered
+step captions + outcome + failure_reason, in the persona's language. WITHOUT a
+key, if ``ANTHROPIC_USE_CLAUDE_CLI`` is truthy it asks the locally-authenticated
+Claude Code CLI (``claude -p`` — subscription login, no API key needed) instead.
+Every path falls back to a deterministic template that still references the
+actual captions/outcome, so tests and the demo never hard-fail.
 """
 
 from __future__ import annotations
 
+import asyncio
 import os
+import shutil
 
 from ghostpanel_contracts import (
     PersonaConfig,
@@ -100,6 +104,40 @@ def _build_prompt(result: PersonaResult, persona: PersonaConfig) -> str:
     )
 
 
+def _cli_narration_enabled() -> bool:
+    return os.environ.get("ANTHROPIC_USE_CLAUDE_CLI", "").lower() in ("1", "true", "yes")
+
+
+async def _claude_cli_exit_interview(
+    result: PersonaResult, persona: PersonaConfig, timeout_s: float = 90.0
+) -> str | None:
+    """Ask the locally-authenticated Claude Code CLI (subscription login, no API
+    key) for the narration. Returns None on any failure so callers fall back."""
+    binary = shutil.which("claude")
+    if binary is None:
+        return None
+    model = os.environ.get("ANTHROPIC_MODEL") or _DEFAULT_MODEL
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            binary, "-p", _build_prompt(result, persona),
+            "--model", model, "--output-format", "text",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.DEVNULL,
+            stdin=asyncio.subprocess.DEVNULL,
+        )
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=timeout_s)
+    except (asyncio.TimeoutError, OSError):
+        try:
+            proc.kill()
+        except Exception:  # noqa: BLE001 - already gone
+            pass
+        return None
+    if proc.returncode != 0:
+        return None
+    text = stdout.decode("utf-8", errors="replace").strip()
+    return text or None
+
+
 async def write_exit_interview(
     result: PersonaResult,
     persona: PersonaConfig,
@@ -107,10 +145,15 @@ async def write_exit_interview(
 ) -> str:
     """Return a short first-person exit-interview line for this persona.
 
-    Uses Claude when ``anthropic_key`` is provided (falling back to the template
-    on any error), otherwise the deterministic template.
+    Uses Claude via the Anthropic SDK when ``anthropic_key`` is provided; with
+    no key and ``ANTHROPIC_USE_CLAUDE_CLI`` enabled, uses the Claude Code CLI's
+    subscription login. Every path falls back to the deterministic template.
     """
     if not anthropic_key:
+        if _cli_narration_enabled():
+            text = await _claude_cli_exit_interview(result, persona)
+            if text:
+                return text
         return template_exit_interview(result, persona)
 
     try:
