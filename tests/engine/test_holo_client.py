@@ -25,6 +25,11 @@ PNG = (FIXTURES / "sample_screenshot.png").read_bytes()
 SIZE = (640, 480)
 
 
+def norm(x: int, y: int) -> tuple[int, int]:
+    """Expected pixel coords for Holo's 0-1000-normalized output (live-verified)."""
+    return round(x * SIZE[0] / 1000), round(y * SIZE[1] / 1000)
+
+
 def test_png_size():
     assert png_size(PNG) == SIZE
     assert png_size(b"not a png") is None
@@ -32,12 +37,12 @@ def test_png_size():
 
 # --- localizer parsing ------------------------------------------------------
 def test_parse_click_text():
-    assert parse_click_response("Click(100, 200)", SIZE) == (100, 200)
-    assert parse_click_response("Sure! Click(12, 34).", SIZE) == (12, 34)
+    assert parse_click_response("Click(100, 200)", SIZE) == norm(100, 200)
+    assert parse_click_response("Sure! Click(12, 34).", SIZE) == norm(12, 34)
 
 
 def test_parse_click_json():
-    assert parse_click_response('{"action": "click", "x": 55, "y": 66}', SIZE) == (55, 66)
+    assert parse_click_response('{"action": "click", "x": 55, "y": 66}', SIZE) == norm(55, 66)
 
 
 def test_parse_click_normalized_rescaled():
@@ -72,11 +77,11 @@ def test_parse_navigation_json_every_action():
         assert action.caption
 
     click = parse_navigation_response(cases[0][0], SIZE)
-    assert (click.x, click.y) == (10, 20)
+    assert (click.x, click.y) == norm(10, 20)
     assert "Sign up" in click.caption
 
     write = parse_navigation_response(cases[1][0], SIZE)
-    assert write.text == "hello" and (write.x, write.y) == (5, 6)
+    assert write.text == "hello" and (write.x, write.y) == norm(5, 6)
 
     scroll = parse_navigation_response(cases[2][0], SIZE)
     assert scroll.direction is ScrollDirection.DOWN
@@ -96,7 +101,7 @@ def test_parse_navigation_cookbook_nested_shape():
            '"action": {"action": "click_element", "element": "Buy", "x": 100, "y": 150}}')
     action = parse_navigation_response(raw, SIZE)
     assert action.type is ActionType.CLICK
-    assert (action.x, action.y) == (100, 150)
+    assert (action.x, action.y) == norm(100, 150)
 
 
 def test_parse_navigation_json_in_code_fence():

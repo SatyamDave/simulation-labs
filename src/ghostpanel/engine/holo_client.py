@@ -42,6 +42,7 @@ from .prompts import NAVIGATION_SYSTEM_PROMPT, localization_prompt, navigation_p
 _PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 _DEFAULT_SIZE = (1280, 800)  # PersonaConfig's default viewport
 _MAX_RETRIES = 5
+_MAX_COMPLETION_TOKENS = 4096  # length-retry ceiling for the reasoning model
 
 
 def png_size(png_bytes: bytes) -> Optional[tuple[int, int]]:
@@ -166,12 +167,19 @@ def _caption_for(
 def _maybe_rescale(
     x: Optional[int], y: Optional[int], image_size: Optional[tuple[int, int]]
 ) -> tuple[Optional[int], Optional[int]]:
-    """Pass true-pixel coords through; rescale legacy normalized 0-1000 coords;
-    clamp the result inside the image."""
+    """Map Holo coordinates into true image pixels and clamp in-bounds.
+
+    Live probe (2026-07-12, holo3-1-35b-a3b, 1280x800 screenshot, ground truth
+    from Playwright bounding_box): the model returns 0-1000 NORMALIZED
+    coordinates — raw (426,536) vs button center (547,430); scaled by
+    (w/1000, h/1000) it lands within 2px. So any coordinate pair inside
+    [0, 1000]^2 is treated as normalized; genuine pixel coords beyond 1000
+    (large viewports) pass through untouched.
+    """
     if x is None or y is None or image_size is None:
         return x, y
     w, h = image_size
-    if (x > w or y > h) and 0 <= x <= 1000 and 0 <= y <= 1000:
+    if 0 <= x <= 1000 and 0 <= y <= 1000:
         x = round(x * w / 1000)
         y = round(y * h / 1000)
     return min(max(x, 0), w - 1), min(max(y, 0), h - 1)
@@ -375,7 +383,12 @@ class LiveHoloClient:
             limiter=cls._shared_limiter,
         )
 
-    async def _complete(self, messages: list[dict], max_tokens: int = 512) -> str:
+    async def _complete(self, messages: list[dict], max_tokens: int = 2048) -> str:
+        # Holo 3.1 is a REASONING model: it streams chain-of-thought into a
+        # non-standard `reasoning` field and only then emits `content`. A small
+        # max_tokens gets fully consumed by reasoning (finish_reason="length",
+        # content=None) — so budgets must be generous, one length-retry doubles
+        # the budget, and the reasoning text is the last-resort answer source.
         last_exc: Optional[Exception] = None
         for attempt in range(_MAX_RETRIES):
             await self.limiter.acquire()
@@ -386,7 +399,15 @@ class LiveHoloClient:
                     max_tokens=max_tokens,
                     temperature=0.0,
                 )
-                return resp.choices[0].message.content or ""
+                choice = resp.choices[0]
+                content = choice.message.content or ""
+                if content.strip():
+                    return content
+                if choice.finish_reason == "length" and max_tokens < _MAX_COMPLETION_TOKENS:
+                    max_tokens = _MAX_COMPLETION_TOKENS
+                    continue
+                reasoning = getattr(choice.message, "reasoning", None) or ""
+                return reasoning
             except (openai.RateLimitError, openai.APITimeoutError, openai.APIConnectionError) as exc:
                 last_exc = exc
                 await asyncio.sleep(min(30.0, 1.5 * 2**attempt) + random.uniform(0, 0.5))
@@ -400,7 +421,7 @@ class LiveHoloClient:
                 "content": [_image_part(image_png),
                             {"type": "text", "text": localization_prompt(instruction)}],
             }],
-            max_tokens=64,
+            max_tokens=1024,
         )
         return parse_click_response(raw, png_size(image_png))
 
