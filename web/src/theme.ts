@@ -1,19 +1,20 @@
-// Ghostpanel palette. Dark haunted surface. Colors are the validated dark-mode
-// steps from the dataviz reference palette (colorblind-safe, checked against a
-// dark surface). Outcomes use the reserved STATUS palette (state, not identity);
-// personas use the categorical palette (identity).
+// Simulation Labs palette. Refined enterprise-dark surface (Linear / Vercel /
+// Stripe register). Colors are the validated dark-mode steps from the dataviz
+// reference palette (colorblind-safe, checked against a dark surface). Outcomes
+// use the reserved STATUS palette (state, not identity); personas use the
+// categorical palette (identity).
 
 import type { PersonaConfig, PersonaOutcome, PerturbationKind } from "./types";
 
 // Surfaces / ink (dark mode)
-export const SURFACE = "#141416";
-export const SURFACE_RAISED = "#1a1a1f";
-export const PLANE = "#0b0b0e";
-export const INK = "#ffffff";
-export const INK_2 = "#c3c2b7";
-export const INK_MUTED = "#898781";
-export const HAIRLINE = "rgba(255,255,255,0.10)";
-export const GRID = "#2c2c2a";
+export const SURFACE = "#101218";
+export const SURFACE_RAISED = "#171a22";
+export const PLANE = "#090a0e";
+export const INK = "#f4f5f8";
+export const INK_2 = "#b3b8c4";
+export const INK_MUTED = "#757b8a";
+export const HAIRLINE = "rgba(255,255,255,0.08)";
+export const GRID = "#242833";
 
 // Categorical (identity) — dark-mode steps, fixed order, never cycled.
 export const CATEGORICAL = [
@@ -29,11 +30,11 @@ export const CATEGORICAL = [
 
 // Status (state) — reserved, never themed. Outcomes map here.
 export const STATUS = {
-  good: "#0ca30c",
+  good: "#22b364",
   warning: "#fab219",
   serious: "#ec835a",
-  critical: "#d03b3b",
-  neutral: "#898781",
+  critical: "#e5484d",
+  neutral: "#757b8a",
 } as const;
 
 // Outcome -> status color. success is the only "good" outcome.
@@ -45,9 +46,10 @@ export const OUTCOME_COLOR: Record<PersonaOutcome, string> = {
   error: STATUS.neutral,
 };
 
-// Ghost accents for the haunted theme
-export const GHOST = "#8be3ff";
-export const BLOOD = "#ff3b3b";
+// Brand accent (single, confident) + the reserved fail red used on the heatmap.
+export const ACCENT = "#7c8cff";
+export const GHOST = ACCENT; // retained export name; now the brand accent
+export const BLOOD = "#e5484d";
 
 export function personaColor(index: number): string {
   return CATEGORICAL[index % CATEGORICAL.length];

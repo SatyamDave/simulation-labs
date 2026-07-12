@@ -70,7 +70,7 @@ export function PersonaTile({ live, index, coordSpace }: Props) {
         }}
       />
       <div className="tile__scrim" />
-      {dead && <div className="tile__blood" />}
+      {dead && <div className="tile__fail-veil" />}
 
       {/* Failure marker */}
       {dead && marker && (
@@ -110,7 +110,7 @@ export function PersonaTile({ live, index, coordSpace }: Props) {
         {dead ? (
           <div className="tile__stamp">
             <div className="tile__stamp-title">
-              ☠ Gave up at step {failure?.stepsSurvived ?? step}
+              Abandoned · step {failure?.stepsSurvived ?? step}
             </div>
             <div className="tile__stamp-outcome">
               {OUTCOME_LABELS[failure?.outcome ?? "stuck"]}

@@ -8,14 +8,12 @@ from typing import Awaitable, Callable, Optional, Union
 # A success predicate takes the live page and returns (optionally awaitable) truthiness.
 SuccessPredicate = Callable[[object], Union[bool, Awaitable[bool]]]
 
-# Selectors a persona would read as "I'm done" if none is supplied by the caller.
-_DEFAULT_SUCCESS_SELECTORS = (
-    "#ok:visible",
-    "text=/thank you/i",
-    "text=/welcome/i",
-    "text=/success/i",
-    "text=/you're all set/i",
-)
+# When NO caller predicate is supplied, success is determined ONLY by the agent
+# emitting an `answer()` action (handled in the session loop) — NOT by scanning page
+# text. Generic markers like "welcome"/"success" false-positive constantly on real
+# content sites (e.g. "Welcome to Wikipedia"), so the default heuristic matches
+# nothing. Callers that know a page's success signal pass an explicit predicate.
+_DEFAULT_SUCCESS_SELECTORS: tuple[str, ...] = ()
 
 
 def is_stuck(history: list[str], window: int = 3) -> bool:

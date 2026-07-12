@@ -77,7 +77,7 @@ export function PersonaGrid({
       {reportReady && onSeeReport && (
         <div className="grid-cta">
           <button className="btn btn--primary btn--big" onClick={onSeeReport}>
-            Read the autopsy →
+            View the report →
           </button>
         </div>
       )}

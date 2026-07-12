@@ -81,7 +81,7 @@ export function OfflineDemo({ onExit }: Props) {
   }
 
   if (view === "loading" || !report) {
-    return <div className="offline-loading">Summoning the swarm…</div>;
+    return <div className="offline-loading">Loading simulation…</div>;
   }
 
   if (view === "report") {

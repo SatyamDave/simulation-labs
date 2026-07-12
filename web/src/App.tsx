@@ -61,6 +61,31 @@ export default function App() {
 
   return (
     <div className="app">
+      <div className="brandbar">
+        <svg
+          className="brandbar__mark"
+          viewBox="0 0 32 32"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect width="32" height="32" rx="8" fill="#12141c" />
+          <circle
+            cx="16"
+            cy="16"
+            r="9.5"
+            fill="none"
+            stroke="#7c8cff"
+            strokeWidth="2"
+            opacity="0.45"
+          />
+          <circle cx="16" cy="16" r="4" fill="#7c8cff" />
+        </svg>
+        <span className="brandbar__word">
+          Simulation <b>Labs</b>
+        </span>
+        <span className="brandbar__tag">Behavioral User Simulation</span>
+      </div>
+
       {mode === "launch" && (
         <LaunchForm
           onLaunch={handleLaunch}
@@ -93,11 +118,12 @@ export default function App() {
       )}
 
       {mode === "report" && report && (
-        <ReportView report={report} onBack={() => setMode("live")} />
+        <ReportView report={report} live onBack={() => setMode("live")} />
       )}
 
       <footer className="app__foot">
-        Ghostpanel · behavioral synthetic users · Holo × Gradium
+        <b>Simulation Labs</b> · Behavioral user simulation · Powered by
+        H&nbsp;Company Holo &amp; Gradium
       </footer>
     </div>
   );

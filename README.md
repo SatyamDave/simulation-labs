@@ -1,14 +1,20 @@
-# 👻 Ghostpanel
+# Simulation Labs — Behavioral User Simulation
 
-**Synthetic users that _do_, not say.** A swarm of [H Company **Holo**](https://hcompany.ai/holo-models-api)
-computer-use agents that attempt real tasks on your website — each one a persona whose
-perception and actuation are *mechanically* degraded (blur for low vision, coordinate noise
-for tremor, tight budgets for impatience) — and either finish or **abandon at a specific
-pixel**. You get a survival curve, an abandonment heatmap, video receipts, and **voice
-exit-interviews** ([Gradium](https://gradium.ai)) where each dead persona explains why it quit.
+**See who fails your site — before your users do.** Simulation Labs runs a swarm of
+[H Company **Holo**](https://hcompany.ai/holo-models-api) computer-use agents against **any live
+website**. Each agent is a persona whose perception and actuation are *mechanically* degraded
+(blur for low vision, coordinate noise for tremor, tight budgets for impatience) — it attempts a
+real task (sign up, check out, cancel) and either completes it or **abandons at a specific pixel**.
+You get a survival curve, an abandonment heatmap over your real page, an **agent-readiness verdict**,
+video receipts, and **cloned-voice exit-interviews** ([Gradium](https://gradium.ai)) where each
+persona explains why it gave up — grounded in its actual action trace.
+
+Behavioral user research that *does*, not *says*. The internal engine/codebase is named
+`ghostpanel` (the Python package); the product/company is **Simulation Labs**.
 
 > Built at H Company's Computer Use Hackathon (SF, Jul 2026). Track 2 — Browser Use.
-> Read **[VISION.md](VISION.md)** for the pitch and **[CLAUDE.md](CLAUDE.md)** for the architecture.
+> Read **[DEMO_PLAYBOOK.md](DEMO_PLAYBOOK.md)** to run it, **[VISION.md](VISION.md)** for the
+> pitch, and **[CLAUDE.md](CLAUDE.md)** for the architecture.
 
 ---
 

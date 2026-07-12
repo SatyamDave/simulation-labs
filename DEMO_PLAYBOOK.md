@@ -1,6 +1,7 @@
-# Ghostpanel — Demo Playbook
+# Simulation Labs — Demo Playbook
 
-Everything you need to run the product and win the 90 seconds on stage. Judging is
+Everything you need to run the product and win the 90 seconds on stage.
+(Company/product: **Simulation Labs**. Internal Python package: `ghostpanel`.) Judging is
 5×20 (Technicality, Creativity, Usefulness, Demo, Sponsor alignment) — this doc is
 aimed at the **Demo (20)** + **Sponsor alignment (20)** points.
 
@@ -26,9 +27,16 @@ cp .env.example .env                                      # fill in keys (see be
 ```bash
 python -m ghostpanel.server.main          # http://127.0.0.1:8000  (serves API + built frontend)
 ```
-Open **http://127.0.0.1:8000/** → enter a target URL + task → pick personas → **Unleash the swarm**.
-Local torture-test target (always works, no network): serve the bundled hostile form in a second shell —
+Open **http://127.0.0.1:8000/** → enter a target URL + task → pick personas → **Run simulation**.
+It works on **any live website** (the launch form ships example chips for real signup flows). For a
+guaranteed-offline torture-test target, serve the bundled hostile form in a second shell —
 `python -m http.server 8137` → use `http://localhost:8137/fixtures/hostile_form.html`.
+
+**Real websites — ethics + reliability:** demo with read-only or "start the flow" tasks (e.g.
+"find the pricing page", "begin signup and reach the verification step"). Do **not** actually submit
+accounts/payments on third-party sites — it's the honest thing to do and it's the NemoClaw
+policy-sandbox story (agents can browse but never submit). Some sites have anti-bot/CAPTCHA that can
+block any agent; the bundled hostile form is the reliable fallback.
 
 ## ⚠️ The rate-limit reality (plan the live demo around this)
 
@@ -58,7 +66,7 @@ live run as the "it's real" proof.**
 **Demo (drive this):**
 1. Landing page → "Point it at any website." Pick the 6 personas (call out the badges: 👁️ low
    vision, ✋ tremor, ⏱️ impatient, and one plain **AI agent** — "is your site even agent-ready?").
-2. Hit **Unleash the swarm** (or Offline demo). **The grid is the moment** — 6 tiles, each showing
+2. Hit **Run simulation** (or Offline demo). **The grid is the moment** — 6 tiles, each showing
    the page *through that persona's eyes*: the low-vision tile is visibly blurred vs the crisp
    baseline. Captions tick: "Tapping through the cookie wall"… "Clicking 'Explore plans' again"…
 3. Personas start dying — tiles **freeze red** with a marker at the failure pixel and "gave up at

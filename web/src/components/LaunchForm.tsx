@@ -15,9 +15,37 @@ interface Props {
   error?: string | null;
 }
 
+// Real, public target examples plus the bundled hostile form (the torture test).
+// Selecting a chip fills the URL and a matching task.
+const EXAMPLES: {
+  label: string;
+  url: string;
+  task: string;
+  torture?: boolean;
+}[] = [
+  {
+    label: "GitHub signup",
+    url: "https://github.com/signup",
+    task: "Create a new account and reach the verification step.",
+  },
+  {
+    label: "Stripe register",
+    url: "https://dashboard.stripe.com/register",
+    task: "Create an account and start the setup.",
+  },
+  {
+    label: "Hostile form",
+    url: "http://localhost:8137/fixtures/hostile_form.html",
+    task: "Create an account and submit the sign-up form.",
+    torture: true,
+  },
+];
+
 export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
-  const [url, setUrl] = useState("https://example.com/signup");
-  const [task, setTask] = useState("Create an account and start the free trial.");
+  const [url, setUrl] = useState("https://github.com/signup");
+  const [task, setTask] = useState(
+    "Create a new account and reach the verification step."
+  );
   const [selected, setSelected] = useState<string[]>(
     PERSONA_CATALOG.map((p) => p.id)
   );
@@ -33,16 +61,17 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
   return (
     <div className="launch">
       <div className="launch__hero">
-        <div className="launch__ghost" aria-hidden="true">
-          👻
-        </div>
+        <span className="launch__eyebrow">
+          <span className="launch__eyebrow-dot" /> Simulation Labs
+        </span>
         <h1 className="launch__title">
-          Ghost<span>panel</span>
+          See who fails your site — <span>before your users do.</span>
         </h1>
         <p className="launch__tag">
-          Synthetic users that <em>do</em>, not <em>say</em>. Point the swarm at
-          your site and watch who survives — and who freezes red at the pixel
-          they give up.
+          A swarm of computer-use agents (H&nbsp;Company Holo) with{" "}
+          <em>mechanically degraded</em> perception and actuation attempts real
+          tasks on any live site — and reports the exact point where real users
+          give up.
         </p>
       </div>
 
@@ -54,18 +83,39 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
             onLaunch({ target_url: url.trim(), task: task.trim(), persona_ids: selected });
         }}
       >
-        <label className="field">
+        <div className="field">
           <span className="field__label">Target URL</span>
           <input
             className="field__input"
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://your-site.com/signup"
+            placeholder="https://github.com/signup"
             autoComplete="off"
             spellCheck={false}
           />
-        </label>
+          <div className="examples">
+            {EXAMPLES.map((ex) => (
+              <button
+                type="button"
+                key={ex.url}
+                className={`example-chip ${
+                  ex.torture ? "example-chip--torture" : ""
+                }`}
+                onClick={() => {
+                  setUrl(ex.url);
+                  setTask(ex.task);
+                }}
+                title={ex.url}
+              >
+                {ex.label}
+                {ex.torture && (
+                  <span className="example-chip__tag">torture test</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <label className="field">
           <span className="field__label">Task</span>
@@ -74,15 +124,15 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
             type="text"
             value={task}
             onChange={(e) => setTask(e.target.value)}
-            placeholder="Create an account and start the free trial."
+            placeholder="Create a new account and reach the verification step."
           />
         </label>
 
         <div className="field">
           <span className="field__label">
-            The swarm{" "}
+            The panel{" "}
             <span className="field__hint">
-              {selected.length}/{PERSONA_CATALOG.length} summoned
+              {selected.length}/{PERSONA_CATALOG.length} selected
             </span>
           </span>
           <div className="persona-picker">
@@ -109,11 +159,17 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
                             {b.icon}
                           </span>
                         ))
-                      : <span className="persona-chip__clean" title="No impairment">✦</span>}
+                      : <span className="persona-chip__clean" title="No perturbation — baseline">◆</span>}
                   </span>
                 </button>
               );
             })}
+          </div>
+          <div className="launch__fidelity">
+            <span><b>Mechanical fidelity, not roleplay:</b></span>
+            <span>blur = low vision</span>
+            <span>coordinate noise = tremor</span>
+            <span>tight budgets = impatience</span>
           </div>
         </div>
 
@@ -125,7 +181,7 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
             className="btn btn--primary btn--big"
             disabled={!canLaunch}
           >
-            {busy ? "Summoning…" : "Unleash the swarm 👻"}
+            {busy ? "Starting simulation…" : "Run simulation"}
           </button>
           <button
             type="button"
@@ -136,8 +192,9 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
           </button>
         </div>
         <p className="launch__note">
-          No backend? The <strong>Offline demo</strong> replays a canned run from
-          local fixtures — fully self-contained.
+          Works on any live URL — public sites, staging, or the bundled hostile
+          form. No backend? The <strong>Offline demo</strong> replays a full run
+          from local fixtures — completely self-contained.
         </p>
       </form>
     </div>

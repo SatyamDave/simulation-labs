@@ -144,6 +144,10 @@ class SwarmManager:
                 )
             )
 
+            # Best-effort clean screenshot of the target (1280x800) so the report can
+            # overlay the abandonment heatmap on the REAL page. Never breaks the run.
+            await self._capture_target(run_id, target_url)
+
             predicate = self.predicate_factory(target_url)
             results: list[PersonaResult] = await asyncio.gather(
                 *(
@@ -188,6 +192,32 @@ class SwarmManager:
             except Exception:  # noqa: BLE001
                 pass
             raise
+
+    async def _capture_target(self, run_id: str, target_url: str) -> None:
+        """Open the target in a fresh context and save a clean 1280x800 screenshot to
+        ``<artifact_dir>/<run_id>/target.png`` for the report heatmap overlay. Purely
+        best-effort — any failure (bad URL, launch_browser=False in tests) is swallowed."""
+        if self.browser is None:
+            return
+        context = None
+        try:
+            run_dir = self.artifact_dir / run_id
+            run_dir.mkdir(parents=True, exist_ok=True)
+            context = await self.browser.new_context(
+                viewport={"width": 1280, "height": 800}
+            )
+            page = await context.new_page()
+            await page.goto(target_url, wait_until="domcontentloaded", timeout=20000)
+            await page.wait_for_timeout(600)
+            await page.screenshot(path=str(run_dir / "target.png"))
+        except Exception:  # noqa: BLE001
+            pass
+        finally:
+            if context is not None:
+                try:
+                    await context.close()
+                except Exception:  # noqa: BLE001
+                    pass
 
     async def _run_one(
         self,

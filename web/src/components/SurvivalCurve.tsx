@@ -49,7 +49,7 @@ export function SurvivalCurve({ survival }: Props) {
                   </span>
                 ) : (
                   <span className="survival__skull" title="Abandoned">
-                    ☠
+                    ✕
                   </span>
                 )}
                 {r.persona_name || r.persona_id}

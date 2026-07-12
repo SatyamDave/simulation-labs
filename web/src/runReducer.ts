@@ -41,7 +41,7 @@ export function reduceEvent(
         personas[p.id] = {
           persona: p,
           status: "pending",
-          lastCaption: "Waiting to be unleashed…",
+          lastCaption: "Queued…",
           lastThumb: "",
           step: 0,
         };

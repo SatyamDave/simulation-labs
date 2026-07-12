@@ -1,21 +1,32 @@
+import { useState } from "react";
 import type { HeatPoint, Viewport } from "../types";
 import { BLOOD } from "../theme";
 
 const BASE = import.meta.env.BASE_URL || "/";
 const SAMPLE = `${BASE}fixtures/sample_screenshot.png`;
 
+// Live runs use a 1280x800 viewport; the backend saves the real target
+// screenshot at that size. The bundled sample is 640x480.
+const LIVE_SPACE: Viewport = { width: 1280, height: 800 };
+const SAMPLE_SPACE: Viewport = { width: 640, height: 480 };
+
 interface Props {
   points: HeatPoint[];
-  // Backdrop screenshot; defaults to the bundled sample. The RunReport does not
-  // carry a target screenshot, so the sample stands in unless one is provided.
-  backdrop?: string;
-  // Pixel space the point coords live in. Offline coords fit the 640x480 sample.
+  // Live target screenshot URL (${API_BASE}/artifacts/${run_id}/target.png).
+  // When present, it is the primary backdrop and coords are treated as 1280x800.
+  // If it fails to load, we fall back to the bundled sample at 640x480.
+  liveBackdrop?: string;
+  // Pixel space the point coords live in when NOT using the live backdrop
+  // (offline demo authors coords against the 640x480 sample).
   coordSpace?: Viewport;
 }
 
-export function Heatmap({ points, backdrop, coordSpace }: Props) {
-  const space = coordSpace ?? { width: 640, height: 480 };
-  const img = backdrop || SAMPLE;
+export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
+  const [liveFailed, setLiveFailed] = useState(false);
+  const useLive = Boolean(liveBackdrop) && !liveFailed;
+
+  const img = useLive ? (liveBackdrop as string) : SAMPLE;
+  const space = useLive ? LIVE_SPACE : coordSpace ?? SAMPLE_SPACE;
   const maxW = Math.max(1, ...points.map((p) => p.weight ?? 1));
 
   return (
@@ -23,13 +34,26 @@ export function Heatmap({ points, backdrop, coordSpace }: Props) {
       <figcaption className="chart__title">
         Abandonment heatmap
         <span className="chart__sub">
-          where, on your actual page, users die
+          where, on your actual page, users give up
         </span>
       </figcaption>
 
-      <div className="heatmap" style={{ aspectRatio: `${space.width} / ${space.height}` }}>
-        <img className="heatmap__img" src={img} alt="Target page" />
+      <div
+        className="heatmap"
+        style={{ aspectRatio: `${space.width} / ${space.height}` }}
+      >
+        <img
+          className="heatmap__img"
+          src={img}
+          alt="Target page"
+          onError={() => {
+            if (useLive) setLiveFailed(true);
+          }}
+        />
         <div className="heatmap__scrim" />
+        <span className="heatmap__source">
+          {useLive ? "Live target page" : "Sample page"}
+        </span>
         {points.map((p, i) => {
           const left = (p.x / space.width) * 100;
           const top = (p.y / space.height) * 100;
@@ -67,7 +91,7 @@ export function Heatmap({ points, backdrop, coordSpace }: Props) {
       </div>
       <div className="heatmap__caption">
         {points.length} abandonment {points.length === 1 ? "point" : "points"} ·
-        each ✕ is a persona that gave up here
+        each ✕ marks a persona that gave up here
       </div>
     </figure>
   );
