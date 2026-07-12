@@ -160,6 +160,59 @@ async def test_budget_exhaustion_yields_step_budget(browser, tmp_path, target_ur
     assert len(result.steps) == 2
 
 
+async def test_slow_decide_does_not_burn_persona_patience(browser, tmp_path, target_url):
+    """decide() latency (Holo inference + rate-limiter queue) is infra time and must
+    NOT count against deadline_s — only simulated user time does."""
+    c = await _measure(browser, target_url)
+    persona = make_persona(deadline_s=8.0)
+    script = [
+        Action(type=ActionType.CLICK, x=c["accept"][0], y=c["accept"][1], caption="accept cookies"),
+    ]
+    # Two decide() calls (click + final ANSWER) at 5s each = 10s of wall clock spent
+    # deciding, > the 8s deadline. Simulated time is ~1 step (~4.5s), well under it.
+    agent = StubPersonaAgent(persona, script, decide_delay_s=5.0)
+    sink = CollectingEventSink()
+    runner = PlaywrightSessionRunner(browser, tmp_path)
+    result = await runner.run(persona, agent, target_url, "sign up", sink, "run-slow-decide")
+    assert result.outcome == PersonaOutcome.SUCCESS
+    assert result.duration_s < persona.deadline_s
+
+
+async def test_sim_clock_trips_time_budget(browser, tmp_path, target_url):
+    """The per-step think-time charge exhausts a tight deadline even when the
+    model answers instantly — patience is simulated, not wall-clock."""
+    c = await _measure(browser, target_url)
+    persona = make_persona(max_steps=10, deadline_s=7.0)
+    script = [
+        Action(type=ActionType.CLICK, x=c["accept"][0], y=c["accept"][1], caption=f"click {i}")
+        for i in range(6)
+    ]
+    sink = CollectingEventSink()
+    runner = PlaywrightSessionRunner(browser, tmp_path)
+    result = await runner.run(
+        persona, StubPersonaAgent(persona, script), target_url, "sign up", sink, "run-sim-clock"
+    )
+    assert result.outcome == PersonaOutcome.TIME_BUDGET
+    # ~4.5s of simulated time per step -> the 7s deadline trips on step 1 or 2.
+    assert 1 <= len(result.steps) <= 2
+
+
+async def test_dead_spot_clicks_detected_as_stuck(browser, tmp_path, target_url):
+    """Near-identical clicks that visibly change nothing (e.g. tremor jitter around a
+    dead spot) trip the stuck detector even though each caption differs."""
+    persona = make_persona()
+    script = [
+        Action(type=ActionType.CLICK, x=5 + i, y=5 + i, caption=f"Clicking at ({5 + i}, {5 + i})")
+        for i in range(4)
+    ]
+    sink = CollectingEventSink()
+    runner = PlaywrightSessionRunner(browser, tmp_path)
+    result = await runner.run(
+        persona, StubPersonaAgent(persona, script), target_url, "sign up", sink, "run-dead-spot"
+    )
+    assert result.outcome == PersonaOutcome.STUCK
+
+
 async def test_success_script_yields_success(browser, tmp_path, target_url):
     c = await _measure(browser, target_url)
     persona = make_persona()

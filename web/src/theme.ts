@@ -1,15 +1,16 @@
 // Simulation Labs functional palette + perturbation labels.
-// Per web/DESIGN_SYSTEM.md (v2 — Instrument Panel) every color is a state:
-// amber = running/live, emerald = survived, red = died/abandoned, neutral =
-// infra error (excluded from survival stats, must not read as a human abandon).
+// Per web/DESIGN_SYSTEM.md (v3 — Quiet workspace) every color is a state and
+// stays quiet — text, small dots, hairlines only: orange = running/live,
+// green = survived, red = died/abandoned, neutral = infra error (excluded
+// from survival stats, must not read as a human abandon).
 
 import type { PersonaConfig, PersonaOutcome, PerturbationKind } from "./types";
 
-// Literal hex values (dark-panel variants) for the few places that need to
-// compose alpha suffixes inline: heatmap radial gradients over screenshots.
-export const SUCCESS_HEX = "#2FD08C";
-export const FAIL_HEX = "#FF4D4D";
-export const NEUTRAL_HEX = "#8B93A5";
+// Literal hex values for the few places that need to compose alpha suffixes
+// inline: heatmap radial gradients over screenshots.
+export const SUCCESS_HEX = "#448361";
+export const FAIL_HEX = "#D44C47";
+export const NEUTRAL_HEX = "#787774";
 
 // Outcome -> chart color. CSS variables so charts stay AA in both themes
 // (light mode darkens the functional hues). success is the only "good"
@@ -33,15 +34,15 @@ export const OUTCOME_TEXT_CLASS: Record<PersonaOutcome, string> = {
 
 // ---------------------------------------------------------------------------
 // Perturbation labels — the "which channels are degraded" chips on a tile.
-// Tiny uppercase mono structural labels (spec: Iconography / labels — no
-// icons, no emoji). Prefer the persona's declared active_perturbations; if
+// Tiny lowercase mono structural labels (spec: labels — no icons, no emoji).
+// Prefer the persona's declared active_perturbations; if
 // absent (sparse fixtures only carry id/name/blurb), infer from the numeric
 // fields, then fall back to id keywords so the offline demo still shows
 // meaningful labels.
 // ---------------------------------------------------------------------------
 export interface Badge {
   kind: PerturbationKind;
-  text: string; // rendered via an `uppercase` class — keep lowercase here
+  text: string; // rendered as-is — keep lowercase
   title: string;
 }
 

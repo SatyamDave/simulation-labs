@@ -30,36 +30,27 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
   const maxW = Math.max(1, ...points.map((p) => p.weight ?? 1));
 
   return (
-    <figure className="p-5 rounded-lg border border-border bg-panel m-0">
-      <figcaption className="mb-5">
-        <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">
-          Abandonment heatmap
-        </p>
-        <p className="text-sm text-muted-foreground">
-          where, on your actual page, users give up
-        </p>
-      </figcaption>
-
+    <div>
       <div
-        className="viewport-bezel relative w-full rounded-md overflow-hidden border border-border bg-background"
+        className="relative w-full rounded-xl overflow-hidden border border-border bg-surface"
         style={{ aspectRatio: `${space.width} / ${space.height}` }}
       >
         <img
-          className="block w-full h-full object-cover grayscale-[0.3] opacity-80"
+          className="block w-full h-full object-cover"
           src={img}
           alt="Target page"
           onError={() => {
             if (useLive) setLiveFailed(true);
           }}
         />
-        <span className="absolute top-2 left-2 z-10 text-[9px] font-mono uppercase tracking-widest text-muted-foreground bg-background/85 border border-border rounded-sm px-1.5 py-0.5">
-          {useLive ? "Live target page" : "Sample page"}
+        <span className="absolute top-2 left-2 z-10 font-mono text-[10px] text-muted-foreground bg-background/90 border border-border rounded px-1.5 py-0.5">
+          {useLive ? "live target page" : "sample page"}
         </span>
         {points.map((p, i) => {
           const left = (p.x / space.width) * 100;
           const top = (p.y / space.height) * 100;
           const w = p.weight ?? 1;
-          const size = 90 + (w / maxW) * 120;
+          const size = 64 + (w / maxW) * 96;
           return (
             <div
               key={`${p.persona_id}-${i}`}
@@ -69,40 +60,33 @@ export function Heatmap({ points, liveBackdrop, coordSpace }: Props) {
                 top: `${top}%`,
                 width: size,
                 height: size,
-                background: `radial-gradient(circle, ${FAIL_HEX}cc 0%, ${FAIL_HEX}66 35%, ${FAIL_HEX}00 70%)`,
+                background: `radial-gradient(circle, ${FAIL_HEX}73 0%, ${FAIL_HEX}33 35%, ${FAIL_HEX}00 70%)`,
               }}
               title={`${p.persona_id || "abandon"} @ ${p.x},${p.y}`}
             />
           );
         })}
+        {/* Precise marks: the same small ring + dot as the death treatment */}
         {points.map((p, i) => {
           const left = (p.x / space.width) * 100;
           const top = (p.y / space.height) * 100;
           return (
-            <svg
-              key={`dot-${p.persona_id}-${i}`}
-              className="absolute w-3.5 h-3.5 -translate-x-1/2 -translate-y-1/2 text-fail cursor-help"
+            <div
+              key={`mark-${p.persona_id}-${i}`}
+              className="absolute -translate-x-1/2 -translate-y-1/2 cursor-help"
               style={{ left: `${left}%`, top: `${top}%` }}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+              title={`${p.persona_id || "abandon"} @ ${p.x},${p.y}`}
             >
-              <title>{`${p.persona_id || "abandon"} @ ${p.x},${p.y}`}</title>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={3}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+              <span className="block w-3.5 h-3.5 rounded-full border border-fail" />
+              <span className="absolute left-1/2 top-1/2 w-[3px] h-[3px] -ml-[1.5px] -mt-[1.5px] rounded-full bg-fail" />
+            </div>
           );
         })}
       </div>
-      <p className="mt-4 font-mono text-[11px] text-muted-foreground tabular-nums">
-        {points.length} abandonment{" "}
-        {points.length === 1 ? "point" : "points"} · each mark is a persona
-        that gave up here
+      <p className="mt-3 font-mono text-[11px] text-muted-foreground tabular-nums">
+        {points.length} abandonment {points.length === 1 ? "point" : "points"} ·
+        each mark is a persona that gave up here
       </p>
-    </figure>
+    </div>
   );
 }

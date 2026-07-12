@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Iterable
 
 from pydantic import BaseModel
@@ -34,15 +35,25 @@ class StubPersonaAgent:
 
     `script` is any iterable of `Action`. Each `decide()` returns the next one; once
     the script is exhausted it returns an ANSWER action (persona declares done), so a
-    short script never wedges the loop.
+    short script never wedges the loop. `decide_delay_s` sleeps inside decide() to
+    simulate model latency / rate-limiter queueing (which must NOT count against the
+    persona's deadline).
     """
 
-    def __init__(self, persona: PersonaConfig, script: Iterable[Action]) -> None:
+    def __init__(
+        self,
+        persona: PersonaConfig,
+        script: Iterable[Action],
+        decide_delay_s: float = 0.0,
+    ) -> None:
         self.persona = persona
         self._script: list[Action] = list(script)
         self._i = 0
+        self._delay = decide_delay_s
 
     async def decide(self, obs: Observation, history: list[str]) -> Action:
+        if self._delay > 0:
+            await asyncio.sleep(self._delay)
         if self._i < len(self._script):
             action = self._script[self._i]
             self._i += 1

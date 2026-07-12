@@ -35,19 +35,6 @@ export function InsightsPanel() {
       viewport={{ once: true }}
       className="flex flex-col gap-5"
     >
-      <div>
-        <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-2">
-          Memory layer
-        </p>
-        <h2 className="font-display text-2xl md:text-3xl">
-          Cross-run insights — what the swarm has learned across sites
-        </h2>
-        <p className="text-sm text-muted-foreground leading-relaxed mt-2">
-          Durable lessons distilled from every prior run, tagged by the
-          impairment that surfaced them.
-        </p>
-      </div>
-
       {status === "loading" && (
         <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
           loading insights…
@@ -55,7 +42,7 @@ export function InsightsPanel() {
       )}
 
       {status === "empty" && (
-        <p className="rounded-lg border border-dashed border-border bg-panel px-4 py-6 text-sm text-muted-foreground text-center">
+        <p className="rounded-lg border border-dashed border-border bg-card px-4 py-6 text-sm text-muted-foreground text-center">
           No cross-run insights yet — run more sessions to build the knowledge
           base.
         </p>
@@ -80,10 +67,10 @@ function InsightCard({ insight, index }: { insight: Insight; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.05 }}
-      className="rounded-lg border border-border bg-panel overflow-hidden flex flex-col"
+      className="rounded-lg border border-border bg-card overflow-hidden flex flex-col"
     >
-      <header className="flex items-center gap-2 px-4 py-3 border-b border-hairline">
-        <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest border border-hairline rounded-sm px-1.5 py-0.5 whitespace-nowrap">
+      <header className="flex items-center gap-2 px-4 py-3 border-b border-border">
+        <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest border border-border rounded-sm px-1.5 py-0.5 whitespace-nowrap">
           {insight.impairment}
         </span>
         <span

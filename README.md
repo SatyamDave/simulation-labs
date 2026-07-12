@@ -66,6 +66,10 @@ python -m http.server 8137      # → http://localhost:8137/fixtures/hostile_for
 
 # run the app (once Agent 3 lands):
 python -m ghostpanel.server.main
+
+# benchmarks — swarm quality + runner perf on bundled flows (easy control vs hostile):
+python -m ghostpanel.benchmarks                 # offline: runner overhead, no network
+python -m ghostpanel.benchmarks --live          # real Holo: completion rate, steps, latency
 ```
 
 ## Sponsors

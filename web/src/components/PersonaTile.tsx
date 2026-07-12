@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import type { PersonaLiveState, TileStatus, Viewport } from "../types";
+import type { PersonaLiveState, Viewport } from "../types";
 import { OUTCOME_LABELS } from "../types";
 import { perceptionFilter, perturbationBadges } from "../theme";
 import { VitalLine } from "./VitalLine";
@@ -9,38 +9,10 @@ const FALLBACK_BG = `${BASE}fixtures/sample_screenshot.png`;
 
 interface Props {
   live: PersonaLiveState;
-  index: number;
   coordSpace?: Viewport; // pixel space of x/y coords (default persona viewport)
 }
 
-function StatusLamp({ status }: { status: TileStatus }) {
-  if (status === "running") {
-    return (
-      <motion.span
-        className="w-1.5 h-1.5 rounded-full bg-live shrink-0"
-        animate={{ opacity: [1, 0.35, 1] }}
-        transition={{ duration: 1.6, repeat: Infinity }}
-        role="img"
-        aria-label="running"
-      />
-    );
-  }
-  const cls =
-    status === "success"
-      ? "bg-ok"
-      : status === "abandoned"
-        ? "bg-fail"
-        : "border border-idle/50";
-  return (
-    <span
-      className={`w-1.5 h-1.5 rounded-full shrink-0 ${cls}`}
-      role="img"
-      aria-label={status}
-    />
-  );
-}
-
-export function PersonaTile({ live, index, coordSpace }: Props) {
+export function PersonaTile({ live, coordSpace }: Props) {
   const { persona, status, lastCaption, lastThumb, step, failure } = live;
   const badges = perturbationBadges(persona);
   const space: Viewport =
@@ -58,33 +30,61 @@ export function PersonaTile({ live, index, coordSpace }: Props) {
   const markerTop = marker
     ? Math.min(Math.max(marker[1] / space.height, 0), 1) * 100
     : 0;
-  // Flip the coord label to the left of the vertical hairline near the right edge.
-  const labelFlip = markerLeft > 62;
+  // Flip the coord chip to the left of the ring near the right edge.
+  const chipFlip = markerLeft > 62;
 
   const bg = lastThumb || FALLBACK_BG;
-  const perturbFilter = lastThumb ? undefined : perceptionFilter(persona);
-  const filter = dead
-    ? `grayscale(0.8) ${perturbFilter ?? ""}`.trim()
-    : perturbFilter;
+  // Screenshots stay full color in every state; the perception filter only
+  // fakes the persona's degraded view on fixture thumbnails.
+  const filter = lastThumb ? undefined : perceptionFilter(persona);
 
   const stepsSurvived = failure?.stepsSurvived ?? step;
   const deathFrac = stepsSurvived / Math.max(persona.max_steps ?? 12, 1);
 
+  const outcomeLine = won ? (
+    <p className="flex items-center gap-1.5 font-mono text-[11px] text-ok tabular-nums">
+      <span className="w-1.5 h-1.5 rounded-full bg-ok shrink-0" aria-hidden="true" />
+      survived · step {step}
+    </p>
+  ) : dead ? (
+    <p className="flex items-center gap-1.5 font-mono text-[11px] text-fail tabular-nums">
+      <span className="w-1.5 h-1.5 rounded-full bg-fail shrink-0" aria-hidden="true" />
+      died at step {stepsSurvived}
+    </p>
+  ) : running ? (
+    <p className="flex items-center gap-1.5 font-mono text-[11px] text-live tabular-nums">
+      <motion.span
+        className="w-1.5 h-1.5 rounded-full bg-live shrink-0"
+        animate={{ opacity: [1, 0.35, 1] }}
+        transition={{ duration: 1.6, repeat: Infinity }}
+        aria-hidden="true"
+      />
+      running · step {step}
+    </p>
+  ) : (
+    <p className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+      <span
+        className="w-1.5 h-1.5 rounded-full bg-idle/40 shrink-0"
+        aria-hidden="true"
+      />
+      waiting
+    </p>
+  );
+
   return (
     <motion.article
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.06 }}
-      className={`rounded-lg border border-border bg-panel overflow-hidden flex flex-col ${
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+      className={`rounded-xl border border-border bg-card flex flex-col overflow-hidden ${
         pending ? "opacity-60" : ""
       }`}
       aria-label={`${persona.name} — ${
-        won ? "survived" : dead ? "died" : running ? "running" : "standby"
+        won ? "survived" : dead ? "died" : running ? "running" : "waiting"
       }`}
     >
-      {/* Identity row: lamp + name (display face) + degraded-channel labels */}
-      <header className="flex items-center gap-2 px-3 pt-2.5 pb-2 min-h-9">
-        <StatusLamp status={status} />
+      {/* Identity row: name + tiny mono perturbation tags */}
+      <header className="flex items-baseline gap-2 px-4 pt-3 pb-2 min-w-0">
         <span
           className="text-sm font-medium truncate"
           title={persona.blurb || persona.name}
@@ -96,7 +96,7 @@ export function PersonaTile({ live, index, coordSpace }: Props) {
             <span
               key={b.kind}
               title={b.title}
-              className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest whitespace-nowrap"
+              className="font-mono text-[10px] text-muted-foreground whitespace-nowrap"
             >
               {b.text}
             </span>
@@ -104,116 +104,64 @@ export function PersonaTile({ live, index, coordSpace }: Props) {
         </span>
       </header>
 
-      {/* Bezel-framed specimen viewport */}
-      <div className="px-3">
-        <div
-          className={`viewport-bezel relative aspect-[16/10] rounded-md overflow-hidden bg-background ${
-            dead
-              ? "border-2 border-fail"
-              : won
-                ? "border border-ok"
-                : "border border-border"
-          }`}
-        >
+      {/* Screenshot — full color, hairline frame */}
+      <div className="px-4">
+        <div className="relative aspect-[16/10] rounded-lg overflow-hidden border border-border bg-surface">
           <div
-            className="absolute inset-0 bg-cover bg-top transition-[filter] duration-500"
+            className="absolute inset-0 bg-cover bg-top"
             style={{ backgroundImage: `url("${bg}")`, filter }}
             aria-hidden="true"
           />
-          <div className="scanlines" aria-hidden="true" />
 
-          {/* The death pixel — calibration crosshair frozen where they gave up */}
+          {/* The death pixel: a small red crosshair ring + coord chip */}
           {dead && marker && (
             <div
               className="absolute inset-0 pointer-events-none"
               title={`Abandoned at ${marker[0]}, ${marker[1]}`}
               aria-hidden="true"
             >
-              {/* full-height / full-width hairlines */}
               <span
-                className="absolute top-0 bottom-0 w-px bg-fail/70"
-                style={{ left: `${markerLeft}%` }}
-              />
-              <span
-                className="absolute left-0 right-0 h-px bg-fail/70"
-                style={{ top: `${markerTop}%` }}
-              />
-              {/* center ring */}
-              <span
-                className="absolute w-3 h-3 -ml-1.5 -mt-1.5 rounded-full border border-fail bg-fail/15"
+                className="absolute w-3.5 h-3.5 -ml-[7px] -mt-[7px] rounded-full border border-fail"
                 style={{ left: `${markerLeft}%`, top: `${markerTop}%` }}
               />
-              {/* coords ride the top edge of the vertical hairline — never
-                  near the epitaph, which lives below the viewport */}
               <span
-                className={`absolute top-0.5 text-[9px] font-mono text-fail whitespace-nowrap bg-background/85 rounded-sm px-1 ${
-                  labelFlip ? "-translate-x-full -ml-0.5" : "ml-0.5"
+                className="absolute w-[3px] h-[3px] -ml-[1.5px] -mt-[1.5px] rounded-full bg-fail"
+                style={{ left: `${markerLeft}%`, top: `${markerTop}%` }}
+              />
+              <span
+                className={`absolute -translate-y-1/2 font-mono text-[10px] text-fail whitespace-nowrap bg-background/90 border border-border rounded px-1 tabular-nums ${
+                  chipFlip ? "-translate-x-full -ml-3" : "ml-3"
                 }`}
-                style={{ left: `${markerLeft}%` }}
+                style={{ left: `${markerLeft}%`, top: `${markerTop}%` }}
               >
                 {marker[0]},{marker[1]}
               </span>
             </div>
           )}
-
-          {/* Corner outcome tag */}
-          {(dead || won) && (
-            <span
-              className={`absolute top-0 right-0 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-widest rounded-bl-md ${
-                dead ? "bg-fail" : "bg-ok"
-              } text-background`}
-            >
-              {dead ? "died" : "survived"} · step{" "}
-              {dead ? stepsSurvived : step}
-            </span>
-          )}
         </div>
       </div>
 
-      {/* Console lines */}
-      <div className="px-3 pt-2 pb-1 font-mono text-xs flex flex-col gap-1">
-        <p className="flex items-baseline gap-1.5 min-w-0">
-          <span className="text-muted-foreground shrink-0" aria-hidden="true">
-            &gt;
-          </span>
-          <span
-            className={`truncate ${
-              won
-                ? "text-ok"
-                : pending
-                  ? "text-muted-foreground"
-                  : "text-foreground"
-            }`}
-          >
-            {won
-              ? "Completed the task"
-              : pending
-                ? "standby"
-                : `step ${step} · ${lastCaption}`}
-          </span>
-          {running && (
-            <span
-              className="caret-blink w-[5px] h-3 bg-live shrink-0 self-center"
-              aria-hidden="true"
-            />
-          )}
+      {/* Caption + outcome */}
+      <div className="px-4 pt-2.5 pb-3 flex flex-col gap-1.5 min-w-0">
+        <p className="text-xs text-muted-foreground truncate">
+          {won
+            ? "Completed the task"
+            : pending
+              ? "Waiting to start"
+              : lastCaption || "…"}
         </p>
+        {outcomeLine}
         {dead && failure && (
-          <p className="flex items-baseline gap-1.5 min-w-0 text-fail">
-            <span className="shrink-0" aria-hidden="true">
-              &gt;
-            </span>
-            <span className="line-clamp-2">
-              {OUTCOME_LABELS[failure.outcome].toLowerCase()}
-              {failure.reason ? ` — “${failure.reason}”` : ""}
-            </span>
+          <p className="text-xs text-fail/80 line-clamp-2">
+            {OUTCOME_LABELS[failure.outcome].toLowerCase()}
+            {failure.reason ? ` — “${failure.reason}”` : ""}
           </p>
         )}
       </div>
 
-      {/* Vital sign — pinned to the bottom of the specimen card */}
+      {/* The whisper: a 1px vital line at the very bottom */}
       <div className="mt-auto">
-        <VitalLine status={status} deathFrac={deathFrac} height={26} />
+        <VitalLine status={status} deathFrac={deathFrac} />
       </div>
     </motion.article>
   );

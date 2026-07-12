@@ -1,8 +1,7 @@
 import { motion } from "framer-motion";
-import type { LiveRunState, TileStatus, Viewport } from "../types";
+import type { LiveRunState, Viewport } from "../types";
 import { tallies } from "../runReducer";
 import { PersonaTile } from "./PersonaTile";
-import { VitalLine } from "./VitalLine";
 
 interface Props {
   state: LiveRunState;
@@ -11,28 +10,36 @@ interface Props {
   reportReady?: boolean;
 }
 
-function Reading({
-  label,
-  value,
+function Dot({
   tone,
+  pulse,
 }: {
-  label: string;
-  value: string | number;
-  tone?: "ok" | "fail" | "live";
+  tone: "ok" | "fail" | "live" | "idle";
+  pulse?: boolean;
 }) {
   const cls =
     tone === "ok"
-      ? "text-ok"
+      ? "bg-ok"
       : tone === "fail"
-        ? "text-fail"
+        ? "bg-fail"
         : tone === "live"
-          ? "text-live"
-          : "text-foreground";
+          ? "bg-live"
+          : "bg-idle/40";
+  if (pulse) {
+    return (
+      <motion.span
+        className={`w-1.5 h-1.5 rounded-full shrink-0 ${cls}`}
+        animate={{ opacity: [1, 0.35, 1] }}
+        transition={{ duration: 1.6, repeat: Infinity }}
+        aria-hidden="true"
+      />
+    );
+  }
   return (
-    <span className="whitespace-nowrap">
-      <span className="text-muted-foreground">{label} </span>
-      <span className={`${cls} font-medium`}>{value}</span>
-    </span>
+    <span
+      className={`w-1.5 h-1.5 rounded-full shrink-0 ${cls}`}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -43,81 +50,57 @@ export function PersonaGrid({
   reportReady,
 }: Props) {
   const t = tallies(state);
-  const finished = state.status === "finished";
-
-  // Aggregate vital sign for the whole run: amber while anything is alive,
-  // emerald once finished with survivors, flatline if everyone died.
-  const aggStatus: TileStatus =
-    t.total === 0
-      ? "pending"
-      : finished || t.done === t.total
-        ? t.survived > 0
-          ? "success"
-          : "abandoned"
-        : "running";
 
   return (
     <section className="flex flex-col gap-6">
-      {/* Telemetry strip — one instrument bar, not four boxes */}
-      <div className="rounded-lg border border-border bg-panel overflow-hidden">
-        <div className="flex items-center gap-x-5 gap-y-1 flex-wrap px-4 py-2.5 font-mono text-xs uppercase tracking-wider tabular-nums border-b border-hairline">
-          <Reading label="survived" value={t.survived} tone="ok" />
-          <span className="text-hairline" aria-hidden="true">
-            ·
+      {/* Telemetry: one quiet line */}
+      <div className="flex items-center gap-x-3 gap-y-1 flex-wrap font-mono text-xs text-muted-foreground tabular-nums min-w-0">
+        <span className="inline-flex items-center gap-1.5">
+          <Dot tone="ok" />
+          {t.survived} survived
+        </span>
+        <span aria-hidden="true">·</span>
+        <span className="inline-flex items-center gap-1.5">
+          <Dot tone="fail" />
+          {t.dead} abandoned
+        </span>
+        {t.running > 0 && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <Dot tone="live" pulse />
+              {t.running} running
+            </span>
+          </>
+        )}
+        <span aria-hidden="true">·</span>
+        <span>
+          {t.done}/{t.total} finished
+        </span>
+        {state.targetUrl && (
+          <span className="ml-auto truncate max-sm:hidden">
+            {state.targetUrl}
           </span>
-          <Reading label="abandoned" value={t.dead} tone="fail" />
-          <span className="text-hairline" aria-hidden="true">
-            ·
-          </span>
-          <Reading
-            label="running"
-            value={t.running}
-            tone={t.running > 0 ? "live" : undefined}
-          />
-          <span className="ml-auto text-muted-foreground">
-            <span className="text-foreground font-medium">
-              {t.done}/{t.total}
-            </span>{" "}
-            finished
-          </span>
-        </div>
-        <VitalLine status={aggStatus} height={28} />
-        <div className="px-4 py-2 font-mono text-xs text-muted-foreground border-t border-hairline flex flex-wrap gap-x-4 gap-y-0.5 min-w-0">
-          <span className="truncate">
-            <span className="uppercase tracking-wider text-[10px]">task</span>{" "}
-            <span className="text-foreground">{state.task || "—"}</span>
-          </span>
-          <span className="truncate">
-            <span className="uppercase tracking-wider text-[10px]">target</span>{" "}
-            {state.targetUrl || "—"}
-          </span>
-        </div>
+        )}
       </div>
 
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
-        {state.order.map((id, i) => {
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {state.order.map((id) => {
           const live = state.personas[id];
           if (!live) return null;
-          return (
-            <PersonaTile
-              key={id}
-              live={live}
-              index={i}
-              coordSpace={coordSpace}
-            />
-          );
+          return <PersonaTile key={id} live={live} coordSpace={coordSpace} />;
         })}
       </div>
 
       {reportReady && onSeeReport && (
         <div className="flex justify-center pt-4">
-          <motion.button
-            className="px-6 py-3 rounded-md bg-foreground text-background font-mono text-sm uppercase tracking-wider"
-            whileTap={{ scale: 0.98 }}
+          <button
+            type="button"
+            className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
             onClick={onSeeReport}
           >
-            View the report →
-          </motion.button>
+            View the report
+          </button>
         </div>
       )}
     </section>

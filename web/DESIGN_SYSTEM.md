@@ -1,6 +1,124 @@
-# [simulation labs] Design System — Comprehensive Specification
+# simulation labs Design System — Comprehensive Specification
 
-## v2 — Instrument Panel (supersedes where in conflict)
+## v3 — Quiet workspace (Notion × Ollama), supersedes v2
+
+> **Concept: a calm paper workspace, not an instrument panel.** The product
+> watches synthetic users fail; the UI stays quiet about it. Personality comes
+> from restraint and exactly one playful touch. Whitespace is the material.
+> Everything in this v3 section **supersedes** v2 and v1 wherever they
+> conflict; the older specs remain below as historical reference only.
+
+### What v3 explicitly removes from v2
+
+Bezel cards, corner tags, telemetry strip panels, scanlines, EKG heartbeat
+traces, amber lamp fills, red 2px borders, tinted state panels (`bg-fail/10`
+washes), the blinking caret, `>` console prefixes, grayscale death washes,
+Archivo and the expanded display voice, uppercase tracked eyebrows, hover
+scale/lift animations, and the bracketed `[simulation labs]` wordmark (now
+plain lowercase `simulation labs`, mono, `text-sm`, everywhere).
+
+### Color tokens (light-FIRST; `.dark` mechanism unchanged)
+
+| Token | Light (primary) | Dark ("Notion-dark") |
+|---|---|---|
+| `--background` | `#FFFFFF` | `#191919` |
+| `--surface` (subtle fill: tracks, image letterbox) | `#F7F7F5` | `#202020` |
+| `--card` | `#FFFFFF` | `#202020` |
+| `--border` (hairline — use sparingly) | `#E9E8E4` | `#2E2E2C` |
+| `--foreground` | `#1D1D1B` | `#EDEDEB` |
+| `--muted-foreground` (dim) | `#787774` | `#9B9B98` |
+| `--hover` (faint tint) | `rgba(0,0,0,.035)` | `rgba(255,255,255,.055)` |
+| `--primary` / `--primary-foreground` (solid button) | `#1D1D1B` / `#FFFFFF` | `#EDEDEB` / `#191919` |
+
+**Functional colors are QUIET** — small dots, text, hairlines, thin bars only.
+Never large fills, washes, tinted panels, or colored borders around content:
+
+| State | Token | Light | Dark (lightened for contrast) |
+|---|---|---|---|
+| running / live | `--live` | `#D9730D` | `#DE8248` |
+| survived | `--ok` | `#448361` | `#55A377` |
+| died / abandoned | `--fail` | `#D44C47` | `#E0605A` |
+| infra error | `--idle` | `#787774` | `#9B9B98` |
+
+`theme.ts` keeps its export names; `OUTCOME_COLOR` points at these CSS vars.
+
+### Typography
+
+- **Inter (400/500/600) for everything.** Headlines are **semibold (600)**,
+  tight (`tracking-tight`), compact — `text-4xl`/`text-5xl` max. Confident and
+  friendly, never thin, never expanded. Body 400; names/labels 500.
+- **IBM Plex Mono only for tiny data moments**: coordinates, step counts, the
+  target URL, persona perturbation tags, telemetry tallies — always `text-xs`
+  or smaller, always dim, always lowercase. No uppercase anywhere.
+- Copy: sentence case, short, plain verbs (Notion voice).
+
+### Shape, depth, motion
+
+- Radius: `rounded-xl` (12px) cards, `rounded-lg` (8px) inputs/buttons/images.
+  No pills except dots.
+- Shadows: at most `0 1px 2px rgba(0,0,0,.05)`; mostly rely on hairlines +
+  whitespace.
+- Buttons: primary = solid `bg-primary text-primary-foreground rounded-lg
+  font-medium` (near-black on light, inverted on dark). Secondary/ghost = no
+  border, dim text, `hover:bg-hover` tint. No scale/lift animations — hover is
+  a background tint or border darkening only.
+- Motion: entrance fades are opacity-only, 0.2s, barely perceptible. Status
+  dots may pulse opacity. `MotionConfig reducedMotion="user"` + the global
+  reduced-motion kill-switch stay.
+
+### The signature (the ONE playful element)
+
+The vital line, shrunk to a whisper (`VitalLine.tsx`):
+
+- A **1px sparkline, full width × 12px, at the very bottom of each tile** —
+  a small dim-gray blip drifting left while running; flat dim-green on
+  success; flat red with a tiny gap at the death point (`deathFrac`).
+- The launch page's mark: **`FlatlineGlyph`** — a 120×24 inline-SVG hairline
+  that blips once then flatlines, drawn in text color, above the headline.
+  The whole product story in one glyph. No other decoration anywhere.
+
+### Patterns
+
+- **Header**: lowercase mono `simulation labs` wordmark (click = home) +
+  theme toggle. Nothing else. Featherweight hairline underneath.
+- **Launch**: centered single column `max-w-xl`. Glyph → semibold headline
+  ("See where users give up.") → one dim sentence → URL command bar (mono,
+  `rounded-lg`, hairline, subtle focus ring) with three tiny dim example
+  links → task input → personas as quiet checkable chips (name + tiny mono
+  tag; checked = near-black border + check, no color fills) → full-width
+  solid "Run simulation" → "or watch the offline demo →" as a dim text link.
+- **Live telemetry**: ONE quiet mono line — `• 2 survived · • 4 abandoned ·
+  6/6 finished` with tiny colored dots; target URL right-aligned. No panels.
+- **Tile**: hairline `rounded-xl` card → name (Inter 500) + tiny mono tags →
+  full-color screenshot in a `rounded-lg` hairline frame → one dim caption
+  line → outcome as dot + words (`died at step 4` in red, `survived · step 7`
+  in green, mono `text-[11px]`) → whisper vital line pinned to the bottom.
+- **Death treatment**: screenshot stays full color. A small red crosshair
+  ring (1px ring + center dot) at `failure_coords`, coords in a tiny mono
+  chip beside it (flips near the right edge), and the failure reason as one
+  dim red line under the caption.
+- **Report**: a Notion document — `max-w-3xl` centered. Big semibold
+  completion % in the outcome color, headline sentence, then sections
+  separated by generous space + hairlines (no cards unless needed): verdict
+  as one line with a colored dot; survival bars 8px `rounded-full` in muted
+  green/red on a `--surface` track with dim mono labels; heatmap image with
+  rounded corners + hairline, soft radial marks topped by precise
+  ring-and-dot markers; receipts as quiet hairline cards.
+
+### Still in force
+
+No emoji. No decorative color or gradients. Inline stroke SVG icons.
+Contract/business logic untouched (`runReducer`, `useRunStream`, `api`,
+`offline`, `types`). Both themes fully designed.
+
+---
+
+*The remainder of this document is the v2 and v1 specs, kept as historical
+reference. Where they conflict with v3 above, v3 wins.*
+
+---
+
+## v2 — Instrument Panel (superseded by v3)
 
 > **Concept: instrument panel, not landing page.** Simulation Labs is a lab
 > bench where specimens (personas) run and flatline. The UI is a precision

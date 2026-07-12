@@ -73,12 +73,12 @@ export function OfflineDemo({ onExit }: Props) {
     return (
       <div className="py-24 text-center">
         <p className="text-muted-foreground">Couldn't load offline fixtures.</p>
-        <pre className="text-xs text-fail whitespace-pre-wrap max-w-xl mx-auto my-4 font-mono text-left border border-fail/30 bg-fail/10 rounded-md px-3 py-2.5">
+        <pre className="font-mono text-xs text-fail whitespace-pre-wrap max-w-xl mx-auto my-4 text-left">
           {loadError}
         </pre>
         <button
           type="button"
-          className="font-mono text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           onClick={onExit}
         >
           ← Back
@@ -89,8 +89,8 @@ export function OfflineDemo({ onExit }: Props) {
 
   if (view === "loading" || !report) {
     return (
-      <div className="py-24 text-center text-xs font-mono uppercase tracking-widest text-muted-foreground">
-        Loading simulation…
+      <div className="py-24 text-center text-sm text-muted-foreground">
+        Loading the simulation…
       </div>
     );
   }
@@ -109,24 +109,20 @@ export function OfflineDemo({ onExit }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-3 rounded-lg border border-border bg-panel px-4 py-2.5">
+      <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
         <motion.span
           className="w-1.5 h-1.5 rounded-full bg-live shrink-0"
           animate={{ opacity: [1, 0.35, 1] }}
           transition={{ duration: 1.6, repeat: Infinity }}
+          aria-hidden="true"
         />
-        <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest">
-          Offline replay
-        </span>
-        <span className="text-xs font-mono text-muted-foreground max-sm:hidden">
-          local fixtures, no backend
-        </span>
+        <span>offline replay · local fixtures, no backend</span>
         <button
           type="button"
-          className="ml-auto font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+          className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
           onClick={onExit}
         >
-          Exit
+          exit
         </button>
       </div>
       <PersonaGrid
