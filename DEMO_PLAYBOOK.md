@@ -5,16 +5,23 @@ Everything you need to run the product and win the 90 seconds on stage.
 5×20 (Technicality, Creativity, Usefulness, Demo, Sponsor alignment) — this doc is
 aimed at the **Demo (20)** + **Sponsor alignment (20)** points.
 
-## One-time setup
+## Setup + run: one command
 
 ```bash
 cd simulation-labs
-uv venv --python 3.12 && source .venv/bin/activate      # or: python3.12 -m venv .venv
-uv pip install -e ".[dev]"                               # or: pip install -e ".[dev]"
-python -m playwright install chromium
-cd web && npm install && npm run build && cd ..          # builds web/dist (served by the server)
-cp .env.example .env                                      # fill in keys (see below)
+./run.sh
 ```
+
+That's the whole setup. `run.sh` self-heals a fresh checkout — creates `.venv` (python3.12),
+installs deps, fetches Chromium, builds `web/dist`, copies `.env.example` → `.env` if missing —
+then starts the app **and** the fixtures server (port 8137), health-checks, and prints every
+demo URL you need. Fill in your `.env` keys after the first run (it warns loudly, and runs
+keyless — Offline demo only — until you do). The rest of the kit:
+
+- `./run.sh doctor` — preflight + contract tests, starts nothing. Run it the night before.
+- `./run.sh --background` then `./run.sh stop` — detached mode (PIDs in `.run/`).
+- `./run.sh --restart` — a stale ghostpanel server owns port 8000? Replace it. (It never
+  kills anything that isn't ours.)
 
 `.env` keys:
 - `HAI_API_KEY` — H Company Holo (required). **Free tier = 5 req/min** (see rate-limit note).
@@ -24,13 +31,11 @@ cp .env.example .env                                      # fill in keys (see be
 
 ## Run it
 
-```bash
-python -m ghostpanel.server.main          # http://127.0.0.1:8000  (serves API + built frontend)
-```
-Open **http://127.0.0.1:8000/** → enter a target URL + task → pick personas → **Run simulation**.
+`./run.sh` (above) leaves the app at **http://127.0.0.1:8000/** — open it → enter a target URL +
+task → pick personas → **Run simulation**. Ctrl-C stops everything.
 It works on **any live website** (the launch form ships example chips for real signup flows). For a
-guaranteed-offline torture-test target, serve the bundled hostile form in a second shell —
-`python -m http.server 8137` → use `http://localhost:8137/fixtures/hostile_form.html`.
+guaranteed-offline torture-test target, `run.sh` already serves the bundled fixtures on port 8137 —
+use `http://localhost:8137/fixtures/hostile_form.html`.
 
 **Real websites — ethics + reliability:** demo with read-only or "start the flow" tasks (e.g.
 "find the pricing page", "begin signup and reach the verification step"). Do **not** actually submit
@@ -110,11 +115,8 @@ errors instead of red-border-only, all fields visible with literal labels, ≥48
 remediation-ledger comment at the top of the file maps each fix to its WCAG 2.2 criterion —
 read a line of it to a compliance-minded judge.
 
-**Serve the fixtures** (one shell from the repo root, keep it running):
-
-```bash
-python -m http.server 8137
-```
+**Serve the fixtures:** nothing to do — `./run.sh` already has them on port 8137 (its banner
+lists the exact before/after URLs).
 
 **Run A — before.** Target `http://localhost:8137/fixtures/hostile_form.html`, task
 "Create an account", personas **low-vision, tremor, power-user**.

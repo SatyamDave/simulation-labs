@@ -44,6 +44,63 @@ export async function getReport(runId: string): Promise<RunReport> {
 }
 
 // ---------------------------------------------------------------------------
+// Live persona Q&A (POST /runs/{id}/ask and /ask-audio)
+// ---------------------------------------------------------------------------
+export interface AskResponse {
+  persona_id: string;
+  // Only /ask-audio echoes the (transcribed) question back.
+  question?: string;
+  text: string;
+  audio_url: string | null;
+}
+
+// Surface the backend's `detail` (e.g. the 503 "no voice engine" explanation)
+// instead of a bare status line when it's available.
+async function askError(res: Response, fallback: string): Promise<Error> {
+  try {
+    const body = (await res.json()) as { detail?: string };
+    if (body?.detail) return new Error(body.detail);
+  } catch {
+    // non-JSON error body — fall through
+  }
+  return new Error(`${fallback}: ${res.status} ${res.statusText}`);
+}
+
+// POST /runs/{id}/ask — text question to one persona of a finished run.
+export async function askPersona(
+  runId: string,
+  personaId: string,
+  question: string
+): Promise<AskResponse> {
+  const res = await fetch(`${API_BASE}/runs/${runId}/ask`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ persona_id: personaId, question }),
+  });
+  if (!res.ok) throw await askError(res, "askPersona failed");
+  return (await res.json()) as AskResponse;
+}
+
+// POST /runs/{id}/ask-audio — the question as raw WAV bytes; the server
+// transcribes it and answers through the same grounded composition.
+export async function askPersonaAudio(
+  runId: string,
+  personaId: string,
+  wav: Blob
+): Promise<AskResponse> {
+  const res = await fetch(
+    `${API_BASE}/runs/${runId}/ask-audio?persona_id=${encodeURIComponent(personaId)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "audio/wav" },
+      body: wav,
+    }
+  );
+  if (!res.ok) throw await askError(res, "askPersonaAudio failed");
+  return (await res.json()) as AskResponse;
+}
+
+// ---------------------------------------------------------------------------
 // Run index / leaderboard
 // ---------------------------------------------------------------------------
 

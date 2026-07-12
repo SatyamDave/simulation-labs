@@ -34,3 +34,4 @@ artifacts/
 
 # TS build cache
 *.tsbuildinfo
+.run/

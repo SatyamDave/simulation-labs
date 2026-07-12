@@ -54,9 +54,11 @@ def client(tmp_path):
 class _FakeVoiceEngine:
     """Stands in for GradiumVoiceEngine: writes a real file, records calls."""
 
-    def __init__(self, run_dir: Path) -> None:
+    def __init__(self, run_dir: Path, transcript: str = "Why did you give up?") -> None:
         self.run_dir = Path(run_dir)
         self.calls: list[tuple[str, str | None]] = []
+        self.transcript = transcript
+        self.transcribed: list[bytes] = []
 
     async def mutter(self, text: str, voice_id: str | None) -> str:
         self.calls.append((text, voice_id))
@@ -64,6 +66,10 @@ class _FakeVoiceEngine:
         path = self.run_dir / "mutter-answer.wav"
         path.write_bytes(b"RIFF-fake")
         return str(path)
+
+    async def transcribe(self, audio_wav: bytes) -> str:
+        self.transcribed.append(audio_wav)
+        return self.transcript
 
 
 def _seed_finished_run(app) -> None:
@@ -200,6 +206,76 @@ def test_ask_409_while_run_in_flight(client):
     resp = client.post(
         "/runs/inflight/ask", json={"persona_id": PERSONA_ID, "question": "?"}
     )
+    assert resp.status_code == 409
+
+
+# ---------------------------------------------------------------------------
+# POST /runs/{run_id}/ask-audio (spoken question -> transcribe -> same answer)
+# ---------------------------------------------------------------------------
+def _post_audio(client, run_id: str, persona_id: str, body: bytes):
+    return client.post(
+        f"/runs/{run_id}/ask-audio",
+        params={"persona_id": persona_id},
+        content=body,
+        headers={"Content-Type": "audio/wav"},
+    )
+
+
+def test_ask_audio_transcribes_and_answers_grounded(client, tmp_path):
+    _seed_finished_run(client.app)
+    engines: list[_FakeVoiceEngine] = []
+
+    def factory(run_dir: Path) -> _FakeVoiceEngine:
+        engine = _FakeVoiceEngine(run_dir, transcript="Why did you give up?")
+        engines.append(engine)
+        return engine
+
+    client.app.state.swarm.voice_engine_factory = factory
+
+    resp = _post_audio(client, RUN_ID, PERSONA_ID, b"RIFF-fake-wav-question")
+    assert resp.status_code == 200
+    body = resp.json()
+    # The spoken question came back as text, via the engine's transcribe().
+    assert body["persona_id"] == PERSONA_ID
+    assert body["question"] == "Why did you give up?"
+    assert engines and engines[0].transcribed == [b"RIFF-fake-wav-question"]
+    # Same grounded composition as /ask — trace facts, nothing invented.
+    assert "I kept clicking and nothing happened." in body["text"]
+    assert "clicking sign up" in body["text"]
+    assert "the submit button never responded" in body["text"]
+    # Reply audio synthesized with the persona's assigned voice.
+    assert body["audio_url"] == f"/artifacts/{RUN_ID}/mutter-answer.wav"
+    assert engines[0].calls[0][1] == "preset-voice-1"
+    assert (tmp_path / RUN_ID / "mutter-answer.wav").exists()
+
+
+def test_ask_audio_503_without_voice_engine(client):
+    _seed_finished_run(client.app)
+    assert client.app.state.swarm.voice_engine_factory is None
+
+    resp = _post_audio(client, RUN_ID, PERSONA_ID, b"RIFF-fake")
+    assert resp.status_code == 503
+    assert "GRADIUM_API_KEY" in resp.json()["detail"]
+
+
+def test_ask_audio_413_oversize_body(client):
+    _seed_finished_run(client.app)
+    resp = _post_audio(client, RUN_ID, PERSONA_ID, b"\x00" * (10 * 1024 * 1024 + 1))
+    assert resp.status_code == 413
+
+
+def test_ask_audio_404_for_unknown_run_and_persona(client):
+    _seed_finished_run(client.app)
+    client.app.state.swarm.voice_engine_factory = _FakeVoiceEngine
+    assert _post_audio(client, "nope", PERSONA_ID, b"RIFF").status_code == 404
+    assert _post_audio(client, RUN_ID, "nobody", b"RIFF").status_code == 404
+
+
+def test_ask_audio_409_while_run_in_flight(client):
+    registry = client.app.state.runs
+    registry.create("inflight-audio", "http://t/", "sign up", [PERSONA_ID])
+    assert registry.get("inflight-audio").status == RunStatus.RUNNING
+    resp = _post_audio(client, "inflight-audio", PERSONA_ID, b"RIFF")
     assert resp.status_code == 409
 
 

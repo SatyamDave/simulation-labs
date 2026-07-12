@@ -38,7 +38,10 @@ def test_template_references_actual_trace():
     assert len(text) > 0
 
 
-def test_write_exit_interview_no_key_uses_template():
+def test_write_exit_interview_no_key_uses_template(monkeypatch):
+    # Isolate from an ambient ANTHROPIC_USE_CLAUDE_CLI (set in .env) — this test
+    # asserts the pure no-key/no-CLI path; the CLI branch has its own tests.
+    monkeypatch.delenv("ANTHROPIC_USE_CLAUDE_CLI", raising=False)
     result = _grandma_result()
     text = asyncio.run(
         write_exit_interview(result, _grandma_persona(), anthropic_key=None)

@@ -12,6 +12,7 @@ import {
   type RunInsights,
   type WcagFinding,
 } from "../insights";
+import { AskPersona } from "./AskPersona";
 import { SurvivalCurve } from "./SurvivalCurve";
 import { Heatmap } from "./Heatmap";
 import { StatsPanel } from "./StatsPanel";
@@ -205,6 +206,8 @@ export function ReportView({ report, coordSpace, live, onBack, onCompare }: Prop
               key={r.persona_id}
               result={r}
               name={nameOf(r.persona_id)}
+              // The mic/Q&A flow needs the backend — hidden in the offline demo.
+              askRunId={live ? report.run_id : undefined}
             />
           ))}
           {results.length === 0 && (
@@ -357,9 +360,12 @@ function WhyItMatters() {
 function ResultCard({
   result,
   name,
+  askRunId,
 }: {
   result: PersonaResult;
   name: string;
+  // Set on live (server-backed) reports only: enables the ask-a-question flow.
+  askRunId?: string;
 }) {
   const [videoOk, setVideoOk] = useState(true);
   const [audioOk, setAudioOk] = useState(true);
@@ -445,6 +451,14 @@ function ResultCard({
             </p>
           )}
         </div>
+
+        {askRunId && !success && (
+          <AskPersona
+            runId={askRunId}
+            personaId={result.persona_id}
+            name={name}
+          />
+        )}
       </div>
     </article>
   );

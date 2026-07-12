@@ -4,6 +4,7 @@
 - ``WS   /ws/runs/{id}``    replay buffered events, then stream live RunEvents
 - ``GET  /runs/{id}/report`` the cached RunReport JSON
 - ``POST /runs/{id}/ask``   live voice Q&A with one persona of a finished run
+- ``POST /runs/{id}/ask-audio`` same Q&A, but the question arrives as WAV bytes
 - ``GET  /runs``           list of runs (id, target, completion_rate, status)
 - ``GET  /policy``         NemoClaw policy relay (local file or live NVIDIA docs)
 - ``GET  /leaderboard``    the Ghostpanel Index — scores across past runs
@@ -139,12 +140,11 @@ def _grounded_answer(persona: PersonaConfig, result: PersonaResult) -> str:
     return " ".join(parts)
 
 
-@router.post("/runs/{run_id}/ask")
-async def ask_persona(run_id: str, req: AskRequest, request: Request) -> dict:
-    """Answer a question AS one persona of a finished run, grounded in its real
-    action trace, and voice it via Gradium when configured. Without a voice
-    engine (no GRADIUM_API_KEY) the text still comes back with ``audio_url: null``
-    so the demo can read it aloud itself."""
+def _lookup_ask_target(
+    request: Request, run_id: str, persona_id: str
+) -> tuple[PersonaConfig, PersonaResult]:
+    """Shared /ask + /ask-audio resolution: 404 unknown run/persona, 409 while
+    the run is still in flight; returns the persona config and its result."""
     record: Optional[RunRecord] = request.app.state.runs.get(run_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Unknown run_id.")
@@ -154,28 +154,100 @@ async def ask_persona(run_id: str, req: AskRequest, request: Request) -> dict:
             detail=f"Run not finished yet (status={record.status.value}).",
         )
     result = next(
-        (r for r in record.report.results if r.persona_id == req.persona_id), None
+        (r for r in record.report.results if r.persona_id == persona_id), None
     )
     if result is None:
         raise HTTPException(status_code=404, detail="Unknown persona_id for this run.")
-    persona = next((p for p in record.personas if p.id == req.persona_id), None)
+    persona = next((p for p in record.personas if p.id == persona_id), None)
     if persona is None:
         # Report present without configs (e.g. seeded in tests) — a minimal
         # stand-in is enough: only voice_id/name are consulted downstream.
-        persona = PersonaConfig(id=req.persona_id, name=req.persona_id)
+        persona = PersonaConfig(id=persona_id, name=persona_id)
+    return persona, result
+
+
+def _make_voice_engine(request: Request, run_id: str):
+    """Construct the run's voice engine, or None when no factory is configured
+    (no GRADIUM_API_KEY). May raise — callers decide whether that's fatal."""
+    swarm = request.app.state.swarm
+    factory = getattr(swarm, "voice_engine_factory", None) if swarm else None
+    if factory is None:
+        return None
+    return factory(Path(swarm.artifact_dir) / run_id)
+
+
+async def _mutter_url(engine, run_id: str, text: str, voice_id: Optional[str]) -> Optional[str]:
+    """Best-effort TTS of the answer; None (never an error) when voice fails."""
+    if engine is None:
+        return None
+    try:
+        wav_path = await engine.mutter(text, voice_id)
+        return f"/artifacts/{run_id}/{Path(wav_path).name}"
+    except Exception:  # noqa: BLE001 - voice is best-effort; text still answers
+        return None
+
+
+@router.post("/runs/{run_id}/ask")
+async def ask_persona(run_id: str, req: AskRequest, request: Request) -> dict:
+    """Answer a question AS one persona of a finished run, grounded in its real
+    action trace, and voice it via Gradium when configured. Without a voice
+    engine (no GRADIUM_API_KEY) the text still comes back with ``audio_url: null``
+    so the demo can read it aloud itself."""
+    persona, result = _lookup_ask_target(request, run_id, req.persona_id)
+    text = _grounded_answer(persona, result)
+    try:
+        engine = _make_voice_engine(request, run_id)
+    except Exception:  # noqa: BLE001 - engine construction is best-effort here
+        engine = None
+    audio_url = await _mutter_url(engine, run_id, text, persona.voice_id)
+    return {"persona_id": req.persona_id, "text": text, "audio_url": audio_url}
+
+
+_MAX_ASK_AUDIO_BYTES = 10 * 1024 * 1024  # 10 MB of WAV question is plenty
+
+
+@router.post("/runs/{run_id}/ask-audio")
+async def ask_persona_audio(run_id: str, persona_id: str, request: Request) -> dict:
+    """Spoken variant of ``/ask``: the raw request body is the judge's question
+    as WAV bytes (``Content-Type: audio/wav``), transcribed via the run's voice
+    engine, then answered through the exact same grounded composition. Unlike
+    ``/ask`` there is no text fallback — without a voice engine transcription
+    is impossible, so this returns 503."""
+    body = await request.body()
+    if len(body) > _MAX_ASK_AUDIO_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Audio question too large (>{_MAX_ASK_AUDIO_BYTES} bytes).",
+        )
+    persona, result = _lookup_ask_target(request, run_id, persona_id)
+    try:
+        engine = _make_voice_engine(request, run_id)
+    except Exception as exc:  # noqa: BLE001 - constructing the engine failed
+        raise HTTPException(
+            status_code=503, detail=f"Voice engine unavailable: {exc}"
+        )
+    if engine is None:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Voice engine unavailable (GRADIUM_API_KEY not configured) — "
+                "spoken questions cannot be transcribed. Use POST "
+                f"/runs/{run_id}/ask with a text question instead."
+            ),
+        )
+    try:
+        question = await engine.transcribe(body)
+    except Exception as exc:  # noqa: BLE001 - upstream STT failed
+        raise HTTPException(status_code=502, detail=f"Transcription failed: {exc}")
 
     text = _grounded_answer(persona, result)
-
-    audio_url: Optional[str] = None
-    swarm = request.app.state.swarm
-    if swarm is not None and getattr(swarm, "voice_engine_factory", None) is not None:
-        try:
-            engine = swarm.voice_engine_factory(Path(swarm.artifact_dir) / run_id)
-            wav_path = await engine.mutter(text, persona.voice_id)
-            audio_url = f"/artifacts/{run_id}/{Path(wav_path).name}"
-        except Exception:  # noqa: BLE001 - voice is best-effort; text still answers
-            audio_url = None
-    return {"persona_id": req.persona_id, "text": text, "audio_url": audio_url}
+    audio_url = await _mutter_url(engine, run_id, text, persona.voice_id)
+    return {
+        "persona_id": persona_id,
+        "question": question,
+        "text": text,
+        "audio_url": audio_url,
+    }
 
 
 # ---------------------------------------------------------------------------
