@@ -11,7 +11,7 @@ import logging
 from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
