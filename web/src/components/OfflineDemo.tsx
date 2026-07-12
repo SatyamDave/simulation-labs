@@ -1,10 +1,27 @@
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import type { RunEvent, RunReport } from "../types";
 import { initialRunState, reduceEvent, type RunState } from "../useRunStream";
 import PersonaGrid from "./PersonaGrid";
 import ReportView from "./ReportView";
 
 const TICK_MS = 1200; // one event per beat — slow enough to narrate on stage
+
+function OfflineFlag() {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-mono text-muted-foreground">
+      offline replay · fixture data
+    </span>
+  );
+}
+
+function Loading({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="py-32 text-center text-sm font-mono text-muted-foreground">
+      {children}
+    </div>
+  );
+}
 
 /**
  * The guaranteed no-backend demo: replays web/public/fixtures/events.jsonl on
@@ -64,27 +81,34 @@ export default function OfflineDemo() {
   }, [events, replayKey]);
 
   if (loadError) {
-    return <div className="loading">could not load fixtures — {loadError}</div>;
+    return <Loading>could not load fixtures — {loadError}</Loading>;
   }
   if (!events) {
-    return <div className="loading">loading séance fixtures…</div>;
+    return <Loading>loading fixtures…</Loading>;
   }
 
   if (showReport && report) {
     return (
       <div>
-        <div className="runbar" style={{ marginBottom: 4 }}>
-          <span className="offline-flag">offline replay · fixture data</span>
-          <span className="runbar__spacer" />
-          <button
-            className="btn"
+        <div className="flex flex-wrap items-center gap-4 mb-8">
+          <OfflineFlag />
+          <span className="flex-1" />
+          <motion.button
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+            whileHover={{ x: 5 }}
             onClick={() => {
               setShowReport(false);
               setReplayKey((k) => k + 1);
             }}
           >
-            ↺ Replay the run
-          </button>
+            Replay the run
+            <motion.span
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              →
+            </motion.span>
+          </motion.button>
         </div>
         <ReportView
           report={report}
@@ -97,28 +121,33 @@ export default function OfflineDemo() {
 
   return (
     <div>
-      <div style={{ marginBottom: 14 }}>
-        <span className="offline-flag">offline replay · fixture data</span>
+      <div className="mb-8">
+        <OfflineFlag />
       </div>
       <PersonaGrid state={state} />
       {state.status === "finished" && (
-        <div className="finisbar">
-          <span className="display">
+        <div className="mt-8 flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-background p-6">
+          <p className="text-xl font-light tabular-nums">
             Run finished —{" "}
             {state.completionRate != null
               ? `${Math.round(state.completionRate * 100)}% made it`
               : "results in"}
-          </span>
-          <span className="runbar__spacer" />
-          <button
-            className="btn btn--primary"
+          </p>
+          <span className="flex-1" />
+          <motion.button
+            className="px-8 py-3 bg-foreground text-background rounded-full font-medium disabled:opacity-50"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setShowReport(true)}
             disabled={!report}
           >
             View the report
-          </button>
-          <button className="btn" onClick={() => setReplayKey((k) => k + 1)}>
-            ↺ Replay
+          </motion.button>
+          <button
+            className="px-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => setReplayKey((k) => k + 1)}
+          >
+            Replay
           </button>
         </div>
       )}
