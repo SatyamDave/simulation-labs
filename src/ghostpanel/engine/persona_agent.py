@@ -62,7 +62,11 @@ class HoloPersonaAgent:
         degraded = perceive(obs.raw_png, self.persona)
 
         # 2. Ask Holo for the next action (coords in image/viewport pixels).
+        # The current URL rides in the task text (navigate() has no page argument)
+        # so the model can tell whether its actions are actually going anywhere.
         task = self._effective_task(history)
+        if obs.url:
+            task = f"{task}\n\nCurrent page URL: {obs.url}"
         raw_action = await self.holo.navigate(degraded, task, history)
 
         # 3. Apply tremor jitter + clamp to the true viewport.
