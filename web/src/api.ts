@@ -1,11 +1,13 @@
 // Ghostpanel API client. The backend base URL is read from VITE_API_BASE and
 // never hardcoded. See CLAUDE.md for the endpoint contract.
 
-import type { RunReport } from "./types";
+import type { PersonaConfig, RunReport } from "./types";
 
+// Default: explicit env override > dev-server assumption (backend on :8000) >
+// same-origin ("" — the built app is mounted at / by the backend itself).
 export const API_BASE: string =
-  (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, "") ||
-  "http://localhost:8000";
+  (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, "") ??
+  (import.meta.env.DEV ? "http://localhost:8000" : "");
 
 export interface StartRunPayload {
   target_url: string;
@@ -43,7 +45,10 @@ export async function getReport(runId: string): Promise<RunReport> {
 
 // WS /ws/runs/{id} — the live RunEvent stream for the grid.
 export function openRunSocket(runId: string): WebSocket {
-  const wsBase = API_BASE.replace(/^http/, "ws");
+  // Relative WS URLs are invalid — derive same-origin ws base when API_BASE is "".
+  const wsBase = API_BASE
+    ? API_BASE.replace(/^http/, "ws")
+    : `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
   return new WebSocket(`${wsBase}/ws/runs/${runId}`);
 }
 
@@ -56,4 +61,17 @@ export function artifactUrl(path?: string | null): string | undefined {
   // The report may store "artifacts/..." — the API serves them under /artifacts.
   const withPrefix = clean.startsWith("artifacts/") ? `/${clean}` : `/${clean}`;
   return `${API_BASE}${withPrefix}`;
+}
+
+/** GET /personas — the live roster. Returns null when the backend is
+ * unreachable or empty so callers can fall back to the static catalog. */
+export async function listPersonas(): Promise<PersonaConfig[] | null> {
+  try {
+    const res = await fetch(`${API_BASE}/personas`);
+    if (!res.ok) return null;
+    const data = (await res.json()) as PersonaConfig[];
+    return Array.isArray(data) && data.length > 0 ? data : null;
+  } catch {
+    return null;
+  }
 }

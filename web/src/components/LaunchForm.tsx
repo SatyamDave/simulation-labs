@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { PERSONA_CATALOG } from "../personaCatalog";
+import { listPersonas } from "../api";
+import { PERSONA_CATALOG, type CatalogEntry } from "../personaCatalog";
 import { perturbationBadges } from "../theme";
 
 export interface LaunchValues {
@@ -50,9 +51,26 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
   const [task, setTask] = useState(
     "Create a new account and reach the verification step."
   );
+  const [catalog, setCatalog] = useState<CatalogEntry[]>(PERSONA_CATALOG);
   const [selected, setSelected] = useState<string[]>(
     PERSONA_CATALOG.map((p) => p.id)
   );
+
+  // Prefer the backend's live roster (GET /personas); the static catalog is
+  // the offline/backendless fallback.
+  useEffect(() => {
+    let alive = true;
+    listPersonas().then((live) => {
+      if (!alive || !live) return;
+      setCatalog(
+        live.map((p) => ({ ...p, perturb: p.active_perturbations ?? [] }))
+      );
+      setSelected(live.map((p) => p.id));
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   function toggle(id: string) {
     setSelected((s) =>
@@ -198,11 +216,11 @@ export function LaunchForm({ onLaunch, onOfflineDemo, busy, error }: Props) {
             <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
               The panel{" "}
               <span className="text-foreground tabular-nums">
-                {selected.length}/{PERSONA_CATALOG.length} selected
+                {selected.length}/{catalog.length} selected
               </span>
             </span>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {PERSONA_CATALOG.map((p) => {
+              {catalog.map((p) => {
                 const on = selected.includes(p.id);
                 const badges = perturbationBadges(p);
                 return (
