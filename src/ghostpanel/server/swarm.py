@@ -23,6 +23,7 @@ import asyncio
 import logging
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Callable, Optional
 
 from ghostpanel_contracts import (
@@ -183,12 +184,12 @@ class SwarmManager:
             )
 
             holo = self._shared_holo()
-            artifact_dir = self.settings.artifact_dir / run_id
-            artifact_dir.mkdir(parents=True, exist_ok=True)
+            # The runner lays out its own <artifact_dir>/<run_id>/ subtree.
+            (self.settings.artifact_dir / run_id).mkdir(parents=True, exist_ok=True)
 
             async def _one_session(persona: PersonaConfig) -> PersonaResult:
                 agent = self._agent_factory(persona, holo)
-                runner = self._runner_factory(self.browser, artifact_dir)
+                runner = self._runner_factory(self.browser, self.settings.artifact_dir)
                 return await runner.run(persona, agent, target_url, task, sink, run_id)
 
             settled = await asyncio.gather(
@@ -210,14 +211,22 @@ class SwarmManager:
                 else:
                     results.append(outcome)
 
+            # Voice first so transcripts/audio paths land in the report.
+            await self._run_exit_interviews(results, personas, run_id)
+
+            # Rewrite filesystem artifact paths to /artifacts/... URLs the
+            # frontend (and the standalone HTML report) can actually load.
+            for result in results:
+                result.video_path = self._artifact_url(result.video_path)
+                result.audio_path = self._artifact_url(result.audio_path)
+
             report = self._report_builder_factory().build(
                 run_id, target_url, task, results, personas
             )
             if not report.generated_at:
                 report.generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
-            await self._run_exit_interviews(results, personas)
-
+            self._write_html_report(report)
             self.registry.set_report(run_id, report)
             await sink.emit(
                 RunFinished(
@@ -231,8 +240,27 @@ class SwarmManager:
             self.registry.set_failed(run_id)
             raise
 
+    def _artifact_url(self, path: Optional[str]) -> Optional[str]:
+        """Map an absolute path under the artifact dir to its /artifacts/ URL."""
+        if not path:
+            return path
+        try:
+            rel = Path(path).resolve().relative_to(self.settings.artifact_dir.resolve())
+        except (ValueError, OSError):
+            return path
+        return f"/artifacts/{rel.as_posix()}"
+
+    def _write_html_report(self, report) -> None:
+        """Standalone report.html leave-behind; never fatal to the run."""
+        try:
+            from ghostpanel.report.html_report import write_html
+
+            write_html(report, self.settings.artifact_dir)
+        except Exception:
+            logger.exception("failed to write HTML report for run %s", report.run_id)
+
     async def _run_exit_interviews(
-        self, results: list[PersonaResult], personas: list[PersonaConfig]
+        self, results: list[PersonaResult], personas: list[PersonaConfig], run_id: str
     ) -> None:
         """Voice exit-interviews for every non-success persona. Voice failures
         (missing key, network, SDK errors) are logged and swallowed — they must
@@ -243,7 +271,13 @@ class SwarmManager:
             logger.exception("voice engine construction failed; skipping exit interviews")
             return
         if voice is None:
+            # No Gradium key: still ground a text transcript in the real trace
+            # (narrate has a deterministic no-key fallback) so the report reads.
+            await self._text_only_interviews(results, personas)
             return
+        # GradiumVoiceEngine writes to <artifact_dir>/<run_id>/ when told the run.
+        if hasattr(voice, "run_id"):
+            voice.run_id = run_id
         personas_by_id = {p.id: p for p in personas}
         for result in results:
             if result.outcome == PersonaOutcome.SUCCESS:
@@ -255,3 +289,25 @@ class SwarmManager:
                 await voice.exit_interview(result, persona)
             except Exception:
                 logger.exception("exit interview failed for persona %s", result.persona_id)
+
+    async def _text_only_interviews(
+        self, results: list[PersonaResult], personas: list[PersonaConfig]
+    ) -> None:
+        try:
+            from ghostpanel.voice.narrate import write_exit_interview
+        except Exception:
+            logger.exception("narrate unavailable; skipping text exit interviews")
+            return
+        personas_by_id = {p.id: p for p in personas}
+        for result in results:
+            if result.outcome == PersonaOutcome.SUCCESS or result.transcript:
+                continue
+            persona = personas_by_id.get(result.persona_id)
+            if persona is None:
+                continue
+            try:
+                result.transcript = await write_exit_interview(
+                    result, persona, anthropic_key=self.settings.anthropic_api_key or None
+                )
+            except Exception:
+                logger.exception("text exit interview failed for %s", result.persona_id)
