@@ -23,7 +23,6 @@ from __future__ import annotations
 import asyncio
 import functools
 import http.server
-import json
 import statistics
 import threading
 import time
