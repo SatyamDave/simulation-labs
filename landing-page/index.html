@@ -430,261 +430,386 @@
           <span class="dot" style="background:var(--live)"></span>
           Built at the H Company Computer Use Hackathon
         </p>
-        <figure class="hero__plotwrap" role="img" aria-label="A coordinate plot of eight synthetic-user sessions attempting a checkout: six abandon before the goal line, each marked with an X; two reach the goal.">
-          <canvas class="hero__plot" id="heroPlot" aria-hidden="true"></canvas>
-          <figcaption class="hero__figcap"><span>fig.1 · session traces · 8 synthetic users</span><span>6 abandoned · 2 completed</span></figcaption>
-        </figure>
       </div>
     </section>
 
-    <section class="section" id="problem">
-  <div class="wrap">
-    <p class="eyebrow">the say&ndash;do gap</p>
-    <h2 class="h-sec">Surveys can't tell you where they quit.</h2>
-    <div class="prob-body">
-      <p class="lead">
-        Every "synthetic user" tool asks AI personas what they <em>think</em> of your page. The
-        answers are shallow and people-pleasing &mdash; prompted personas match real user behavior
-        only <strong>11.86%</strong> of the time (arXiv 2503.20749). Meanwhile real money leaks from
-        your highest-intent flows: an average <strong>70.19%</strong> of shoppers who reach checkout
-        abandon before they pay, yet checkout design changes alone can lift conversion by up to
-        <strong>35%</strong> (Baymard Institute, 2025). You can't fix a drop-off you can't see.
-      </p>
-      <p class="prob-source mono">
-        Sources: arXiv 2503.20749 (prompted-persona fidelity); Baymard Institute checkout
-        UX research, 2025 (70.19% average cart abandonment; up to 35% conversion lift from
-        checkout design changes).
-      </p>
-    </div>
-  </div>
-</section>
     <section id="demo" class="section">
   <div class="wrap">
-    <p class="eyebrow">live demo</p>
-    <h2 class="h-sec demo-headline">Watch a synthetic user check out</h2>
-    <p class="lead demo-sub">Pick a behavior. The persona attempts a real checkout &mdash; and abandons at the exact pixel where the flow breaks.</p>
+    <p class="eyebrow">live simulation</p>
+    <h2 class="h-sec sim-headline" id="sim-headline">Watch a live flow lose a real customer.</h2>
+    <p class="lead sim-lead" id="sim-lead">An ICP model attempts your existing high-intent flow and abandons at the exact friction point — no survey, just behavior.</p>
 
-    <div class="demo-widget card">
-      <div class="demo-grid">
+    <!-- WEDGE TABS -->
+    <div class="sim-tabs" id="sim-tabs" role="tablist" aria-label="Choose what to simulate">
+      <button class="sim-tab" id="sim-tab-flow" role="tab" type="button" aria-selected="true" aria-controls="sim-stage" data-wedge="flow" tabindex="0">
+        <span class="sim-tab-t">Optimize a live flow</span>
+        <span class="sim-tab-s">cro / growth</span>
+      </button>
+      <button class="sim-tab" id="sim-tab-launch" role="tab" type="button" aria-selected="false" aria-controls="sim-stage" data-wedge="launch" tabindex="-1">
+        <span class="sim-tab-t">Validate a new launch</span>
+        <span class="sim-tab-s">product</span>
+      </button>
+      <button class="sim-tab" id="sim-tab-gate" role="tab" type="button" aria-selected="false" aria-controls="sim-stage" data-wedge="gate" tabindex="-1">
+        <span class="sim-tab-t">Wire into CI/CD</span>
+        <span class="sim-tab-s">qa / eng</span>
+      </button>
+    </div>
 
-        <!-- MONITOR: the mock checkout the persona attempts -->
-        <div class="demo-monitor">
-          <div class="demo-stage" role="img" aria-label="A live monitor of a synthetic user attempting a checkout flow, ending where the persona abandons the task.">
-            <div class="demo-scan" aria-hidden="true"></div>
+    <!-- ICP MODEL CHIP -->
+    <div class="sim-icp" id="sim-icp">
+      <span class="dot" style="background:var(--live)"></span>
+      <span class="mono" id="sim-icp-text">ICP MODEL · returning mobile shopper · tuned to your users</span>
+    </div>
 
-            <div class="demo-brand"><span class="demo-brand-dot"></span>QuantumLeap <span class="demo-brand-sep">/</span> checkout</div>
+    <!-- STAGE -->
+    <div class="sim-stage card" id="sim-stage" role="tabpanel" aria-labelledby="sim-tab-flow"
+         aria-label="Simulation stage: an ICP model runs through a flow and abandons at a recorded point.">
 
-            <!-- cart summary -->
-            <div class="demo-cart" aria-hidden="true">
-              <div class="demo-cart-title">Order summary</div>
-              <div class="demo-cart-row"><span>Pro plan &mdash; annual</span><span>$228.00</span></div>
-              <div class="demo-cart-row"><span>Onboarding</span><span>$40.00</span></div>
-              <div class="demo-cart-line"></div>
-              <div class="demo-cart-row demo-cart-total"><span>Total</span><span>$268.00</span></div>
+      <!-- SESSION VIEW (wedges 1 & 2) -->
+      <div class="sim-view sim-view--session" id="sim-view-session">
+        <div class="sim-mockcol">
+
+          <!-- WEDGE 1 · mobile checkout -->
+          <div class="sim-phone sim-mock" id="sim-mock-flow" aria-hidden="true">
+            <span class="sim-notch"></span>
+            <div class="sim-screen sim-screen--flow">
+              <div class="sim-topbar">
+                <span class="sim-back">‹</span>
+                <span class="sim-store">NOVA</span>
+                <span class="sim-lock">lock</span>
+              </div>
+              <div class="sim-h1">Checkout</div>
+              <div class="sim-summary">
+                <div class="sim-sum-row"><span>Pro plan · annual</span><span>$228.00</span></div>
+                <div class="sim-sum-row sim-dim"><span>Tax</span><span>$0.00</span></div>
+                <div class="sim-sum-rule"></div>
+                <div class="sim-sum-row sim-total"><span>Total</span><span>$228.00</span></div>
+              </div>
+              <div class="sim-promo-toggle">Have a promo code?<span class="sim-chev">▾</span></div>
+              <div class="sim-promo">
+                <div class="sim-input sim-input--empty">Enter code</div>
+                <div class="sim-promo-apply">Apply</div>
+              </div>
+              <div class="sim-flabel">Card number</div>
+              <div class="sim-input">4242 4242 4242 4242</div>
+              <div class="sim-fold"><span>fold</span></div>
+              <button class="sim-pay" tabindex="-1">Pay $228.00</button>
+
+              <div class="sim-heat"></div>
+              <div class="sim-death"><span class="sim-death-ring"></span><span class="sim-death-x">✕</span></div>
+              <div class="sim-cursor"><span class="sim-cursor-ping"></span></div>
             </div>
-
-            <!-- form -->
-            <div class="demo-field demo-field-email" aria-hidden="true">
-              <label>Email</label>
-              <div class="demo-input"><span class="demo-caret">you@company.co</span></div>
-            </div>
-            <div class="demo-field demo-field-card" aria-hidden="true">
-              <label>Card number</label>
-              <div class="demo-input demo-input-empty"><span>1234 1234 1234 1234</span></div>
-            </div>
-
-            <!-- confusing legal label -->
-            <div class="demo-terms" aria-hidden="true">
-              <span class="demo-check"></span>
-              I accept the DPA, AUP &amp; the updated ToS as described in the master agreement.
-            </div>
-
-            <!-- deliberately small primary action -->
-            <button class="demo-btn-order" tabindex="-1" aria-hidden="true">Place order</button>
-            <!-- larger decoy -->
-            <button class="demo-btn-decoy" tabindex="-1" aria-hidden="true">Explore plans <span>&rarr;</span></button>
-
-            <!-- overlay layer -->
-            <div class="demo-heat" aria-hidden="true"></div>
-            <div class="demo-death" aria-hidden="true">
-              <span class="demo-death-ring"></span>
-              <span class="demo-death-x">&times;</span>
-            </div>
-            <div class="demo-cursor" aria-hidden="true"><span class="demo-cursor-ping"></span></div>
           </div>
+
+          <!-- WEDGE 2 · onboarding wizard -->
+          <div class="sim-phone sim-mock" id="sim-mock-launch" aria-hidden="true" hidden>
+            <span class="sim-notch"></span>
+            <div class="sim-screen sim-screen--launch">
+              <div class="sim-topbar">
+                <span class="sim-store">Acme</span>
+                <span class="sim-dim">· setup</span>
+              </div>
+              <div class="sim-wizsteps">
+                <span class="sim-wiz-dot is-on">1</span><span class="sim-wiz-bar"></span>
+                <span class="sim-wiz-dot">2</span><span class="sim-wiz-bar"></span>
+                <span class="sim-wiz-dot">3</span>
+              </div>
+              <div class="sim-wiz-label">Step 1 of 3 · connect data</div>
+              <div class="sim-h1">Connect your data source</div>
+              <div class="sim-flabel">Data source</div>
+              <div class="sim-select">Select…<span class="sim-chev">▾</span></div>
+              <div class="sim-flabel">Connection string</div>
+              <div class="sim-input sim-input--empty">postgres://…</div>
+              <div class="sim-wiz-steps-note">invite team · go live</div>
+              <button class="sim-continue" tabindex="-1" disabled>Continue</button>
+
+              <div class="sim-heat"></div>
+              <div class="sim-death"><span class="sim-death-ring"></span><span class="sim-death-x">✕</span></div>
+              <div class="sim-cursor"><span class="sim-cursor-ping"></span></div>
+            </div>
+          </div>
+
         </div>
 
-        <!-- TELEMETRY -->
-        <aside class="demo-telemetry">
-          <div class="demo-tel-head">
-            <span class="dot" style="background:var(--live)" id="demo-status-dot"></span>
-            <span class="mono demo-tel-state" id="demo-state">live</span>
+        <!-- shared telemetry side -->
+        <aside class="sim-side">
+          <div class="sim-tel-head">
+            <span class="dot" id="sim-state-dot" style="background:var(--live)"></span>
+            <span class="mono" id="sim-state">idle</span>
           </div>
-
-          <div class="demo-tel-row"><span class="demo-tel-label mono">persona</span><span class="demo-tel-val mono" id="demo-persona-name">Rushed</span></div>
-          <div class="demo-tel-row"><span class="demo-tel-label mono">step</span><span class="demo-tel-val mono" id="demo-step">0 / 0</span></div>
-          <div class="demo-tel-row"><span class="demo-tel-label mono">elapsed</span><span class="demo-tel-val mono" id="demo-clock">00:00</span></div>
-
-          <div class="demo-caption mono" id="demo-caption" aria-live="polite">Select a behavior to begin.</div>
-
-          <canvas class="demo-vital" id="demo-vital"></canvas>
-          <div class="demo-vital-label mono">vital line</div>
-
-          <div class="demo-chip" id="demo-chip"><span class="dot" style="background:var(--fail)"></span><span class="mono" id="demo-chip-text"></span></div>
-          <div class="demo-chip-note mono">illustrative outcome &mdash; not a benchmark</div>
-
-          <button class="demo-replay mono" id="demo-replay" type="button">&#8635; Replay run</button>
+          <div class="sim-tel">
+            <div class="sim-tel-row"><span class="sim-tel-k mono">model</span><span class="sim-tel-v mono" id="sim-tel-model">returning mobile shopper</span></div>
+            <div class="sim-tel-row"><span class="sim-tel-k mono">step</span><span class="sim-tel-v mono" id="sim-tel-step">0 / 0</span></div>
+            <div class="sim-tel-row"><span class="sim-tel-k mono">elapsed</span><span class="sim-tel-v mono" id="sim-tel-elapsed">00:00</span></div>
+          </div>
+          <p class="sim-caption mono" id="sim-caption" aria-live="polite">Ready to run.</p>
+          <div class="sim-tracewrap">
+            <canvas id="sim-trace" aria-hidden="true"></canvas>
+            <div class="sim-trace-label mono">session trace · progress → abandonment</div>
+          </div>
+          <div class="sim-outcome" id="sim-outcome"><span class="sim-x mono">✕</span><span class="mono" id="sim-outcome-text"></span></div>
+          <p class="sim-note mono">illustrative run — not a benchmark</p>
         </aside>
       </div>
 
-      <!-- PERSONA PICKER -->
-      <div class="demo-picker" role="group" aria-label="Choose a persona behavior to simulate">
-        <button class="demo-persona" type="button" data-persona="rushed" aria-pressed="true">
-          <span class="demo-persona-name mono">Rushed</span>
-          <span class="demo-persona-desc">races ahead, skips fields, bounces on the clock</span>
-        </button>
-        <button class="demo-persona" type="button" data-persona="misclick" aria-pressed="false">
-          <span class="demo-persona-name mono">Misclick-prone</span>
-          <span class="demo-persona-desc">jittery taps, keeps missing small targets</span>
-        </button>
-        <button class="demo-persona" type="button" data-persona="distracted" aria-pressed="false">
-          <span class="demo-persona-name mono">Distracted</span>
-          <span class="demo-persona-desc">wanders off, backtracks, loses the task</span>
-        </button>
-        <button class="demo-persona" type="button" data-persona="firsttime" aria-pressed="false">
-          <span class="demo-persona-name mono">First-time visitor</span>
-          <span class="demo-persona-desc">hesitates, re-reads labels, times out</span>
-        </button>
+      <!-- GATE VIEW (wedge 3) -->
+      <div class="sim-view sim-view--gate" id="sim-view-gate" hidden>
+        <div class="sim-gate-head">
+          <span class="sim-gate-title mono">BUILD #482 · pre-deploy check</span>
+          <span class="sim-gate-state mono" id="sim-gate-state">queued</span>
+        </div>
+        <div class="sim-gate-sub mono">gate: block release if any ICP model's completion drops &gt; 10% vs r-041</div>
+        <div class="sim-gate-rows" id="sim-gate-rows">
+          <div class="sim-row" data-pass="true" data-delta="+1%">
+            <span class="sim-row-dot"></span>
+            <span class="sim-row-model">returning mobile shopper</span>
+            <span class="sim-row-flow mono">checkout</span>
+            <span class="sim-row-delta mono"></span>
+            <span class="sim-row-status mono">queued</span>
+          </div>
+          <div class="sim-row" data-pass="true" data-delta="−3%">
+            <span class="sim-row-dot"></span>
+            <span class="sim-row-model">first-time trial user</span>
+            <span class="sim-row-flow mono">onboarding</span>
+            <span class="sim-row-delta mono"></span>
+            <span class="sim-row-status mono">queued</span>
+          </div>
+          <div class="sim-row" data-pass="true" data-delta="0%">
+            <span class="sim-row-dot"></span>
+            <span class="sim-row-model">power user</span>
+            <span class="sim-row-flow mono">plan upgrade</span>
+            <span class="sim-row-delta mono"></span>
+            <span class="sim-row-status mono">queued</span>
+          </div>
+          <div class="sim-row" data-pass="false" data-delta="−22%">
+            <span class="sim-row-dot"></span>
+            <span class="sim-row-model">first-time mobile</span>
+            <span class="sim-row-flow mono">signup</span>
+            <span class="sim-row-delta mono"></span>
+            <span class="sim-row-status mono">queued</span>
+          </div>
+          <div class="sim-row" data-pass="true" data-delta="+2%">
+            <span class="sim-row-dot"></span>
+            <span class="sim-row-model">enterprise admin</span>
+            <span class="sim-row-flow mono">SSO setup</span>
+            <span class="sim-row-delta mono"></span>
+            <span class="sim-row-status mono">queued</span>
+          </div>
+        </div>
+        <div class="sim-banner" id="sim-banner" hidden>
+          <span class="sim-banner-x mono">✕</span>
+          <span class="sim-banner-t mono">BUILD BLOCKED — signup completion −22% for first-time mobile</span>
+        </div>
+        <p class="sim-note mono">illustrative run — not a benchmark</p>
       </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="sim-controls">
+      <button class="sim-run" id="sim-run" type="button">
+        <span class="sim-run-glyph" aria-hidden="true">▸</span>
+        <span id="sim-run-label">Run simulation</span>
+      </button>
+      <span class="sim-controls-note mono">deterministic replay · same abandonment point every run</span>
     </div>
   </div>
 
   <style>
-    .demo-widget{ padding:clamp(14px,2.4vw,22px); margin-top:clamp(20px,3vw,30px); overflow:hidden; }
-    .demo-grid{ display:grid; grid-template-columns:1fr; gap:clamp(14px,2vw,20px); }
-    @media(min-width:720px){ .demo-grid{ grid-template-columns:1.55fr 1fr; align-items:stretch; } }
-
-    /* ---------- MONITOR / STAGE ---------- */
-    .demo-monitor{ min-width:0; }
-    .demo-stage{
-      position:relative; width:100%; aspect-ratio:16/11;
-      background:var(--panel-2); border:1px solid var(--line);
-      border-radius:var(--radius); overflow:hidden;
-      container-type:inline-size;
-      box-shadow:inset 0 0 30px rgba(24,33,28,.06);
-    }
-    .demo-scan{ position:absolute; inset:0; pointer-events:none; z-index:5;
-      background:repeating-linear-gradient(0deg, rgba(24,33,28,.045) 0 1px, transparent 1px 26px), repeating-linear-gradient(90deg, rgba(24,33,28,.045) 0 1px, transparent 1px 26px); }
-
-    .demo-brand{ position:absolute; top:5%; left:6%; font-family:var(--font-mono);
-      font-size:3.1cqw; letter-spacing:.02em; color:var(--text); display:flex; align-items:center; gap:.5em; }
-    .demo-brand-dot{ width:.7em; height:.7em; border-radius:50%; background:var(--live); box-shadow:0 0 6px var(--live); }
-    .demo-brand-sep{ color:var(--muted); }
-
-    .demo-cart{ position:absolute; top:15%; left:56%; width:38%;
+    /* ============ SIM · three-wedge ICP simulator ============ */
+    .sim-tabs{ display:grid; grid-template-columns:1fr; gap:8px; margin-top:clamp(20px,3vw,30px); }
+    @media(min-width:560px){ .sim-tabs{ grid-template-columns:repeat(3,1fr); } }
+    .sim-tab{ text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:3px;
       background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-sm);
-      padding:2.6cqw 2.8cqw; font-family:var(--font-sans); }
-    .demo-cart-title{ font-family:var(--font-mono); font-size:2.5cqw; color:var(--muted); text-transform:lowercase; letter-spacing:.04em; margin-bottom:1.6cqw; }
-    .demo-cart-row{ display:flex; justify-content:space-between; gap:1em; font-size:2.7cqw; color:var(--muted); margin:.7cqw 0; font-variant-numeric:tabular-nums; }
-    .demo-cart-line{ height:1px; background:var(--line); margin:1.4cqw 0; }
-    .demo-cart-total{ color:var(--text); font-weight:600; }
+      padding:12px 14px; transition:border-color .18s ease, background .18s ease; min-width:0; }
+    .sim-tab:hover{ border-color:var(--muted); }
+    .sim-tab[aria-selected="true"]{ border-color:var(--live); background:rgba(18,69,102,.07); }
+    .sim-tab-k{ font-size:10px; letter-spacing:.12em; color:var(--muted); }
+    .sim-tab[aria-selected="true"] .sim-tab-k{ color:var(--live); }
+    .sim-tab-t{ font-family:var(--font-sans); font-weight:600; font-size:.95rem; color:var(--text); letter-spacing:-.01em; }
+    .sim-tab-s{ font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
 
-    .demo-field{ position:absolute; left:6%; width:44%; }
-    .demo-field-email{ top:28%; }
-    .demo-field-card{ top:45%; }
-    .demo-field label{ display:block; font-family:var(--font-mono); font-size:2.4cqw; color:var(--muted); margin-bottom:1cqw; text-transform:lowercase; letter-spacing:.03em; }
-    .demo-input{ background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius-sm);
-      padding:2.2cqw 2.4cqw; font-family:var(--font-mono); font-size:2.8cqw; color:var(--text); overflow:hidden; white-space:nowrap; }
-    .demo-input-empty span{ color:#a9a598; }
+    .sim-icp{ display:inline-flex; align-items:center; gap:.55em; margin-top:16px;
+      background:var(--panel-2); border:1px solid var(--line); border-radius:999px;
+      padding:6px 13px; max-width:100%; }
+    .sim-icp .mono{ font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--text);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-    .demo-terms{ position:absolute; top:61%; left:6%; width:62%;
-      font-family:var(--font-sans); font-size:2.2cqw; line-height:1.45; color:#7d7d7a;
-      display:flex; gap:1.4cqw; }
-    .demo-check{ flex:0 0 auto; width:2.6cqw; height:2.6cqw; border:1px solid var(--line); border-radius:3px; margin-top:.3cqw; }
+    /* ---------- STAGE ---------- */
+    .sim-stage{ margin-top:16px; padding:clamp(14px,2.4vw,22px); overflow:hidden; }
+    .sim-view[hidden], .sim-mock[hidden]{ display:none !important; }
+    .sim-view--session{ display:grid; grid-template-columns:1fr; gap:clamp(16px,2.4vw,24px); }
+    @media(min-width:720px){ .sim-view--session{ grid-template-columns:300px 1fr; align-items:start; } }
 
-    .demo-btn-order{ position:absolute; top:79%; left:6%; width:20%; height:11%;
-      background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-sm);
-      color:var(--muted); font-family:var(--font-mono); font-size:2.3cqw; letter-spacing:.01em; cursor:default; }
-    .demo-btn-decoy{ position:absolute; top:75%; left:58%; width:34%; height:17%;
-      background:transparent; border:1px solid var(--live); border-radius:var(--radius-sm);
-      color:var(--live); font-family:var(--font-sans); font-weight:600; font-size:3.2cqw; cursor:default;
-      display:flex; align-items:center; justify-content:center; gap:.5em;
-      box-shadow:0 0 16px rgba(18,69,102,.12); }
+    .sim-mockcol{ width:100%; max-width:340px; margin:0 auto; min-width:0; }
 
-    /* overlay: cursor */
-    .demo-cursor{ position:absolute; left:50%; top:10%; width:14px; height:14px; z-index:8;
-      transform:translate(-50%,-50%); pointer-events:none;
-      border-radius:50%; background:var(--live);
-      box-shadow:0 0 9px 2px rgba(18,69,102,.5), 0 0 2px rgba(24,33,28,.35);
-      transition:opacity .4s ease; }
-    .demo-cursor--hidden{ opacity:0; }
-    .demo-cursor-ping{ position:absolute; inset:-6px; border-radius:50%; border:1px solid var(--live); opacity:0; }
+    /* ---------- device frame ---------- */
+    .sim-phone{ position:relative; width:100%; background:var(--panel); border:1px solid var(--line);
+      border-radius:20px; padding:14px 10px; box-shadow:inset 0 0 0 4px var(--panel-2); }
+    .sim-notch{ position:absolute; top:7px; left:50%; transform:translateX(-50%);
+      width:34%; height:5px; border-radius:999px; background:var(--panel-2); }
+    .sim-screen{ position:relative; width:100%; aspect-ratio:300/540; overflow:hidden;
+      background:var(--paper); border:1px solid var(--line); border-radius:12px;
+      container-type:inline-size; display:flex; flex-direction:column; padding:4.5cqw 4.5cqw 0; }
 
-    /* overlay: death mark + heat */
-    .demo-heat{ position:absolute; left:0; top:0; width:34cqw; height:34cqw; z-index:6;
-      transform:translate(-50%,-50%) scale(.2); pointer-events:none; opacity:0;
-      border-radius:50%;
-      background:radial-gradient(circle, rgba(224,96,90,.45) 0%, rgba(224,96,90,.16) 40%, transparent 70%); }
-    .demo-heat--show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
-    .demo-death{ position:absolute; left:0; top:0; z-index:9; width:0; height:0;
-      transform:translate(-50%,-50%); pointer-events:none; opacity:0; color:var(--fail); }
-    .demo-death--show{ opacity:1; }
-    .demo-death-ring{ position:absolute; left:50%; top:50%; width:26px; height:26px; margin:-13px 0 0 -13px;
-      border:1.5px solid var(--fail); border-radius:50%; box-shadow:0 0 10px rgba(224,96,90,.6); }
-    .demo-death-x{ position:absolute; left:50%; top:50%; transform:translate(-50%,-52%);
-      font-family:var(--font-mono); font-size:16px; line-height:1; color:var(--fail); }
+    .sim-topbar{ display:flex; align-items:center; justify-content:space-between;
+      font-family:var(--font-mono); font-size:3.4cqw; color:var(--text); padding-bottom:2.6cqw; }
+    .sim-back{ color:var(--muted); }
+    .sim-store{ letter-spacing:.14em; }
+    .sim-lock{ font-size:2.4cqw; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+    .sim-dim{ color:var(--muted); }
+    .sim-h1{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:-.01em;
+      font-size:5.2cqw; color:var(--text); margin:1.4cqw 0 2.6cqw; }
 
-    /* ---------- TELEMETRY ---------- */
-    .demo-telemetry{ display:flex; flex-direction:column; gap:clamp(8px,1.4vw,12px);
+    .sim-summary{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-sm);
+      padding:3cqw 3.4cqw; margin-bottom:2.8cqw; }
+    .sim-sum-row{ display:flex; justify-content:space-between; gap:1em; font-family:var(--font-sans);
+      font-size:3cqw; color:var(--text); margin:.6cqw 0; font-variant-numeric:tabular-nums; }
+    .sim-sum-row.sim-dim{ color:var(--muted); }
+    .sim-sum-rule{ height:1px; background:var(--line); margin:1.8cqw 0; }
+    .sim-sum-row.sim-total{ font-weight:600; }
+
+    .sim-promo-toggle{ display:flex; align-items:center; justify-content:space-between;
+      font-family:var(--font-sans); font-size:3cqw; color:var(--live);
+      border:1px solid var(--line); border-radius:var(--radius-sm); padding:2.6cqw 3cqw; margin-bottom:2.6cqw; }
+    .sim-chev{ color:var(--muted); font-size:2.6cqw; transition:transform .2s ease; }
+    .sim-promo{ display:none; gap:2cqw; margin-bottom:2.6cqw; }
+    .sim-screen--flow.is-expanded .sim-promo{ display:flex; }
+    .sim-screen--flow.is-expanded .sim-promo-toggle .sim-chev{ transform:rotate(180deg); }
+    .sim-promo .sim-input{ flex:1 1 auto; }
+    .sim-promo-apply{ flex:0 0 auto; font-family:var(--font-mono); font-size:2.8cqw; color:var(--text);
+      border:1px solid var(--line); border-radius:var(--radius-sm); padding:0 3cqw; display:flex; align-items:center; }
+
+    .sim-flabel{ font-family:var(--font-mono); font-size:2.6cqw; color:var(--muted);
+      text-transform:lowercase; letter-spacing:.03em; margin-bottom:1.2cqw; }
+    .sim-input{ background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius-sm);
+      padding:2.6cqw 3cqw; font-family:var(--font-mono); font-size:3cqw; color:var(--text);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2.8cqw; }
+    .sim-input--empty{ color:#a9a598; margin-bottom:0; }
+
+    .sim-fold{ position:relative; height:0; border-top:1px dashed var(--fail); opacity:.55; margin:1cqw 0 3.4cqw; }
+    .sim-fold span{ position:absolute; right:0; top:-1.8cqw; font-family:var(--font-mono);
+      font-size:2.2cqw; text-transform:uppercase; letter-spacing:.1em; color:var(--fail); background:var(--paper); padding:0 1cqw; }
+    .sim-pay{ width:100%; background:transparent; border:1px solid var(--ok); color:var(--ok);
+      font-family:var(--font-mono); font-weight:500; font-size:3.6cqw; letter-spacing:.02em;
+      border-radius:var(--radius-sm); padding:3cqw; cursor:default; }
+
+    /* wizard bits */
+    .sim-wizsteps{ display:flex; align-items:center; gap:1.4cqw; margin:1.6cqw 0 2cqw; }
+    .sim-wiz-dot{ width:6cqw; height:6cqw; border-radius:50%; border:1px solid var(--line);
+      display:flex; align-items:center; justify-content:center; font-family:var(--font-mono);
+      font-size:2.8cqw; color:var(--muted); flex:0 0 auto; }
+    .sim-wiz-dot.is-on{ border-color:var(--live); color:var(--live); box-shadow:0 0 0 2px rgba(18,69,102,.12); }
+    .sim-wiz-bar{ flex:1 1 auto; height:1px; background:var(--line); }
+    .sim-wiz-label{ font-family:var(--font-mono); font-size:2.6cqw; text-transform:uppercase;
+      letter-spacing:.08em; color:var(--muted); margin-bottom:1.2cqw; }
+    .sim-select{ display:flex; align-items:center; justify-content:space-between;
+      background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius-sm);
+      padding:2.6cqw 3cqw; font-family:var(--font-mono); font-size:3cqw; color:#a9a598; margin-bottom:2.8cqw; }
+    .sim-wiz-steps-note{ font-family:var(--font-mono); font-size:2.4cqw; color:var(--muted);
+      letter-spacing:.06em; margin:2cqw 0 2.6cqw; }
+    .sim-continue{ width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--muted);
+      font-family:var(--font-mono); font-size:3.4cqw; border-radius:var(--radius-sm); padding:3cqw; cursor:default; }
+
+    /* ---------- overlays ---------- */
+    .sim-cursor{ position:absolute; left:50%; top:12%; width:12px; height:12px; z-index:8;
+      transform:translate(-50%,-50%); pointer-events:none; border-radius:50%; background:var(--live);
+      box-shadow:0 0 8px 2px rgba(18,69,102,.45), 0 0 2px rgba(24,33,28,.35); transition:opacity .35s ease; }
+    .sim-cursor.is-hidden{ opacity:0; }
+    .sim-cursor-ping{ position:absolute; inset:-6px; border-radius:50%; border:1px solid var(--live); opacity:0; }
+    .sim-heat{ position:absolute; left:50%; top:80%; width:44cqw; height:44cqw; z-index:6;
+      transform:translate(-50%,-50%) scale(.2); pointer-events:none; opacity:0; border-radius:50%;
+      background:radial-gradient(circle, rgba(192,54,43,.42) 0%, rgba(192,54,43,.15) 42%, transparent 70%); }
+    .sim-heat.is-show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+    .sim-death{ position:absolute; left:50%; top:80%; z-index:9; width:0; height:0;
+      transform:translate(-50%,-50%); pointer-events:none; opacity:0; }
+    .sim-death.is-show{ opacity:1; }
+    .sim-death-ring{ position:absolute; left:50%; top:50%; width:24px; height:24px; margin:-12px 0 0 -12px;
+      border:1.5px solid var(--fail); border-radius:50%; box-shadow:0 0 9px rgba(192,54,43,.5); }
+    .sim-death-x{ position:absolute; left:50%; top:50%; transform:translate(-50%,-54%);
+      font-family:var(--font-mono); font-size:15px; line-height:1; color:var(--fail); }
+
+    /* ---------- telemetry side ---------- */
+    .sim-side{ display:flex; flex-direction:column; gap:clamp(9px,1.5vw,13px);
       background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius);
-      padding:clamp(14px,1.8vw,18px); min-width:0; }
-    .demo-tel-head{ display:flex; align-items:center; gap:.5em; }
-    .demo-tel-state{ font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--live); }
-    .demo-tel-row{ display:flex; justify-content:space-between; align-items:baseline; gap:1em;
-      font-size:12px; border-bottom:1px solid var(--line); padding-bottom:6px; }
-    .demo-tel-label{ color:var(--muted); text-transform:lowercase; letter-spacing:.03em; }
-    .demo-tel-val{ color:var(--text); font-variant-numeric:tabular-nums; }
-    .demo-caption{ font-size:12.5px; line-height:1.5; color:var(--text); min-height:2.6em;
+      padding:clamp(14px,1.9vw,18px); min-width:0; }
+    .sim-tel-head{ display:flex; align-items:center; gap:.5em; }
+    #sim-state{ font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--live); }
+    .sim-tel{ display:flex; flex-direction:column; }
+    .sim-tel-row{ display:flex; justify-content:space-between; align-items:baseline; gap:1em;
+      font-size:12px; border-bottom:1px solid var(--line); padding:6px 0; }
+    .sim-tel-k{ color:var(--muted); text-transform:lowercase; letter-spacing:.03em; }
+    .sim-tel-v{ color:var(--text); font-variant-numeric:tabular-nums; text-align:right;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sim-caption{ font-size:12.5px; line-height:1.5; color:var(--text); min-height:3.4em;
       padding:8px 0; border-bottom:1px solid var(--line); }
-    .demo-vital{ display:block; width:100%; height:58px; }
-    .demo-vital-label{ font-size:10px; color:var(--muted); letter-spacing:.05em; text-transform:lowercase; margin-top:-4px; }
-
-    .demo-chip{ display:none; align-items:center; gap:.55em; margin-top:2px;
+    .sim-tracewrap{ display:flex; flex-direction:column; gap:4px; }
+    #sim-trace{ display:block; width:100%; height:96px; }
+    .sim-trace-label{ font-size:10px; color:var(--muted); letter-spacing:.05em; text-transform:lowercase; }
+    .sim-outcome{ display:none; align-items:center; gap:.5em;
       background:var(--panel); border:1px solid var(--line); border-radius:999px;
       padding:6px 12px; font-size:11.5px; color:var(--text); align-self:flex-start;
       font-variant-numeric:tabular-nums; }
-    .demo-chip--show{ display:inline-flex; }
-    .demo-chip-note{ font-size:9.5px; color:var(--muted); letter-spacing:.02em; margin-top:-4px; }
+    .sim-outcome.is-show{ display:inline-flex; }
+    .sim-outcome .sim-x{ color:var(--fail); font-size:12px; }
+    .sim-note{ font-size:9.5px; color:var(--muted); letter-spacing:.03em; margin:0; }
 
-    .demo-replay{ margin-top:auto; align-self:flex-start; cursor:pointer;
-      background:var(--panel); color:var(--text); border:1px solid var(--line);
-      border-radius:var(--radius-sm); padding:8px 14px; font-size:12px; letter-spacing:.02em; }
-    .demo-replay:hover{ border-color:var(--muted); }
+    /* ---------- GATE view ---------- */
+    .sim-gate-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .sim-gate-title{ font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--text); }
+    .sim-gate-state{ font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--live);
+      border:1px solid var(--line); border-radius:999px; padding:3px 10px; }
+    .sim-gate-state.is-blocked{ color:var(--fail); border-color:color-mix(in srgb, var(--fail) 45%, var(--line)); }
+    .sim-gate-sub{ font-size:11px; color:var(--muted); letter-spacing:.02em; margin:8px 0 14px; }
+    .sim-gate-rows{ display:flex; flex-direction:column; }
+    .sim-row{ display:grid; grid-template-columns:10px minmax(0,1fr) auto auto;
+      grid-template-rows:auto auto; column-gap:10px; align-items:center;
+      border-top:1px solid var(--line); padding:11px 0; }
+    .sim-row:last-child{ border-bottom:1px solid var(--line); }
+    .sim-row-dot{ grid-column:1; grid-row:1/3; width:8px; height:8px; border-radius:50%;
+      background:var(--line); align-self:center; }
+    .sim-row.is-running .sim-row-dot{ background:var(--live); }
+    .sim-row.is-pass .sim-row-dot{ background:var(--ok); }
+    .sim-row.is-fail .sim-row-dot{ background:var(--fail); }
+    .sim-row-model{ grid-column:2; grid-row:1; font-family:var(--font-sans); font-weight:500;
+      font-size:.92rem; color:var(--text); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .sim-row-flow{ grid-column:2; grid-row:2; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+    .sim-row-delta{ grid-column:3; grid-row:1/3; font-size:12px; color:var(--muted);
+      font-variant-numeric:tabular-nums; text-align:right; min-width:5ch; opacity:0; transition:opacity .2s ease; }
+    .sim-row.is-pass .sim-row-delta, .sim-row.is-fail .sim-row-delta{ opacity:1; }
+    .sim-row.is-fail .sim-row-delta{ color:var(--fail); }
+    .sim-row-status{ grid-column:4; grid-row:1/3; font-size:11px; letter-spacing:.08em;
+      text-transform:uppercase; color:var(--muted); text-align:right; min-width:7ch; }
+    .sim-row.is-running .sim-row-status{ color:var(--live); }
+    .sim-row.is-pass .sim-row-status{ color:var(--ok); }
+    .sim-row.is-fail .sim-row-status{ color:var(--fail); }
 
-    /* ---------- PERSONA PICKER ---------- */
-    .demo-picker{ display:grid; grid-template-columns:1fr; gap:8px; margin-top:clamp(14px,2vw,18px); }
-    @media(min-width:560px){ .demo-picker{ grid-template-columns:1fr 1fr; } }
-    @media(min-width:920px){ .demo-picker{ grid-template-columns:repeat(4,1fr); } }
-    .demo-persona{ text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:5px;
-      background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-sm);
-      padding:12px 13px; transition:border-color .18s ease, background .18s ease; }
-    .demo-persona:hover{ border-color:var(--muted); }
-    .demo-persona[aria-pressed="true"]{ border-color:var(--live); background:rgba(18,69,102,.07); }
-    .demo-persona-name{ font-size:13px; color:var(--text); letter-spacing:.01em; display:flex; align-items:center; gap:.5em; }
-    .demo-persona[aria-pressed="true"] .demo-persona-name::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--live); box-shadow:0 0 6px var(--live); }
-    .demo-persona-desc{ font-size:11.5px; color:var(--muted); line-height:1.4; }
+    .sim-banner{ display:flex; align-items:center; gap:.6em; margin-top:16px;
+      border:1px solid color-mix(in srgb, var(--fail) 45%, var(--line));
+      background:linear-gradient(180deg, color-mix(in srgb, var(--fail) 8%, var(--panel)), var(--panel));
+      border-radius:var(--radius-sm); padding:11px 14px; }
+    .sim-banner-x{ color:var(--fail); font-size:14px; flex:0 0 auto; }
+    .sim-banner-t{ font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--fail); line-height:1.4; }
+    .sim-view--gate .sim-note{ margin-top:12px; }
 
-    /* ---------- motion-only flourishes ---------- */
+    /* ---------- controls ---------- */
+    .sim-controls{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:16px; }
+    .sim-run{ display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono); font-weight:500;
+      font-size:.8rem; letter-spacing:.03em; text-transform:uppercase; background:var(--text); color:var(--paper);
+      border:1px solid var(--text); padding:12px 18px; border-radius:var(--radius-sm); cursor:pointer;
+      transition:background .15s ease, color .15s ease; }
+    .sim-run:hover{ background:transparent; color:var(--text); }
+    .sim-run-glyph{ font-size:.7rem; }
+    .sim-controls-note{ font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
+
+    /* ---------- motion flourishes ---------- */
     @media(prefers-reduced-motion:no-preference){
-      .demo-cursor--ping .demo-cursor-ping{ animation:demo-ping 1.4s ease-out infinite; }
-      .demo-heat--show{ animation:demo-bloom-heat .6s ease-out; }
-      .demo-death--show{ animation:demo-bloom-death .5s cubic-bezier(.2,.9,.3,1.2); }
-      .demo-brand-dot{ animation:demo-pulse 2s ease-in-out infinite; }
+      .sim-cursor:not(.is-hidden) .sim-cursor-ping{ animation:sim-ping 1.5s ease-out infinite; }
+      .sim-heat.is-show{ animation:sim-bloom .6s ease-out; }
+      .sim-death.is-show{ animation:sim-pop .5s cubic-bezier(.2,.9,.3,1.2); }
     }
-    @keyframes demo-ping{ 0%{ transform:scale(.7); opacity:.7; } 100%{ transform:scale(2.1); opacity:0; } }
-    @keyframes demo-bloom-heat{ 0%{ transform:translate(-50%,-50%) scale(.2); opacity:0; } 100%{ transform:translate(-50%,-50%) scale(1); opacity:1; } }
-    @keyframes demo-bloom-death{ 0%{ transform:translate(-50%,-50%) scale(.3); opacity:0; } 60%{ transform:translate(-50%,-50%) scale(1.25); } 100%{ transform:translate(-50%,-50%) scale(1); opacity:1; } }
-    @keyframes demo-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.4; } }
+    @keyframes sim-ping{ 0%{ transform:scale(.7); opacity:.6; } 100%{ transform:scale(2.1); opacity:0; } }
+    @keyframes sim-bloom{ 0%{ transform:translate(-50%,-50%) scale(.2); opacity:0; } 100%{ transform:translate(-50%,-50%) scale(1); opacity:1; } }
+    @keyframes sim-pop{ 0%{ transform:translate(-50%,-50%) scale(.3); opacity:0; } 60%{ transform:translate(-50%,-50%) scale(1.25); } 100%{ transform:translate(-50%,-50%) scale(1); opacity:1; } }
   </style>
 
   <script>
@@ -692,263 +817,373 @@
     var root = document.getElementById('demo');
     if(!root) return;
 
-    var stage    = root.querySelector('.demo-stage');
-    var cursor   = root.querySelector('.demo-cursor');
-    var death    = root.querySelector('.demo-death');
-    var heat     = root.querySelector('.demo-heat');
-    var capEl    = root.querySelector('#demo-caption');
-    var stepEl   = root.querySelector('#demo-step');
-    var clockEl  = root.querySelector('#demo-clock');
-    var nameEl   = root.querySelector('#demo-persona-name');
-    var stateEl  = root.querySelector('#demo-state');
-    var statusDot= root.querySelector('#demo-status-dot');
-    var chip     = root.querySelector('#demo-chip');
-    var chipText = root.querySelector('#demo-chip-text');
-    var replay   = root.querySelector('#demo-replay');
-    var vital    = root.querySelector('#demo-vital');
-    var vctx     = vital.getContext('2d');
-    var buttons  = Array.prototype.slice.call(root.querySelectorAll('.demo-persona'));
-
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var VITAL_DEATH = 0.8;
 
-    // resolve theme colors (fallback to contract hexes)
     function cssVar(n, fb){
       var v = getComputedStyle(document.documentElement).getPropertyValue(n).trim();
       return v || fb;
     }
     var LIVE = cssVar('--live','#124566');
     var FAIL = cssVar('--fail','#C0362B');
+    var OK   = cssVar('--ok','#2F6B4E');
+    var GRID = cssVar('--grid','#D8D4C4');
+    var MUTED= cssVar('--muted','#5C6259');
 
-    // target coordinates in stage percent
-    var T = {
-      start:  {x:50, y:10},
-      email:  {x:28, y:35},
-      card:   {x:28, y:51},
-      terms:  {x:37, y:64},
-      order:  {x:16, y:84},
-      decoy:  {x:75, y:83},
-      cart:   {x:75, y:35}
-    };
+    // element refs
+    var tabs      = Array.prototype.slice.call(root.querySelectorAll('.sim-tab'));
+    var stage     = document.getElementById('sim-stage');
+    var headline  = document.getElementById('sim-headline');
+    var lead      = document.getElementById('sim-lead');
+    var icpText   = document.getElementById('sim-icp-text');
+    var viewSess  = document.getElementById('sim-view-session');
+    var viewGate  = document.getElementById('sim-view-gate');
+    var mockFlow  = document.getElementById('sim-mock-flow');
+    var mockLaunch= document.getElementById('sim-mock-launch');
+    var stateEl   = document.getElementById('sim-state');
+    var stateDot  = document.getElementById('sim-state-dot');
+    var telModel  = document.getElementById('sim-tel-model');
+    var telStep   = document.getElementById('sim-tel-step');
+    var telElapsed= document.getElementById('sim-tel-elapsed');
+    var caption   = document.getElementById('sim-caption');
+    var outcome   = document.getElementById('sim-outcome');
+    var outcomeTx = document.getElementById('sim-outcome-text');
+    var trace     = document.getElementById('sim-trace');
+    var tctx      = trace.getContext('2d');
+    var runBtn    = document.getElementById('sim-run');
+    var runLabel  = document.getElementById('sim-run-label');
+    var gateState = document.getElementById('sim-gate-state');
+    var gateRows  = Array.prototype.slice.call(document.querySelectorAll('#sim-gate-rows .sim-row'));
+    var banner    = document.getElementById('sim-banner');
 
-    var PLANS = {
-      rushed: {
-        name:'Rushed', tag:'time', dur:41, death:T.card,
-        reason:'Ran out of time — bounced before entering card details.',
+    var dpr = Math.min(window.devicePixelRatio||1, 2);
+
+    // ---------- config ----------
+    var CFG = {
+      flow: {
+        headline:'Watch a live flow lose a real customer.',
+        lead:'An ICP model attempts your existing high-intent checkout and abandons at the exact friction point — no survey, just behavior.',
+        icp:'ICP MODEL · returning mobile shopper · tuned to your users',
+        runLabel:'Run simulation',
+        kind:'session', mock:'flow', model:'returning mobile shopper',
+        dur:38, climb:0.64, endState:'abandoned',
+        outcome:'abandoned · checkout · below the fold',
+        reason:'Abandoned — the promo panel pushed “Pay $228” below the fold. The shopper scrolled, mis-tapped, and left without paying.',
         steps:[
-          {to:T.start, cap:'Dismissing the banner',        move:280, hold:120},
-          {to:T.email, cap:'Racing through the email',     move:380, hold:170},
-          {to:T.order, cap:'Straight to Place order',       move:360, hold:150},
-          {to:T.card,  cap:'Wait — no card was entered',    move:340, hold:280}
-        ]
+          {x:50,y:13, cap:'Returning shopper lands on the checkout.', move:0,   hold:520},
+          {x:56,y:29, cap:'Scanning the order total — $228.00.',     move:420, hold:560},
+          {x:30,y:47, cap:'Taps “Have a promo code?”.',              move:460, hold:520, expand:true},
+          {x:50,y:92, cap:'Promo panel expands — “Pay” slips below the fold.', move:540, hold:640},
+          {x:47,y:84, cap:'Scrolls, mis-taps near the fold line.',   move:280, hold:560}
+        ],
+        death:{x:50,y:86}
       },
-      misclick: {
-        name:'Misclick-prone', tag:'steps', dur:52, death:T.order,
-        reason:'Out of tries — kept missing the small Place order button.',
+      launch: {
+        headline:'Validate a launch before a single user sees it.',
+        lead:'An ICP model runs your brand-new onboarding wizard and stalls where the flow is unclear — the pre-launch signal you have no data for.',
+        icp:'ICP MODEL · first-time trial user · tuned to your users',
+        runLabel:'Run simulation',
+        kind:'session', mock:'launch', model:'first-time trial user',
+        dur:62, climb:0.34, endState:'timed out',
+        outcome:'timed out · onboarding · step 1 of 3',
+        reason:'Timed out — “Connect your data source” shows no example format. The first-time user hesitated on the connection string and never advanced past step 1.',
         steps:[
-          {to:T.email, cap:'Aiming for the email field',    move:420, hold:200, jitter:true},
-          {to:T.card,  cap:'Fumbling the card number',      move:360, hold:220, jitter:true},
-          {to:T.order, cap:'Reaching for Place order',      move:400, hold:260, jitter:true},
-          {to:T.order, cap:'Missed — the target is tiny',   move:150, hold:260, jitter:true},
-          {to:T.order, cap:'Missed again…',                 move:140, hold:280, jitter:true}
-        ]
+          {x:50,y:15, cap:'First-time trial user opens setup — step 1 of 3.', move:0,   hold:600},
+          {x:40,y:34, cap:'Reads “Connect your data source”.',       move:440, hold:760},
+          {x:47,y:49, cap:'Opens the data source dropdown.',         move:420, hold:820},
+          {x:47,y:66, cap:'Clicks the connection string field — no example shown.', move:460, hold:900},
+          {x:47,y:66, cap:'Unsure of the format. Hesitates…',        move:120, hold:1100}
+        ],
+        death:{x:47,y:66}
       },
-      distracted: {
-        name:'Distracted', tag:'stuck', dur:47, death:T.decoy,
-        reason:"Lost the task — clicked 'Explore plans' and never checked out.",
-        steps:[
-          {to:T.email, cap:'Starting the checkout',         move:360, hold:200},
-          {to:T.cart,  cap:'Distracted by the summary',     move:520, hold:260},
-          {to:T.decoy, cap:"Drawn to 'Explore plans'",      move:440, hold:240},
-          {to:T.email, cap:'Trying to refocus',             move:640, hold:220},
-          {to:T.decoy, cap:"Clicks 'Explore plans' anyway", move:640, hold:280}
-        ]
-      },
-      firsttime: {
-        name:'First-time visitor', tag:'time', dur:44, death:T.terms,
-        reason:'Timed out — stuck on a label it could not parse.',
-        steps:[
-          {to:T.email, cap:'Reading the page…',             move:700, hold:700},
-          {to:T.card,  cap:'Where does payment go?',        move:640, hold:820},
-          {to:T.terms, cap:'Re-reading the fine print',     move:560, hold:900},
-          {to:T.terms, cap:"'DPA, AUP, ToS' — unclear",     move:140, hold:1000}
-        ]
+      gate: {
+        headline:'Make it a gate — block the regression before it ships.',
+        lead:'Every build runs your ICP models against the flows that matter. If completion drops for a segment, Simulation Labs blocks the release.',
+        icp:'ICP MODELS · full segment panel · run per build',
+        runLabel:'Re-run check',
+        kind:'gate'
       }
     };
 
-    var raf=null, current='rushed', lastReveal=0, lastDead=false;
+    var current = 'flow';
+    var raf = null;
+    var timers = [];
 
-    function clearRun(){ if(raf){ cancelAnimationFrame(raf); raf=null; } }
+    function stopAll(){
+      if(raf){ cancelAnimationFrame(raf); raf=null; }
+      for(var i=0;i<timers.length;i++){ clearTimeout(timers[i]); }
+      timers = [];
+    }
+    function later(fn, ms){ var id=setTimeout(fn, ms); timers.push(id); return id; }
+
     function ease(t){ return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
     function lerp(a,b,t){ return a+(b-a)*t; }
     function place(el,x,y){ el.style.left=x+'%'; el.style.top=y+'%'; }
-    function mmss(s){ s=Math.max(0,Math.round(s)); var m=Math.floor(s/60); var r=s%60;
+    function mmss(s){ s=Math.max(0,Math.round(s)); var m=Math.floor(s/60), r=s%60;
       return (m<10?'0':'')+m+':'+(r<10?'0':'')+r; }
 
-    // ---- vital line ----
-    var dpr = Math.min(window.devicePixelRatio||1, 2);
-    function fitVital(){
-      var w = vital.clientWidth || 240, h = 58;
-      vital._w=w; vital._h=h;
-      vital.width = Math.round(w*dpr); vital.height = Math.round(h*dpr);
+    // ---------- trace canvas ----------
+    var lastFrac=0, lastDead=false, lastClimb=0.6;
+    function fitTrace(){
+      var w = trace.clientWidth || 260, h = 96;
+      trace._w=w; trace._h=h;
+      trace.width = Math.round(w*dpr); trace.height = Math.round(h*dpr);
     }
-    function ekg(u){
-      var blips=7, p=(u*blips)%1, s=0;
-      if(p>0.40 && p<0.60){ var q=(p-0.40)/0.20; s = Math.sin(q*Math.PI)*(q<0.5?9:13); }
-      s += Math.sin(u*130)*0.8;
-      return s;
-    }
-    function drawVital(reveal, dead){
-      lastReveal=reveal; lastDead=dead;
-      var W=vital._w, H=vital._h, mid=H/2;
-      vctx.setTransform(1,0,0,1,0,0);
-      vctx.clearRect(0,0,vital.width,vital.height);
-      vctx.scale(dpr,dpr);
-      var deathX = W*VITAL_DEATH;
-      var aliveEnd = dead ? deathX : Math.min(reveal, VITAL_DEATH)*W;
-      // alive orange trace
-      vctx.lineWidth=1; vctx.lineJoin='round'; vctx.lineCap='round';
-      vctx.strokeStyle=LIVE; vctx.shadowColor=LIVE; vctx.shadowBlur=6;
-      vctx.beginPath();
-      var started=false;
-      for(var x=0;x<=aliveEnd;x++){ var y=mid-ekg(x/W);
-        if(!started){ vctx.moveTo(x,y); started=true; } else vctx.lineTo(x,y); }
-      vctx.stroke();
-      vctx.shadowBlur=0;
-      if(!dead && aliveEnd>2){
-        var hy=mid-ekg(aliveEnd/W);
-        vctx.fillStyle=LIVE; vctx.beginPath(); vctx.arc(aliveEnd,hy,2,0,7); vctx.fill();
+    function drawTrace(frac, dead, climb){
+      lastFrac=frac; lastDead=dead; lastClimb=climb;
+      var W=trace._w, H=trace._h;
+      tctx.setTransform(1,0,0,1,0,0);
+      tctx.clearRect(0,0,trace.width,trace.height);
+      tctx.scale(dpr,dpr);
+      var padL=8, padR=12, padT=12, padB=16;
+      var x0=padL, x1=W-padR, y0=padT, y1=H-padB;
+      // grid
+      tctx.strokeStyle=GRID; tctx.lineWidth=1;
+      var gy;
+      for(gy=0; gy<=3; gy++){ var yy=y0+(y1-y0)*gy/3; tctx.beginPath(); tctx.moveTo(x0,yy); tctx.lineTo(x1,yy); tctx.stroke(); }
+      // goal line (progress = 1)
+      tctx.save(); tctx.setLineDash([3,3]); tctx.strokeStyle=MUTED; tctx.globalAlpha=.55;
+      tctx.beginPath(); tctx.moveTo(x0,y0); tctx.lineTo(x1,y0); tctx.stroke(); tctx.restore();
+      tctx.save(); tctx.setLineDash([]); tctx.fillStyle=MUTED; tctx.globalAlpha=.7;
+      tctx.font='9px '+cssVar('--font-mono','monospace'); tctx.textBaseline='bottom';
+      tctx.fillText('goal', x1-24, y0-1); tctx.restore();
+
+      function px(u){ return x0+(x1-x0)*u; }
+      function progAt(u){
+        var p = u<0.72 ? climb*ease(u/0.72) : climb;
+        p += Math.sin(u*46)*0.008; // deterministic texture
+        return Math.max(0, Math.min(1, p));
       }
+      function py(u){ return y1-(y1-y0)*progAt(u); }
+
+      // blue revealed trace
+      tctx.strokeStyle=LIVE; tctx.lineWidth=1.5; tctx.lineJoin='round'; tctx.lineCap='round';
+      tctx.shadowColor=LIVE; tctx.shadowBlur=5;
+      tctx.beginPath();
+      var N=90, upto=Math.max(0, Math.min(1, frac)), started=false, i, u;
+      for(i=0;i<=N;i++){ u=i/N; if(u>upto) break; var X=px(u), Y=py(u);
+        if(!started){ tctx.moveTo(X,Y); started=true; } else tctx.lineTo(X,Y); }
+      tctx.lineTo(px(upto), py(upto));
+      tctx.stroke(); tctx.shadowBlur=0;
+
+      var ex=px(dead?1:upto), ey=py(dead?1:upto);
       if(dead){
-        // death tick + gap + faint flat red tail
-        vctx.strokeStyle=FAIL;
-        vctx.beginPath(); vctx.moveTo(deathX,mid-6); vctx.lineTo(deathX,mid+6); vctx.stroke();
-        var gapEnd = deathX + W*0.04;
-        vctx.globalAlpha=0.45;
-        vctx.beginPath(); vctx.moveTo(gapEnd,mid); vctx.lineTo(W,mid); vctx.stroke();
-        vctx.globalAlpha=1;
+        // faint flat red tail then the red ✕
+        tctx.strokeStyle=FAIL; tctx.globalAlpha=.4; tctx.lineWidth=1;
+        tctx.beginPath(); tctx.moveTo(px(1)-14, ey); tctx.lineTo(px(1), ey); tctx.stroke(); tctx.globalAlpha=1;
+        tctx.strokeStyle=FAIL; tctx.lineWidth=1.7; var r=4.5;
+        tctx.beginPath();
+        tctx.moveTo(ex-r,ey-r); tctx.lineTo(ex+r,ey+r);
+        tctx.moveTo(ex+r,ey-r); tctx.lineTo(ex-r,ey+r);
+        tctx.stroke();
+      } else if(upto>0.002){
+        tctx.fillStyle=LIVE; tctx.beginPath(); tctx.arc(ex,ey,2.3,0,7); tctx.fill();
       }
     }
 
-    // ---- state helpers ----
-    function setButtons(id){
-      buttons.forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.persona===id ? 'true':'false'); });
-    }
-    function resetVisuals(plan){
-      chip.classList.remove('demo-chip--show');
-      death.classList.remove('demo-death--show');
-      heat.classList.remove('demo-heat--show');
-      cursor.classList.remove('demo-cursor--hidden');
-      cursor.classList.add('demo-cursor--ping');
-      place(cursor, plan.steps[0].to.x, plan.steps[0].to.y);
-      place(death, plan.death.x, plan.death.y);
-      place(heat, plan.death.x, plan.death.y);
-      nameEl.textContent = plan.name;
-      stepEl.textContent = '0 / ' + plan.steps.length;
-      clockEl.textContent = '00:00';
-      stateEl.textContent = 'live'; stateEl.style.color='var(--live)';
-      statusDot.style.background='var(--live)';
-    }
-    function showEnd(plan){
-      var n = plan.steps.length;
-      cursor.classList.remove('demo-cursor--ping');
-      cursor.classList.add('demo-cursor--hidden');
-      place(cursor, plan.death.x, plan.death.y);
-      heat.classList.add('demo-heat--show');
-      death.classList.add('demo-death--show');
-      drawVital(VITAL_DEATH, true);
-      capEl.textContent = plan.reason;
-      stepEl.textContent = n + ' / ' + n;
-      clockEl.textContent = mmss(plan.dur);
-      stateEl.textContent = 'abandoned'; stateEl.style.color='var(--fail)';
-      statusDot.style.background='var(--fail)';
-      chipText.textContent = 'abandoned · ' + plan.tag + ' · step ' + n + ' · ' + mmss(plan.dur);
-      chip.classList.add('demo-chip--show');
+    // ---------- session helpers ----------
+    function activeMock(cfg){ return cfg.mock==='launch' ? mockLaunch : mockFlow; }
+    function overlaysOf(mock){
+      return {
+        cursor: mock.querySelector('.sim-cursor'),
+        death:  mock.querySelector('.sim-death'),
+        heat:   mock.querySelector('.sim-heat'),
+        screen: mock.querySelector('.sim-screen')
+      };
     }
 
-    function run(id){
-      clearRun();
-      current = id;
-      var plan = PLANS[id];
-      setButtons(id);
-      resetVisuals(plan);
-      fitVital();
-      drawVital(0, false);
+    function resetSession(cfg){
+      var mock = activeMock(cfg), o = overlaysOf(mock);
+      if(o.screen) o.screen.classList.remove('is-expanded');
+      o.cursor.classList.remove('is-hidden');
+      o.death.classList.remove('is-show');
+      o.heat.classList.remove('is-show');
+      place(o.cursor, cfg.steps[0].x, cfg.steps[0].y);
+      place(o.death, cfg.death.x, cfg.death.y);
+      place(o.heat, cfg.death.x, cfg.death.y);
+      outcome.classList.remove('is-show');
+      telModel.textContent = cfg.model;
+      telStep.textContent = '0 / ' + cfg.steps.length;
+      telElapsed.textContent = '00:00';
+      stateEl.textContent = 'running'; stateEl.style.color='var(--live)';
+      stateDot.style.background='var(--live)';
+      caption.textContent = cfg.steps[0].cap;
+      fitTrace();
+      drawTrace(0, false, cfg.climb);
+    }
 
-      if(reduce){
-        capEl.textContent = plan.steps[0].cap;
-        showEnd(plan);
-        return;
-      }
+    function endSession(cfg){
+      var mock = activeMock(cfg), o = overlaysOf(mock);
+      if(cfg.mock==='flow' && o.screen) o.screen.classList.add('is-expanded');
+      o.cursor.classList.add('is-hidden');
+      place(o.cursor, cfg.death.x, cfg.death.y);
+      o.heat.classList.add('is-show');
+      o.death.classList.add('is-show');
+      drawTrace(1, true, cfg.climb);
+      caption.textContent = cfg.reason;
+      telStep.textContent = cfg.steps.length + ' / ' + cfg.steps.length;
+      telElapsed.textContent = mmss(cfg.dur);
+      stateEl.textContent = cfg.endState; stateEl.style.color='var(--fail)';
+      stateDot.style.background='var(--fail)';
+      outcomeTx.textContent = cfg.outcome;
+      outcome.classList.add('is-show');
+    }
 
+    function runSession(cfg){
+      stopAll();
+      resetSession(cfg);
+      if(reduce){ endSession(cfg); return; }
+
+      var mock = activeMock(cfg), o = overlaysOf(mock);
       // build timeline
-      var segs=[], acc=0, from=plan.steps[0].to;
-      for(var i=0;i<plan.steps.length;i++){
-        var s=plan.steps[i];
-        var seg={ from:(i===0?plan.steps[0].to:from), to:s.to, move:(i===0?0:s.move),
-                  hold:s.hold, cap:s.cap, jitter:!!s.jitter, start:acc };
+      var segs=[], acc=0, from={x:cfg.steps[0].x,y:cfg.steps[0].y};
+      for(var i=0;i<cfg.steps.length;i++){
+        var s=cfg.steps[i];
+        var seg={ from:(i===0?{x:s.x,y:s.y}:from), to:{x:s.x,y:s.y},
+                  move:(i===0?0:s.move), hold:s.hold, cap:s.cap, expand:!!s.expand, start:acc };
         seg.moveEnd = seg.start + seg.move;
         seg.holdEnd = seg.moveEnd + seg.hold;
         acc = seg.holdEnd;
         segs.push(seg);
-        from = s.to;
+        from = {x:s.x, y:s.y};
       }
-      var total = acc;
-      var shown = -1;
-      var t0 = performance.now();
+      var total = acc, shown = -1, t0 = performance.now();
 
       function frame(now){
         var e = now - t0;
-        if(e >= total){ showEnd(plan); raf=null; return; }
-        var seg=null, idx=0;
+        if(e >= total){ endSession(cfg); raf=null; return; }
+        var seg=segs[segs.length-1], idx=segs.length-1;
         for(var i=0;i<segs.length;i++){ if(e < segs[i].holdEnd){ seg=segs[i]; idx=i; break; } }
-        if(!seg){ seg=segs[segs.length-1]; idx=segs.length-1; }
 
         var cx, cy;
         if(e < seg.moveEnd && seg.move>0){
           var p = ease((e-seg.start)/seg.move);
           cx = lerp(seg.from.x, seg.to.x, p);
           cy = lerp(seg.from.y, seg.to.y, p);
-          if(seg.jitter){ cx += (Math.random()-0.5)*2.2; cy += (Math.random()-0.5)*2.2; }
         } else {
           cx = seg.to.x; cy = seg.to.y;
-          if(seg.jitter){ cx += (Math.random()-0.5)*4.0; cy += (Math.random()-0.5)*4.0; }
+          // small idle jitter for texture only — never moves the endpoint target
+          cx += (Math.random()-0.5)*0.8; cy += (Math.random()-0.5)*0.8;
         }
-        place(cursor, cx, cy);
+        place(o.cursor, cx, cy);
 
-        if(idx !== shown){ shown = idx; capEl.textContent = seg.cap; }
-        stepEl.textContent = (idx+1) + ' / ' + segs.length;
+        if(idx !== shown){
+          shown = idx;
+          caption.textContent = seg.cap;
+          if(seg.expand && cfg.mock==='flow' && o.screen) o.screen.classList.add('is-expanded');
+        }
+        telStep.textContent = (idx+1) + ' / ' + segs.length;
         var frac = e/total;
-        clockEl.textContent = mmss(plan.dur * frac);
-        drawVital(frac * VITAL_DEATH, false);
-
+        telElapsed.textContent = mmss(cfg.dur * frac);
+        drawTrace(frac, false, cfg.climb);
         raf = requestAnimationFrame(frame);
       }
       raf = requestAnimationFrame(frame);
     }
 
+    // ---------- gate ----------
+    function resetGate(){
+      gateState.textContent = 'running'; gateState.classList.remove('is-blocked');
+      banner.hidden = true;
+      gateRows.forEach(function(r){
+        r.classList.remove('is-running','is-pass','is-fail');
+        r.querySelector('.sim-row-delta').textContent = r.getAttribute('data-delta');
+        r.querySelector('.sim-row-status').textContent = 'queued';
+      });
+    }
+    function resolveRow(r){
+      r.classList.remove('is-running');
+      var pass = r.getAttribute('data-pass')==='true';
+      r.classList.add(pass ? 'is-pass' : 'is-fail');
+      r.querySelector('.sim-row-status').textContent = pass ? 'pass' : 'fail';
+    }
+    function finishGate(){
+      gateState.textContent = 'blocked'; gateState.classList.add('is-blocked');
+      banner.hidden = false;
+    }
+    function runGate(){
+      stopAll();
+      resetGate();
+      if(reduce){
+        gateRows.forEach(resolveRow);
+        finishGate();
+        return;
+      }
+      var d = 260, step = 480;
+      gateRows.forEach(function(r, i){
+        later(function(){ r.classList.add('is-running'); r.querySelector('.sim-row-status').textContent='running…'; }, d + i*step);
+        later(function(){ resolveRow(r); }, d + i*step + 340);
+      });
+      later(finishGate, d + gateRows.length*step + 200);
+    }
+
+    // ---------- view / tab switching ----------
+    function showView(key){
+      var isGate = key==='gate';
+      viewGate.hidden = !isGate;
+      viewSess.hidden = isGate;
+      if(!isGate){
+        mockFlow.hidden = (key!=='flow');
+        mockLaunch.hidden = (key!=='launch');
+      }
+    }
+    function setActive(key){
+      stopAll();
+      current = key;
+      var cfg = CFG[key];
+      tabs.forEach(function(t){
+        var on = t.dataset.wedge===key;
+        t.setAttribute('aria-selected', on ? 'true':'false');
+        t.tabIndex = on ? 0 : -1;
+      });
+      stage.setAttribute('aria-labelledby', 'sim-tab-'+key);
+      headline.textContent = cfg.headline;
+      lead.textContent = cfg.lead;
+      icpText.textContent = cfg.icp;
+      runLabel.textContent = cfg.runLabel;
+      showView(key);
+      if(cfg.kind==='gate') runGate(); else runSession(cfg);
+    }
+    function runCurrent(){
+      var cfg = CFG[current];
+      if(cfg.kind==='gate') runGate(); else runSession(cfg);
+    }
+
     // interactions
-    buttons.forEach(function(b){
-      b.addEventListener('click', function(){ run(b.dataset.persona); });
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){ setActive(t.dataset.wedge); });
     });
-    replay.addEventListener('click', function(){ run(current); });
+    // roving tabindex keyboard nav
+    root.querySelector('#sim-tabs').addEventListener('keydown', function(e){
+      var idx = tabs.findIndex(function(t){ return t.getAttribute('aria-selected')==='true'; });
+      if(idx<0) idx=0;
+      var next = null;
+      if(e.key==='ArrowRight' || e.key==='ArrowDown') next = (idx+1)%tabs.length;
+      else if(e.key==='ArrowLeft' || e.key==='ArrowUp') next = (idx-1+tabs.length)%tabs.length;
+      else if(e.key==='Home') next = 0;
+      else if(e.key==='End') next = tabs.length-1;
+      if(next!==null){ e.preventDefault(); tabs[next].focus(); setActive(tabs[next].dataset.wedge); }
+    });
+    runBtn.addEventListener('click', runCurrent);
+    window.addEventListener('resize', function(){ fitTrace(); drawTrace(lastFrac, lastDead, lastClimb); });
 
-    window.addEventListener('resize', function(){ fitVital(); drawVital(lastReveal, lastDead); });
+    // initial paint (idle frame) + auto-run when visible
+    showView('flow');
+    fitTrace(); drawTrace(0, false, CFG.flow.climb);
+    place(overlaysOf(mockFlow).cursor, CFG.flow.steps[0].x, CFG.flow.steps[0].y);
 
-    // kick off when scrolled into view (once)
     var kicked=false;
-    function kick(){ if(kicked) return; kicked=true; run('rushed'); }
+    function kick(){ if(kicked) return; kicked=true; setActive('flow'); }
     if('IntersectionObserver' in window){
       var io = new IntersectionObserver(function(en){
         en.forEach(function(x){ if(x.isIntersecting){ kick(); io.disconnect(); } });
-      }, {threshold:0.35});
+      }, {threshold:0.3});
       io.observe(stage);
     } else { kick(); }
-    // safety: ensure first paint even if observer never fires
-    setTimeout(function(){ if(!kicked){ fitVital(); drawVital(0,false); resetVisuals(PLANS.rushed); capEl.textContent='Select a behavior to begin.'; } }, 1200);
+    later(function(){ if(!kicked){ kicked=true; setActive('flow'); } }, 1400);
   })();
   </script>
 </section>
+
     <section class="section" id="how">
   <div class="wrap">
     <p class="eyebrow">three steps</p>
@@ -1063,63 +1298,6 @@
     </div>
   </div>
 </section>
-    <section class="section" id="personas">
-  <div class="wrap">
-    <p class="eyebrow">behavioral personas</p>
-    <h2 class="h-sec">Real behavior, not roleplay.</h2>
-    <p class="lead">
-      Each persona attempts your task with its perception and actions mechanically shaped
-      to match how real people behave &mdash; so failure is measured, not imagined.
-    </p>
-    <ul class="persona-grid">
-      <li class="card persona-card">
-        <span class="persona-name">Rushed</span>
-        <span class="persona-desc">Races ahead, skips instructions, bounces the moment it stalls.</span>
-        <span class="persona-tag mono">races &middot; bounces</span>
-      </li>
-      <li class="card persona-card">
-        <span class="persona-name">Distracted</span>
-        <span class="persona-desc">Wanders off task, backtracks, loses the thread mid-flow.</span>
-        <span class="persona-tag mono">wanders</span>
-      </li>
-      <li class="card persona-card">
-        <span class="persona-name">Misclick-prone</span>
-        <span class="persona-desc">Jittery taps that land just off the target.</span>
-        <span class="persona-tag mono">jitter</span>
-      </li>
-      <li class="card persona-card">
-        <span class="persona-name">First-time visitor</span>
-        <span class="persona-desc">Reads everything literally, assumes nothing about the UI.</span>
-        <span class="persona-tag mono">hesitates</span>
-      </li>
-      <li class="card persona-card">
-        <span class="persona-name">Mobile (thumb precision)</span>
-        <span class="persona-desc">Small screen, fat-finger taps near tight targets.</span>
-        <span class="persona-tag mono">small viewport</span>
-      </li>
-      <li class="card persona-card">
-        <span class="persona-name">Slow connection</span>
-        <span class="persona-desc">Waits on loads, times out when the page lags.</span>
-        <span class="persona-tag mono">latency</span>
-      </li>
-    </ul>
-    <div class="persona-baselines">
-      <p class="persona-label mono">Baselines &mdash; neutral controls</p>
-      <ul class="persona-base-grid">
-        <li class="card persona-card persona-card--base">
-          <span class="persona-name">Fluent power user</span>
-          <span class="persona-desc">No constraints; the flow works, this proves it.</span>
-          <span class="persona-tag mono">control</span>
-        </li>
-        <li class="card persona-card persona-card--base">
-          <span class="persona-name">AI agent</span>
-          <span class="persona-desc">No constraints, machine-driven: is your flow usable by an agent at all?</span>
-          <span class="persona-tag mono">control</span>
-        </li>
-      </ul>
-    </div>
-  </div>
-</section>
     <section class="section" id="powered">
   <div class="wrap">
     <p class="eyebrow">powered by</p>
@@ -1210,85 +1388,7 @@
   (function(){
     "use strict";
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    /* ----- Hero coordinate plot: synthetic-user session traces ----- */
-    var cv = document.getElementById("heroPlot");
-    if(cv){
-      var ctx = cv.getContext("2d");
-      var DPR = Math.min(window.devicePixelRatio||1, 2);
-      var W=0,H=0;
-      function css(n,f){ var v=getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return v||f; }
-      var BLUE=css('--live','#124566'), RED=css('--fail','#C0362B'), OKC=css('--ok','#2F6B4E'),
-          GRID=css('--line','#C6C2B2'), MUT=css('--muted','#5C6259');
-      var PAD={l:48,r:20,t:20,b:28}, GOAL=0.90;
-      var TR=[
-        {y:0.13,dx:0.34,out:'fail',s:1.7},
-        {y:0.26,dx:0.52,out:'fail',s:3.1},
-        {y:0.39,dx:GOAL,out:'ok',  s:2.2},
-        {y:0.51,dx:0.44,out:'fail',s:4.0},
-        {y:0.63,dx:0.70,out:'fail',s:1.3},
-        {y:0.75,dx:GOAL,out:'ok',  s:2.7},
-        {y:0.86,dx:0.60,out:'fail',s:3.6},
-        {y:0.95,dx:0.24,out:'fail',s:2.0}
-      ];
-      function size(){ W=cv.clientWidth; H=cv.clientHeight; cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0); }
-      function px(nx){ return PAD.l + nx*(W-PAD.l-PAD.r); }
-      function py(ny){ return PAD.t + ny*(H-PAD.t-PAD.b); }
-      function ease(x){ return 1-Math.pow(1-x,3); }
-      function grid(){
-        ctx.lineWidth=1;
-        ctx.strokeStyle=GRID;
-        var i,x,y,cols=8,rows=4;
-        for(i=0;i<=cols;i++){ x=px(i/cols); ctx.globalAlpha=.35; ctx.beginPath(); ctx.moveTo(x,py(0)); ctx.lineTo(x,py(1)); ctx.stroke(); }
-        for(i=0;i<=rows;i++){ y=py(i/rows); ctx.globalAlpha=.35; ctx.beginPath(); ctx.moveTo(px(0),y); ctx.lineTo(px(1),y); ctx.stroke(); }
-        ctx.globalAlpha=1;
-        ctx.strokeStyle=MUT; ctx.globalAlpha=.7;
-        ctx.beginPath(); ctx.moveTo(px(0),py(0)); ctx.lineTo(px(0),py(1)); ctx.lineTo(px(1),py(1)); ctx.stroke();
-        ctx.globalAlpha=1;
-        ctx.strokeStyle=OKC; ctx.setLineDash([3,4]); ctx.globalAlpha=.85;
-        ctx.beginPath(); ctx.moveTo(px(GOAL),py(0)); ctx.lineTo(px(GOAL),py(1)); ctx.stroke();
-        ctx.setLineDash([]); ctx.globalAlpha=1;
-        ctx.fillStyle=MUT; ctx.font='9px "IBM Plex Mono", monospace';
-        ctx.save(); ctx.translate(13,py(0.5)); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('SESSION START',0,0); ctx.restore();
-        ctx.textAlign='right'; ctx.fillText('GOAL', px(GOAL)-5, py(0)+10);
-        ctx.textAlign='left';
-      }
-      function ty(tr,nx){ return tr.y + Math.sin(nx*tr.s*6.283 + tr.y*10)*0.017; }
-      function trace(tr,frac){
-        var end=tr.dx*frac, step=0.006, nx, started=false;
-        ctx.strokeStyle=BLUE; ctx.lineWidth=1.4; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.globalAlpha=.92;
-        ctx.beginPath();
-        for(nx=0; nx<=end+1e-9; nx+=step){ var xx=px(nx), yy=py(ty(tr,nx)); if(!started){ctx.moveTo(xx,yy);started=true;} else ctx.lineTo(xx,yy); }
-        ctx.stroke(); ctx.globalAlpha=1;
-        if(frac>=0.999){
-          var mx=px(tr.dx), my=py(ty(tr,tr.dx));
-          if(tr.out==='ok'){
-            ctx.fillStyle=OKC; ctx.beginPath(); ctx.arc(mx,my,3,0,7); ctx.fill();
-            ctx.strokeStyle=OKC; ctx.globalAlpha=.5; ctx.beginPath(); ctx.arc(mx,my,6.5,0,7); ctx.stroke(); ctx.globalAlpha=1;
-          } else {
-            ctx.strokeStyle=RED; ctx.lineWidth=1.5;
-            ctx.beginPath(); ctx.moveTo(mx-3.4,my-3.4); ctx.lineTo(mx+3.4,my+3.4); ctx.moveTo(mx+3.4,my-3.4); ctx.lineTo(mx-3.4,my+3.4); ctx.stroke();
-            ctx.strokeStyle=RED; ctx.globalAlpha=.4; ctx.beginPath(); ctx.arc(mx,my,6.5,0,7); ctx.stroke(); ctx.globalAlpha=1;
-          }
-        }
-      }
-      function render(p){
-        ctx.clearRect(0,0,W,H); grid();
-        var maxDelay=0.5, i, delay, lp;
-        for(i=0;i<TR.length;i++){
-          delay=(i/(TR.length-1))*maxDelay;
-          lp=(p-delay)/(1-maxDelay); lp=lp<0?0:(lp>1?1:lp);
-          if(lp>0) trace(TR[i], ease(lp));
-        }
-      }
-      var start=null;
-      function frame(ts){ if(start===null)start=ts; var p=Math.min(1,(ts-start)/2200); render(p); if(p<1) requestAnimationFrame(frame); }
-      size();
-      if(reduce){ render(1); } else { requestAnimationFrame(frame); }
-      var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt=setTimeout(function(){ size(); render(1); },150); });
-    }
-
-    /* ----- smooth-scroll for in-page anchors ----- */
+    /* smooth-scroll for in-page anchors */
     document.addEventListener("click", function(e){
       var a = e.target.closest && e.target.closest('a[href^="#"]');
       if(!a) return;
