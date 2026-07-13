@@ -24,6 +24,9 @@ interface Props {
   // Live runs pull the real target screenshot for the heatmap backdrop.
   // The offline demo leaves this false so it renders from bundled fixtures.
   live?: boolean;
+  // Explicit backdrop image (simulated runs pass the target page mock); used
+  // for the heatmap and the per-persona session-replay poster.
+  backdrop?: string;
   onBack?: () => void;
   // Server-backed report screens offer "Compare with another run".
   onCompare?: () => void;
@@ -38,7 +41,14 @@ function SectionHeading({ title, sub }: { title: string; sub?: string }) {
   );
 }
 
-export function ReportView({ report, coordSpace, live, onBack, onCompare }: Props) {
+export function ReportView({
+  report,
+  coordSpace,
+  live,
+  backdrop,
+  onBack,
+  onCompare,
+}: Props) {
   const pct = Math.round((report.completion_rate ?? 0) * 100);
   const counted = report.survival.filter((s) => s.outcome !== "error");
   const survived = counted.filter((s) => s.completed).length;
@@ -67,9 +77,9 @@ export function ReportView({ report, coordSpace, live, onBack, onCompare }: Prop
   // fill anything missing from the report so the dashboard always renders.
   const insights = withDerivedStats(serverInsights ?? fallbackInsights, report);
 
-  const liveBackdrop = live
-    ? `${API_BASE}/artifacts/${report.run_id}/target.png`
-    : undefined;
+  const liveBackdrop =
+    backdrop ??
+    (live ? `${API_BASE}/artifacts/${report.run_id}/target.png` : undefined);
 
   const nameOf = (id: string) =>
     report.survival.find((s) => s.persona_id === id)?.persona_name || id;
@@ -206,6 +216,8 @@ export function ReportView({ report, coordSpace, live, onBack, onCompare }: Prop
               key={r.persona_id}
               result={r}
               name={nameOf(r.persona_id)}
+              poster={liveBackdrop}
+              coordSpace={coordSpace}
               // The mic/Q&A flow needs the backend — hidden in the offline demo.
               askRunId={live ? report.run_id : undefined}
             />
@@ -360,10 +372,15 @@ function WhyItMatters() {
 function ResultCard({
   result,
   name,
+  poster,
+  coordSpace,
   askRunId,
 }: {
   result: PersonaResult;
   name: string;
+  // Session-replay poster shown when there is no video file (simulated runs).
+  poster?: string;
+  coordSpace?: Viewport;
   // Set on live (server-backed) reports only: enables the ask-a-question flow.
   askRunId?: string;
 }) {
@@ -372,6 +389,11 @@ function ResultCard({
   const success = result.outcome === "success";
   const video = artifactUrl(result.video_path);
   const audio = artifactUrl(result.audio_path);
+
+  const space = coordSpace ?? { width: 1280, height: 800 };
+  const fc = result.failure_coords;
+  const markX = fc ? Math.min(Math.max(fc[0] / space.width, 0), 1) * 100 : 50;
+  const markY = fc ? Math.min(Math.max(fc[1] / space.height, 0), 1) * 100 : 50;
 
   return (
     <article className="rounded-xl border border-border bg-card flex flex-col overflow-hidden">
@@ -416,6 +438,31 @@ function ResultCard({
             onError={() => setVideoOk(false)}
             src={video}
           />
+        ) : poster ? (
+          <div className="relative w-full rounded-lg border border-border overflow-hidden aspect-[16/10] bg-black">
+            <img
+              className="absolute inset-0 w-full h-full object-cover object-top"
+              src={poster}
+              alt="Session replay"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40" />
+            {fc && !success && (
+              <span
+                className="absolute w-5 h-5 -ml-2.5 -mt-2.5 rounded-full bg-fail text-white text-[11px] font-bold flex items-center justify-center shadow-[0_0_14px_rgba(229,72,77,0.6)]"
+                style={{ left: `${markX}%`, top: `${markY}%` }}
+              >
+                ✕
+                <span className="absolute inset-0 rounded-full border border-white/50 animate-ping" />
+              </span>
+            )}
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/50 border border-white/50 flex items-center justify-center text-white text-lg backdrop-blur-sm">
+              ▶
+            </span>
+            <span className="absolute left-2.5 bottom-2 font-mono text-[11px] text-white bg-black/60 rounded px-2 py-0.5">
+              🎬 Session replay
+              {result.duration_s ? ` · ${result.duration_s.toFixed(1)}s` : ""}
+            </span>
+          </div>
         ) : (
           <div className="rounded-lg border border-border bg-surface aspect-[16/10] flex items-center justify-center">
             <p className="text-xs text-muted-foreground">

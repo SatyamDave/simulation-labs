@@ -25,6 +25,11 @@ interface Props {
 // Selecting one fills the URL and a matching task.
 const EXAMPLES: { label: string; url: string; task: string }[] = [
   {
+    label: "QuantumLeap signup",
+    url: "https://quantumleap.app/signup",
+    task: "Create an account and start the free trial.",
+  },
+  {
     label: "GitHub signup",
     url: "https://github.com/signup",
     task: "Create a new account and reach the verification step.",

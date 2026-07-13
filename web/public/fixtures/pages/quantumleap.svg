@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <filter id="qlCard" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="18" flood-color="#1a1f36" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="800" fill="#ffffff"/>
+  <rect x="0" y="64" width="1280" height="736" fill="#f7f8fa"/>
+
+  <!-- Header bar -->
+  <rect x="0" y="0" width="1280" height="64" fill="#ffffff"/>
+  <rect x="0" y="63" width="1280" height="1" fill="#eeeeee"/>
+
+  <!-- Wordmark left -->
+  <g transform="translate(48,32)">
+    <rect x="0" y="-11" width="22" height="22" rx="6" fill="#3b5bdb"/>
+    <path d="M6,-2 l4,4 l6,-8" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="34" y="6" font-size="20" font-weight="700" fill="#1a1f36" letter-spacing="-0.4">QuantumLeap</text>
+  </g>
+
+  <!-- Nav right -->
+  <g font-size="14" fill="#5a6072">
+    <text x="1010" y="37">Product</text>
+    <text x="1092" y="37">Pricing</text>
+    <text x="1170" y="37">Sign in</text>
+  </g>
+
+  <!-- Signup card -->
+  <rect x="440" y="140" width="400" height="460" rx="14" fill="#ffffff" stroke="#ececf0" stroke-width="1" filter="url(#qlCard)"/>
+
+  <!-- Heading -->
+  <text x="472" y="192" font-size="22" font-weight="700" fill="#1a1f36" letter-spacing="-0.3">Start your free trial</text>
+
+  <!-- Email -->
+  <text x="472" y="238" font-size="13" font-weight="600" fill="#41465a">Email</text>
+  <rect x="472" y="248" width="336" height="42" rx="6" fill="#ffffff" stroke="#d7dae0" stroke-width="1"/>
+  <text x="484" y="274" font-size="14" fill="#a9adb8">you@work.com</text>
+
+  <!-- Password -->
+  <text x="472" y="320" font-size="13" font-weight="600" fill="#41465a">Password</text>
+  <rect x="472" y="330" width="336" height="42" rx="6" fill="#ffffff" stroke="#d7dae0" stroke-width="1"/>
+  <text x="484" y="356" font-size="14" fill="#a9adb8">At least 12 characters</text>
+
+  <!-- Tiny low-contrast legal text -->
+  <g font-size="10" fill="#b8b8b8">
+    <text x="472" y="402">By continuing you agree to the Terms, the Data Processing Addendum, the</text>
+    <text x="472" y="416">Acceptable Use Policy, and consent to receive product communications. A</text>
+    <text x="472" y="430">verification step and a promo code are required to complete registration.</text>
+  </g>
+
+  <!-- Button row: decoy blue primary + recessed real submit -->
+  <!-- Decoy prominent blue "Explore plans" -->
+  <rect x="470" y="520" width="150" height="44" rx="8" fill="#3b5bdb"/>
+  <text x="545" y="547" text-anchor="middle" font-size="15" font-weight="600" fill="#ffffff">Explore plans</text>
+
+  <!-- Washed-out grey real "Create account" -->
+  <rect x="650" y="520" width="150" height="44" rx="8" fill="#f2f2f2" stroke="#e2e2e6" stroke-width="1"/>
+  <text x="725" y="547" text-anchor="middle" font-size="14" font-weight="500" fill="#555555">Create account</text>
+</svg>

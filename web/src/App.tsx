@@ -7,11 +7,23 @@ import { OfflineDemo } from "./components/OfflineDemo";
 import { CompareView } from "./components/CompareView";
 import { IndexView } from "./components/IndexView";
 import { PolicyPanel } from "./components/PolicyPanel";
+import { SimulatedRun } from "./components/SimulatedRun";
 import { useRunStream } from "./useRunStream";
 import { getReport, startRun } from "./api";
 import type { RunReport } from "./types";
 
-type Mode = "launch" | "live" | "report" | "offline" | "index" | "compare";
+type Mode =
+  | "launch"
+  | "live"
+  | "report"
+  | "offline"
+  | "index"
+  | "compare"
+  | "sim";
+
+// When no backend is configured (the default for a self-contained demo), the
+// swarm is simulated entirely in-browser — the full product flow with no server.
+const HAS_BACKEND = Boolean(import.meta.env.VITE_API_BASE);
 
 /** Dark mode on a `.dark` html class; initial value set pre-paint in index.html. */
 function useTheme(): { dark: boolean; toggle: () => void } {
@@ -65,6 +77,7 @@ function ThemeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
 export default function App() {
   const [mode, setMode] = useState<Mode>("launch");
   const [runId, setRunId] = useState<string | null>(null);
+  const [launchValues, setLaunchValues] = useState<LaunchValues | null>(null);
   const [report, setReport] = useState<RunReport | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,18 +88,26 @@ export default function App() {
 
   async function handleLaunch(v: LaunchValues) {
     setError(null);
+
+    // No backend configured → run the swarm simulation in-browser.
+    if (!HAS_BACKEND) {
+      setLaunchValues(v);
+      setReport(null);
+      setMode("sim");
+      return;
+    }
+
     setBusy(true);
     try {
       const { run_id } = await startRun(v);
       setRunId(run_id);
       setReport(null);
       setMode("live");
-    } catch (err) {
-      setError(
-        `Couldn't reach the backend (${String(
-          err
-        )}). Try the offline demo — it needs no server.`
-      );
+    } catch {
+      // Backend unreachable → fall back to the in-browser simulation.
+      setLaunchValues(v);
+      setReport(null);
+      setMode("sim");
     } finally {
       setBusy(false);
     }
@@ -109,6 +130,7 @@ export default function App() {
   function reset() {
     setMode("launch");
     setRunId(null);
+    setLaunchValues(null);
     setReport(null);
     setError(null);
   }
@@ -144,6 +166,10 @@ export default function App() {
           {mode !== "launch" && (
             <div className="mx-auto max-w-6xl px-6 py-10">
               {mode === "offline" && <OfflineDemo onExit={reset} />}
+
+              {mode === "sim" && launchValues && (
+                <SimulatedRun values={launchValues} onExit={reset} />
+              )}
 
               {mode === "index" && <IndexView onBack={reset} />}
 

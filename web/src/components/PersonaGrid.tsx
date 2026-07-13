@@ -6,6 +6,9 @@ import { PersonaTile } from "./PersonaTile";
 interface Props {
   state: LiveRunState;
   coordSpace?: Viewport;
+  // Static target screenshot shown behind tiles when no live thumb is streamed
+  // (simulated runs pass the target page mock).
+  backdrop?: string;
   onSeeReport?: () => void;
   reportReady?: boolean;
 }
@@ -46,6 +49,7 @@ function Dot({
 export function PersonaGrid({
   state,
   coordSpace,
+  backdrop,
   onSeeReport,
   reportReady,
 }: Props) {
@@ -88,7 +92,14 @@ export function PersonaGrid({
         {state.order.map((id) => {
           const live = state.personas[id];
           if (!live) return null;
-          return <PersonaTile key={id} live={live} coordSpace={coordSpace} />;
+          return (
+            <PersonaTile
+              key={id}
+              live={live}
+              coordSpace={coordSpace}
+              backdrop={backdrop}
+            />
+          );
         })}
       </div>
 

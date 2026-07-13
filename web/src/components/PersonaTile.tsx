@@ -10,9 +10,10 @@ const FALLBACK_BG = `${BASE}fixtures/sample_screenshot.png`;
 interface Props {
   live: PersonaLiveState;
   coordSpace?: Viewport; // pixel space of x/y coords (default persona viewport)
+  backdrop?: string; // static target screenshot when no live thumb is streamed
 }
 
-export function PersonaTile({ live, coordSpace }: Props) {
+export function PersonaTile({ live, coordSpace, backdrop }: Props) {
   const { persona, status, lastCaption, lastThumb, step, failure, blockedSteps } =
     live;
   const badges = perturbationBadges(persona);
@@ -34,10 +35,20 @@ export function PersonaTile({ live, coordSpace }: Props) {
   // Flip the coord chip to the left of the ring near the right edge.
   const chipFlip = markerLeft > 62;
 
-  const bg = lastThumb || FALLBACK_BG;
+  const bg = lastThumb || backdrop || FALLBACK_BG;
   // Screenshots stay full color in every state; the perception filter only
-  // fakes the persona's degraded view on fixture thumbnails.
+  // fakes the persona's degraded view on fixture thumbnails / static backdrops.
   const filter = lastThumb ? undefined : perceptionFilter(persona);
+
+  // Live cursor over the screenshot while the persona is acting (sim/live runs
+  // that stream true click coords).
+  const hasCursor = running && live.x != null && live.y != null;
+  const cursorLeft = hasCursor
+    ? Math.min(Math.max((live.x as number) / space.width, 0), 1) * 100
+    : 0;
+  const cursorTop = hasCursor
+    ? Math.min(Math.max((live.y as number) / space.height, 0), 1) * 100
+    : 0;
 
   const stepsSurvived = failure?.stepsSurvived ?? step;
   const deathFrac = stepsSurvived / Math.max(persona.max_steps ?? 12, 1);
@@ -137,6 +148,19 @@ export function PersonaTile({ live, coordSpace }: Props) {
             style={{ backgroundImage: `url("${bg}")`, filter }}
             aria-hidden="true"
           />
+
+          {/* Live cursor tracking the persona's current click target */}
+          {hasCursor && (
+            <motion.span
+              className="absolute w-3 h-3 -ml-1.5 -mt-1.5 rounded-full bg-live shadow-[0_0_10px_2px_rgba(80,200,120,0.6)] pointer-events-none z-10"
+              style={{ left: `${cursorLeft}%`, top: `${cursorTop}%` }}
+              animate={{ left: `${cursorLeft}%`, top: `${cursorTop}%` }}
+              transition={{ duration: 0.32, ease: [0.4, 0.1, 0.2, 1] }}
+              aria-hidden="true"
+            >
+              <span className="absolute inset-0 rounded-full border border-live animate-ping" />
+            </motion.span>
+          )}
 
           {/* The death pixel: a small red crosshair ring + coord chip */}
           {dead && marker && (
