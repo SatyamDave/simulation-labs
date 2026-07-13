@@ -1,0 +1,1348 @@
+<!doctype html>
+<html lang="en" data-scaffold="v1">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simulation Labs — Find where your funnel loses money</title>
+<meta name="description" content="Simulation Labs runs a swarm of computer-use agents through your signup, checkout, or cancel flow and shows the exact pixel where users give up. We simulate what users do, not what they say." />
+<meta property="og:title" content="Simulation Labs — Find where your funnel loses money" />
+<meta property="og:description" content="Synthetic users that do, not say. Watch real behavior break your checkout before it costs you revenue." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Simulation Labs" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Simulation Labs — Find where your funnel loses money" />
+<meta name="twitter:description" content="Synthetic users that do, not say. Watch real behavior break your checkout before it costs you revenue." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23131314'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%23DE8248' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- tokens ---------- */
+  :root{
+    --ink:#131314; --panel:#1C1C1E; --panel-2:#242426; --line:#2C2C2E;
+    --text:#ECECEA; --muted:#9A9A97;
+    --live:#DE8248; --ok:#55A377; --fail:#E0605A;
+    --radius:12px; --radius-sm:8px; --maxw:1100px;
+    --font-sans:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;
+    --font-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  /* ---------- reset ---------- */
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--ink); color:var(--text);
+    font-family:var(--font-sans); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  img{max-width:100%;display:block}
+  a{color:inherit}
+  h1,h2,h3,p{margin:0}
+  ::selection{background:rgba(222,130,72,.25)}
+  /* ---------- layout ---------- */
+  .wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 20px}
+  .section{padding:64px 0;border-top:1px solid var(--line)}
+  @media(min-width:720px){.section{padding:96px 0}}
+  .section--plain{border-top:none}
+  /* ---------- type ---------- */
+  .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  .eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;
+    color:var(--muted);text-transform:lowercase;margin:0 0 14px}
+  .h-sec{font-weight:600;letter-spacing:-.02em;line-height:1.12;
+    font-size:clamp(1.6rem,4.2vw,2.4rem)}
+  .lead{color:var(--muted);max-width:56ch;margin-top:14px;line-height:1.6}
+  .muted{color:var(--muted)}
+  /* ---------- dots / marks ---------- */
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;
+    background:var(--muted);vertical-align:middle;flex:0 0 auto}
+  .hairline{height:1px;background:var(--line);border:0}
+  /* ---------- buttons ---------- */
+  .btn-cta{display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--font-sans);font-weight:500;font-size:.95rem;
+    background:var(--text);color:var(--ink);border:1px solid var(--text);
+    padding:12px 20px;border-radius:var(--radius-sm);cursor:pointer;
+    text-decoration:none;transition:opacity .15s ease}
+  .btn-cta:hover{opacity:.9}
+  .btn-ghost{display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--font-sans);font-size:.9rem;color:var(--muted);
+    background:none;border:0;cursor:pointer;text-decoration:none;
+    transition:color .15s ease}
+  .btn-ghost:hover{color:var(--text)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+  /* ---------- focus ---------- */
+  :focus-visible{outline:2px solid var(--live);outline-offset:2px;border-radius:4px}
+  /* ---------- header ---------- */
+  .hdr{position:sticky;top:0;z-index:50;background:rgba(19,19,20,.82);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .hdr__in{display:flex;align-items:center;justify-content:space-between;height:52px}
+  .brand{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-mono);
+    font-size:.86rem;color:var(--text);text-decoration:none;letter-spacing:.01em}
+  .brand svg{display:block}
+  .hdr .btn-cta{padding:8px 14px;font-size:.85rem}
+  /* ---------- hero ---------- */
+  .hero{padding:72px 0 56px}
+  @media(min-width:720px){.hero{padding:104px 0 84px}}
+  .hero__trace{width:100%;height:64px;display:block;margin-bottom:30px}
+  .hero h1{font-weight:600;letter-spacing:-.03em;line-height:1.05;
+    font-size:clamp(2.2rem,7vw,3.6rem);max-width:16ch}
+  .hero__sub{color:var(--muted);font-size:clamp(1rem,2.4vw,1.18rem);
+    max-width:52ch;margin-top:18px;line-height:1.55}
+  .hero__cta{margin-top:32px;display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+  .hero__trust{margin-top:26px;font-family:var(--font-mono);font-size:11.5px;
+    color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  /* ---------- footer ---------- */
+  .ftr{border-top:1px solid var(--line);padding:40px 0;margin-top:24px}
+  .ftr__in{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:baseline;
+    justify-content:space-between;font-family:var(--font-mono);font-size:11.5px;
+    color:var(--muted)}
+  .ftr a{color:var(--muted);text-decoration:none;transition:color .15s}
+  .ftr a:hover{color:var(--text)}
+  /* ---------- vital line (shared) ---------- */
+  @keyframes ping{0%{transform:scale(1);opacity:.6}80%,100%{transform:scale(2.4);opacity:0}}
+  /* ---------- reduced motion ---------- */
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.001ms!important;
+      animation-iteration-count:1!important;transition-duration:.001ms!important}
+  }
+</style>
+<style>
+  /* ---------- PROBLEM ---------- */
+  .prob-body { max-width: 62ch; }
+  .prob-body strong { color: var(--text); font-weight: 600; }
+  .prob-source {
+    margin-top: 1.25rem;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  /* ---------- HOW ---------- */
+  .how-steps {
+    list-style: none;
+    margin: 2rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .how-step { padding: 1.5rem; }
+  .how-num {
+    display: block;
+    font-size: 12px;
+    color: var(--live);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.9rem;
+  }
+  .how-title {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.5rem;
+    color: var(--text);
+  }
+  .how-desc { margin: 0; color: var(--muted); line-height: 1.6; font-size: 0.95rem; }
+
+  /* ---------- WHAT ---------- */
+  .what-groups {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .what-label {
+    font-size: 12px;
+    color: var(--text);
+    letter-spacing: 0.04em;
+    margin: 0 0 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .what-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--live);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+  }
+  .what-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+  .what-item {
+    padding: 1rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .what-name { color: var(--text); font-weight: 500; font-size: 0.95rem; }
+  .what-detail { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+  .what-group--platform .what-item {
+    background: var(--panel-2);
+    border-color: var(--line);
+    position: relative;
+  }
+  .what-group--platform .what-item::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--live);
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    opacity: 0.55;
+  }
+
+  /* ---------- FRAMES ---------- */
+  .frames-grid {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .frames-card { padding: 1.5rem; }
+  .frames-kicker {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--live);
+    margin: 0 0 0.75rem;
+  }
+  .frames-title {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.6rem;
+    color: var(--text);
+  }
+  .frames-desc { margin: 0; color: var(--muted); line-height: 1.6; font-size: 0.95rem; }
+  .frames-card--primary {
+    border-color: color-mix(in srgb, var(--live) 45%, var(--line));
+    background: linear-gradient(180deg, color-mix(in srgb, var(--live) 6%, var(--panel)), var(--panel));
+  }
+  .frames-card--primary .frames-title { font-size: 1.25rem; }
+  .frames-card--secondary { opacity: 0.92; }
+  .frames-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .frames-head .frames-title { margin: 0; }
+  .frames-next {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+
+  /* ---------- PERSONAS ---------- */
+  .persona-grid {
+    list-style: none;
+    margin: 2rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+  .persona-card {
+    padding: 1.15rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .persona-name { color: var(--text); font-weight: 600; font-size: 0.98rem; }
+  .persona-desc { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+  .persona-tag {
+    margin-top: 0.35rem;
+    align-self: flex-start;
+    font-size: 10px;
+    text-transform: lowercase;
+    letter-spacing: 0.05em;
+    color: var(--live);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+  }
+  .persona-baselines { margin-top: 1.75rem; }
+  .persona-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    margin: 0 0 0.85rem;
+  }
+  .persona-base-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+  .persona-card--base {
+    background: var(--panel-2);
+    border-style: dashed;
+  }
+  .persona-card--base .persona-tag { color: var(--muted); }
+
+  /* ---------- POWERED BY ---------- */
+  .pw-list {
+    list-style: none;
+    margin: 2rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+  .pw-row {
+    padding: 1.15rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .pw-mark { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .pw-name { font-size: 0.95rem; color: var(--text); letter-spacing: 0.01em; }
+  .pw-badge {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--live);
+    border: 1px solid color-mix(in srgb, var(--live) 40%, var(--line));
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+  }
+  .pw-desc { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.55; }
+  .pw-fn { font-size: 0.65em; color: var(--live); }
+  .pw-row--core {
+    border-color: color-mix(in srgb, var(--live) 40%, var(--line));
+    background: linear-gradient(180deg, color-mix(in srgb, var(--live) 5%, var(--panel)), var(--panel));
+  }
+  .pw-footnotes { margin-top: 1.25rem; display: grid; gap: 0.4rem; }
+  .pw-foot {
+    margin: 0;
+    font-size: 10.5px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+  .pw-foot sup { color: var(--live); }
+  .pw-cred {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--panel);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+    line-height: 1.8;
+  }
+  .pw-cred .pw-sep { color: var(--live); margin: 0 0.15rem; }
+
+  /* ---------- APPLY FORM ---------- */
+  .apply-form {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+    max-width: 640px;
+  }
+  .apply-field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .apply-label {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .apply-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    padding: 0.7rem 0.85rem;
+  }
+  .apply-input::placeholder { color: var(--muted); }
+  .apply-input:focus { border-color: var(--live); }
+  .apply-input:focus-visible { border-color: var(--live); outline: 2px solid var(--live); outline-offset: 1px; }
+  .apply-textarea { resize: vertical; min-height: 3.5rem; line-height: 1.5; }
+  .apply-actions { margin-top: 0.25rem; }
+  .apply-status {
+    margin: 0.35rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--ok);
+  }
+
+  /* ---------- SHARED RESPONSIVE ---------- */
+  @media (min-width: 720px) {
+    .how-steps { grid-template-columns: repeat(3, 1fr); }
+    .what-groups { grid-template-columns: 1fr 1fr; }
+    .frames-grid {
+      grid-template-columns: 1.4fr 1fr;
+      grid-template-areas:
+        "primary secondary1"
+        "primary secondary2";
+    }
+    .frames-card--primary { grid-area: primary; }
+    .frames-grid .frames-card--secondary:nth-of-type(2) { grid-area: secondary1; }
+    .frames-grid .frames-card--secondary:nth-of-type(3) { grid-area: secondary2; }
+    .persona-grid { grid-template-columns: repeat(3, 1fr); }
+    .persona-base-grid { grid-template-columns: repeat(2, 1fr); }
+    .apply-form { grid-template-columns: 1fr 1fr; }
+    .apply-field--wide { grid-column: 1 / -1; }
+    .apply-actions { grid-column: 1 / -1; }
+    .apply-status { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+  <!-- ============ HEADER ============ -->
+  <header class="hdr">
+    <div class="wrap hdr__in">
+      <a class="brand" href="#top" aria-label="Simulation Labs home">
+        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true">
+          <path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="var(--live)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>simulation labs</span>
+      </a>
+      <a class="btn-cta" href="#apply">Apply for access</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ============ HERO ============ -->
+    <section class="hero section--plain">
+      <div class="wrap">
+        <canvas class="hero__trace" id="heroTrace" aria-hidden="true"></canvas>
+        <h1 data-slot="hero-headline">Find where your funnel loses money.</h1>
+        <p class="hero__sub" data-slot="hero-sub">
+          Simulation Labs runs a swarm of computer-use agents through your signup,
+          checkout, or cancel flow — and shows you the exact pixel where users give up.
+          We simulate what users <em>do</em>, not what they <em>say</em>.
+        </p>
+        <div class="hero__cta">
+          <a class="btn-cta" href="#apply">Apply for design partner access</a>
+          <a class="btn-ghost" href="#demo">Watch a run →</a>
+        </div>
+        <p class="hero__trust" data-slot="hero-trust">
+          <span class="dot" style="background:var(--live)"></span>
+          Built at the H Company Computer Use Hackathon
+        </p>
+      </div>
+    </section>
+
+    <section class="section" id="problem">
+  <div class="wrap">
+    <p class="eyebrow">the say&ndash;do gap</p>
+    <h2 class="h-sec">Surveys can't tell you where they quit.</h2>
+    <div class="prob-body">
+      <p class="lead">
+        Every "synthetic user" tool asks AI personas what they <em>think</em> of your page. The
+        answers are shallow and people-pleasing &mdash; prompted personas match real user behavior
+        only <strong>11.86%</strong> of the time (arXiv 2503.20749). Meanwhile real money leaks from
+        your highest-intent flows: an average <strong>70.19%</strong> of shoppers who reach checkout
+        abandon before they pay, yet checkout design changes alone can lift conversion by up to
+        <strong>35%</strong> (Baymard Institute, 2025). You can't fix a drop-off you can't see.
+      </p>
+      <p class="prob-source mono">
+        Sources: arXiv 2503.20749 (prompted-persona fidelity); Baymard Institute checkout
+        UX research, 2025 (70.19% average cart abandonment; up to 35% conversion lift from
+        checkout design changes).
+      </p>
+    </div>
+  </div>
+</section>
+    <section id="demo" class="section">
+  <div class="wrap">
+    <p class="eyebrow">live demo</p>
+    <h2 class="h-sec demo-headline">Watch a synthetic user check out</h2>
+    <p class="lead demo-sub">Pick a behavior. The persona attempts a real checkout &mdash; and abandons at the exact pixel where the flow breaks.</p>
+
+    <div class="demo-widget card">
+      <div class="demo-grid">
+
+        <!-- MONITOR: the mock checkout the persona attempts -->
+        <div class="demo-monitor">
+          <div class="demo-stage" role="img" aria-label="A live monitor of a synthetic user attempting a checkout flow, ending where the persona abandons the task.">
+            <div class="demo-scan" aria-hidden="true"></div>
+
+            <div class="demo-brand"><span class="demo-brand-dot"></span>QuantumLeap <span class="demo-brand-sep">/</span> checkout</div>
+
+            <!-- cart summary -->
+            <div class="demo-cart" aria-hidden="true">
+              <div class="demo-cart-title">Order summary</div>
+              <div class="demo-cart-row"><span>Pro plan &mdash; annual</span><span>$228.00</span></div>
+              <div class="demo-cart-row"><span>Onboarding</span><span>$40.00</span></div>
+              <div class="demo-cart-line"></div>
+              <div class="demo-cart-row demo-cart-total"><span>Total</span><span>$268.00</span></div>
+            </div>
+
+            <!-- form -->
+            <div class="demo-field demo-field-email" aria-hidden="true">
+              <label>Email</label>
+              <div class="demo-input"><span class="demo-caret">you@company.co</span></div>
+            </div>
+            <div class="demo-field demo-field-card" aria-hidden="true">
+              <label>Card number</label>
+              <div class="demo-input demo-input-empty"><span>1234 1234 1234 1234</span></div>
+            </div>
+
+            <!-- confusing legal label -->
+            <div class="demo-terms" aria-hidden="true">
+              <span class="demo-check"></span>
+              I accept the DPA, AUP &amp; the updated ToS as described in the master agreement.
+            </div>
+
+            <!-- deliberately small primary action -->
+            <button class="demo-btn-order" tabindex="-1" aria-hidden="true">Place order</button>
+            <!-- larger decoy -->
+            <button class="demo-btn-decoy" tabindex="-1" aria-hidden="true">Explore plans <span>&rarr;</span></button>
+
+            <!-- overlay layer -->
+            <div class="demo-heat" aria-hidden="true"></div>
+            <div class="demo-death" aria-hidden="true">
+              <span class="demo-death-ring"></span>
+              <span class="demo-death-x">&times;</span>
+            </div>
+            <div class="demo-cursor" aria-hidden="true"><span class="demo-cursor-ping"></span></div>
+          </div>
+        </div>
+
+        <!-- TELEMETRY -->
+        <aside class="demo-telemetry">
+          <div class="demo-tel-head">
+            <span class="dot" style="background:var(--live)" id="demo-status-dot"></span>
+            <span class="mono demo-tel-state" id="demo-state">live</span>
+          </div>
+
+          <div class="demo-tel-row"><span class="demo-tel-label mono">persona</span><span class="demo-tel-val mono" id="demo-persona-name">Rushed</span></div>
+          <div class="demo-tel-row"><span class="demo-tel-label mono">step</span><span class="demo-tel-val mono" id="demo-step">0 / 0</span></div>
+          <div class="demo-tel-row"><span class="demo-tel-label mono">elapsed</span><span class="demo-tel-val mono" id="demo-clock">00:00</span></div>
+
+          <div class="demo-caption mono" id="demo-caption" aria-live="polite">Select a behavior to begin.</div>
+
+          <canvas class="demo-vital" id="demo-vital"></canvas>
+          <div class="demo-vital-label mono">vital line</div>
+
+          <div class="demo-chip" id="demo-chip"><span class="dot" style="background:var(--fail)"></span><span class="mono" id="demo-chip-text"></span></div>
+          <div class="demo-chip-note mono">illustrative outcome &mdash; not a benchmark</div>
+
+          <button class="demo-replay mono" id="demo-replay" type="button">&#8635; Replay run</button>
+        </aside>
+      </div>
+
+      <!-- PERSONA PICKER -->
+      <div class="demo-picker" role="group" aria-label="Choose a persona behavior to simulate">
+        <button class="demo-persona" type="button" data-persona="rushed" aria-pressed="true">
+          <span class="demo-persona-name mono">Rushed</span>
+          <span class="demo-persona-desc">races ahead, skips fields, bounces on the clock</span>
+        </button>
+        <button class="demo-persona" type="button" data-persona="misclick" aria-pressed="false">
+          <span class="demo-persona-name mono">Misclick-prone</span>
+          <span class="demo-persona-desc">jittery taps, keeps missing small targets</span>
+        </button>
+        <button class="demo-persona" type="button" data-persona="distracted" aria-pressed="false">
+          <span class="demo-persona-name mono">Distracted</span>
+          <span class="demo-persona-desc">wanders off, backtracks, loses the task</span>
+        </button>
+        <button class="demo-persona" type="button" data-persona="firsttime" aria-pressed="false">
+          <span class="demo-persona-name mono">First-time visitor</span>
+          <span class="demo-persona-desc">hesitates, re-reads labels, times out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .demo-widget{ padding:clamp(14px,2.4vw,22px); margin-top:clamp(20px,3vw,30px); overflow:hidden; }
+    .demo-grid{ display:grid; grid-template-columns:1fr; gap:clamp(14px,2vw,20px); }
+    @media(min-width:720px){ .demo-grid{ grid-template-columns:1.55fr 1fr; align-items:stretch; } }
+
+    /* ---------- MONITOR / STAGE ---------- */
+    .demo-monitor{ min-width:0; }
+    .demo-stage{
+      position:relative; width:100%; aspect-ratio:16/11;
+      background:var(--panel-2); border:1px solid var(--line);
+      border-radius:var(--radius); overflow:hidden;
+      container-type:inline-size;
+      box-shadow:inset 0 0 40px rgba(0,0,0,.35);
+    }
+    .demo-scan{ position:absolute; inset:0; pointer-events:none; z-index:5;
+      background:repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 3px); }
+
+    .demo-brand{ position:absolute; top:5%; left:6%; font-family:var(--font-mono);
+      font-size:3.1cqw; letter-spacing:.02em; color:var(--text); display:flex; align-items:center; gap:.5em; }
+    .demo-brand-dot{ width:.7em; height:.7em; border-radius:50%; background:var(--live); box-shadow:0 0 6px var(--live); }
+    .demo-brand-sep{ color:var(--muted); }
+
+    .demo-cart{ position:absolute; top:15%; left:56%; width:38%;
+      background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-sm);
+      padding:2.6cqw 2.8cqw; font-family:var(--font-sans); }
+    .demo-cart-title{ font-family:var(--font-mono); font-size:2.5cqw; color:var(--muted); text-transform:lowercase; letter-spacing:.04em; margin-bottom:1.6cqw; }
+    .demo-cart-row{ display:flex; justify-content:space-between; gap:1em; font-size:2.7cqw; color:var(--muted); margin:.7cqw 0; font-variant-numeric:tabular-nums; }
+    .demo-cart-line{ height:1px; background:var(--line); margin:1.4cqw 0; }
+    .demo-cart-total{ color:var(--text); font-weight:600; }
+
+    .demo-field{ position:absolute; left:6%; width:44%; }
+    .demo-field-email{ top:28%; }
+    .demo-field-card{ top:45%; }
+    .demo-field label{ display:block; font-family:var(--font-mono); font-size:2.4cqw; color:var(--muted); margin-bottom:1cqw; text-transform:lowercase; letter-spacing:.03em; }
+    .demo-input{ background:var(--ink); border:1px solid var(--line); border-radius:var(--radius-sm);
+      padding:2.2cqw 2.4cqw; font-family:var(--font-mono); font-size:2.8cqw; color:var(--text); overflow:hidden; white-space:nowrap; }
+    .demo-input-empty span{ color:#4a4a4d; }
+
+    .demo-terms{ position:absolute; top:61%; left:6%; width:62%;
+      font-family:var(--font-sans); font-size:2.2cqw; line-height:1.45; color:#7d7d7a;
+      display:flex; gap:1.4cqw; }
+    .demo-check{ flex:0 0 auto; width:2.6cqw; height:2.6cqw; border:1px solid var(--line); border-radius:3px; margin-top:.3cqw; }
+
+    .demo-btn-order{ position:absolute; top:79%; left:6%; width:20%; height:11%;
+      background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-sm);
+      color:#c9c9c6; font-family:var(--font-mono); font-size:2.3cqw; letter-spacing:.01em; cursor:default; }
+    .demo-btn-decoy{ position:absolute; top:75%; left:58%; width:34%; height:17%;
+      background:transparent; border:1px solid var(--live); border-radius:var(--radius-sm);
+      color:var(--live); font-family:var(--font-sans); font-weight:600; font-size:3.2cqw; cursor:default;
+      display:flex; align-items:center; justify-content:center; gap:.5em;
+      box-shadow:0 0 18px rgba(222,130,72,.14); }
+
+    /* overlay: cursor */
+    .demo-cursor{ position:absolute; left:50%; top:10%; width:14px; height:14px; z-index:8;
+      transform:translate(-50%,-50%); pointer-events:none;
+      border-radius:50%; background:var(--live);
+      box-shadow:0 0 10px 2px rgba(222,130,72,.6), 0 0 3px rgba(255,255,255,.5);
+      transition:opacity .4s ease; }
+    .demo-cursor--hidden{ opacity:0; }
+    .demo-cursor-ping{ position:absolute; inset:-6px; border-radius:50%; border:1px solid var(--live); opacity:0; }
+
+    /* overlay: death mark + heat */
+    .demo-heat{ position:absolute; left:0; top:0; width:34cqw; height:34cqw; z-index:6;
+      transform:translate(-50%,-50%) scale(.2); pointer-events:none; opacity:0;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(224,96,90,.45) 0%, rgba(224,96,90,.16) 40%, transparent 70%); }
+    .demo-heat--show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+    .demo-death{ position:absolute; left:0; top:0; z-index:9; width:0; height:0;
+      transform:translate(-50%,-50%); pointer-events:none; opacity:0; color:var(--fail); }
+    .demo-death--show{ opacity:1; }
+    .demo-death-ring{ position:absolute; left:50%; top:50%; width:26px; height:26px; margin:-13px 0 0 -13px;
+      border:1.5px solid var(--fail); border-radius:50%; box-shadow:0 0 10px rgba(224,96,90,.6); }
+    .demo-death-x{ position:absolute; left:50%; top:50%; transform:translate(-50%,-52%);
+      font-family:var(--font-mono); font-size:16px; line-height:1; color:var(--fail); }
+
+    /* ---------- TELEMETRY ---------- */
+    .demo-telemetry{ display:flex; flex-direction:column; gap:clamp(8px,1.4vw,12px);
+      background:var(--panel-2); border:1px solid var(--line); border-radius:var(--radius);
+      padding:clamp(14px,1.8vw,18px); min-width:0; }
+    .demo-tel-head{ display:flex; align-items:center; gap:.5em; }
+    .demo-tel-state{ font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--live); }
+    .demo-tel-row{ display:flex; justify-content:space-between; align-items:baseline; gap:1em;
+      font-size:12px; border-bottom:1px solid var(--line); padding-bottom:6px; }
+    .demo-tel-label{ color:var(--muted); text-transform:lowercase; letter-spacing:.03em; }
+    .demo-tel-val{ color:var(--text); font-variant-numeric:tabular-nums; }
+    .demo-caption{ font-size:12.5px; line-height:1.5; color:var(--text); min-height:2.6em;
+      padding:8px 0; border-bottom:1px solid var(--line); }
+    .demo-vital{ display:block; width:100%; height:58px; }
+    .demo-vital-label{ font-size:10px; color:var(--muted); letter-spacing:.05em; text-transform:lowercase; margin-top:-4px; }
+
+    .demo-chip{ display:none; align-items:center; gap:.55em; margin-top:2px;
+      background:var(--panel); border:1px solid var(--line); border-radius:999px;
+      padding:6px 12px; font-size:11.5px; color:var(--text); align-self:flex-start;
+      font-variant-numeric:tabular-nums; }
+    .demo-chip--show{ display:inline-flex; }
+    .demo-chip-note{ font-size:9.5px; color:var(--muted); letter-spacing:.02em; margin-top:-4px; }
+
+    .demo-replay{ margin-top:auto; align-self:flex-start; cursor:pointer;
+      background:var(--panel); color:var(--text); border:1px solid var(--line);
+      border-radius:var(--radius-sm); padding:8px 14px; font-size:12px; letter-spacing:.02em; }
+    .demo-replay:hover{ border-color:var(--muted); }
+
+    /* ---------- PERSONA PICKER ---------- */
+    .demo-picker{ display:grid; grid-template-columns:1fr; gap:8px; margin-top:clamp(14px,2vw,18px); }
+    @media(min-width:560px){ .demo-picker{ grid-template-columns:1fr 1fr; } }
+    @media(min-width:920px){ .demo-picker{ grid-template-columns:repeat(4,1fr); } }
+    .demo-persona{ text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:5px;
+      background:var(--panel); border:1px solid var(--line); border-radius:var(--radius-sm);
+      padding:12px 13px; transition:border-color .18s ease, background .18s ease; }
+    .demo-persona:hover{ border-color:var(--muted); }
+    .demo-persona[aria-pressed="true"]{ border-color:var(--live); background:rgba(222,130,72,.07); }
+    .demo-persona-name{ font-size:13px; color:var(--text); letter-spacing:.01em; display:flex; align-items:center; gap:.5em; }
+    .demo-persona[aria-pressed="true"] .demo-persona-name::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--live); box-shadow:0 0 6px var(--live); }
+    .demo-persona-desc{ font-size:11.5px; color:var(--muted); line-height:1.4; }
+
+    /* ---------- motion-only flourishes ---------- */
+    @media(prefers-reduced-motion:no-preference){
+      .demo-cursor--ping .demo-cursor-ping{ animation:demo-ping 1.4s ease-out infinite; }
+      .demo-heat--show{ animation:demo-bloom-heat .6s ease-out; }
+      .demo-death--show{ animation:demo-bloom-death .5s cubic-bezier(.2,.9,.3,1.2); }
+      .demo-brand-dot{ animation:demo-pulse 2s ease-in-out infinite; }
+    }
+    @keyframes demo-ping{ 0%{ transform:scale(.7); opacity:.7; } 100%{ transform:scale(2.1); opacity:0; } }
+    @keyframes demo-bloom-heat{ 0%{ transform:translate(-50%,-50%) scale(.2); opacity:0; } 100%{ transform:translate(-50%,-50%) scale(1); opacity:1; } }
+    @keyframes demo-bloom-death{ 0%{ transform:translate(-50%,-50%) scale(.3); opacity:0; } 60%{ transform:translate(-50%,-50%) scale(1.25); } 100%{ transform:translate(-50%,-50%) scale(1); opacity:1; } }
+    @keyframes demo-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.4; } }
+  </style>
+
+  <script>
+  (function(){
+    var root = document.getElementById('demo');
+    if(!root) return;
+
+    var stage    = root.querySelector('.demo-stage');
+    var cursor   = root.querySelector('.demo-cursor');
+    var death    = root.querySelector('.demo-death');
+    var heat     = root.querySelector('.demo-heat');
+    var capEl    = root.querySelector('#demo-caption');
+    var stepEl   = root.querySelector('#demo-step');
+    var clockEl  = root.querySelector('#demo-clock');
+    var nameEl   = root.querySelector('#demo-persona-name');
+    var stateEl  = root.querySelector('#demo-state');
+    var statusDot= root.querySelector('#demo-status-dot');
+    var chip     = root.querySelector('#demo-chip');
+    var chipText = root.querySelector('#demo-chip-text');
+    var replay   = root.querySelector('#demo-replay');
+    var vital    = root.querySelector('#demo-vital');
+    var vctx     = vital.getContext('2d');
+    var buttons  = Array.prototype.slice.call(root.querySelectorAll('.demo-persona'));
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var VITAL_DEATH = 0.8;
+
+    // resolve theme colors (fallback to contract hexes)
+    function cssVar(n, fb){
+      var v = getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+      return v || fb;
+    }
+    var LIVE = cssVar('--live','#DE8248');
+    var FAIL = cssVar('--fail','#E0605A');
+
+    // target coordinates in stage percent
+    var T = {
+      start:  {x:50, y:10},
+      email:  {x:28, y:35},
+      card:   {x:28, y:51},
+      terms:  {x:37, y:64},
+      order:  {x:16, y:84},
+      decoy:  {x:75, y:83},
+      cart:   {x:75, y:35}
+    };
+
+    var PLANS = {
+      rushed: {
+        name:'Rushed', tag:'time', dur:41, death:T.card,
+        reason:'Ran out of time — bounced before entering card details.',
+        steps:[
+          {to:T.start, cap:'Dismissing the banner',        move:280, hold:120},
+          {to:T.email, cap:'Racing through the email',     move:380, hold:170},
+          {to:T.order, cap:'Straight to Place order',       move:360, hold:150},
+          {to:T.card,  cap:'Wait — no card was entered',    move:340, hold:280}
+        ]
+      },
+      misclick: {
+        name:'Misclick-prone', tag:'steps', dur:52, death:T.order,
+        reason:'Out of tries — kept missing the small Place order button.',
+        steps:[
+          {to:T.email, cap:'Aiming for the email field',    move:420, hold:200, jitter:true},
+          {to:T.card,  cap:'Fumbling the card number',      move:360, hold:220, jitter:true},
+          {to:T.order, cap:'Reaching for Place order',      move:400, hold:260, jitter:true},
+          {to:T.order, cap:'Missed — the target is tiny',   move:150, hold:260, jitter:true},
+          {to:T.order, cap:'Missed again…',                 move:140, hold:280, jitter:true}
+        ]
+      },
+      distracted: {
+        name:'Distracted', tag:'stuck', dur:47, death:T.decoy,
+        reason:"Lost the task — clicked 'Explore plans' and never checked out.",
+        steps:[
+          {to:T.email, cap:'Starting the checkout',         move:360, hold:200},
+          {to:T.cart,  cap:'Distracted by the summary',     move:520, hold:260},
+          {to:T.decoy, cap:"Drawn to 'Explore plans'",      move:440, hold:240},
+          {to:T.email, cap:'Trying to refocus',             move:640, hold:220},
+          {to:T.decoy, cap:"Clicks 'Explore plans' anyway", move:640, hold:280}
+        ]
+      },
+      firsttime: {
+        name:'First-time visitor', tag:'time', dur:44, death:T.terms,
+        reason:'Timed out — stuck on a label it could not parse.',
+        steps:[
+          {to:T.email, cap:'Reading the page…',             move:700, hold:700},
+          {to:T.card,  cap:'Where does payment go?',        move:640, hold:820},
+          {to:T.terms, cap:'Re-reading the fine print',     move:560, hold:900},
+          {to:T.terms, cap:"'DPA, AUP, ToS' — unclear",     move:140, hold:1000}
+        ]
+      }
+    };
+
+    var raf=null, current='rushed', lastReveal=0, lastDead=false;
+
+    function clearRun(){ if(raf){ cancelAnimationFrame(raf); raf=null; } }
+    function ease(t){ return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+    function lerp(a,b,t){ return a+(b-a)*t; }
+    function place(el,x,y){ el.style.left=x+'%'; el.style.top=y+'%'; }
+    function mmss(s){ s=Math.max(0,Math.round(s)); var m=Math.floor(s/60); var r=s%60;
+      return (m<10?'0':'')+m+':'+(r<10?'0':'')+r; }
+
+    // ---- vital line ----
+    var dpr = Math.min(window.devicePixelRatio||1, 2);
+    function fitVital(){
+      var w = vital.clientWidth || 240, h = 58;
+      vital._w=w; vital._h=h;
+      vital.width = Math.round(w*dpr); vital.height = Math.round(h*dpr);
+    }
+    function ekg(u){
+      var blips=7, p=(u*blips)%1, s=0;
+      if(p>0.40 && p<0.60){ var q=(p-0.40)/0.20; s = Math.sin(q*Math.PI)*(q<0.5?9:13); }
+      s += Math.sin(u*130)*0.8;
+      return s;
+    }
+    function drawVital(reveal, dead){
+      lastReveal=reveal; lastDead=dead;
+      var W=vital._w, H=vital._h, mid=H/2;
+      vctx.setTransform(1,0,0,1,0,0);
+      vctx.clearRect(0,0,vital.width,vital.height);
+      vctx.scale(dpr,dpr);
+      var deathX = W*VITAL_DEATH;
+      var aliveEnd = dead ? deathX : Math.min(reveal, VITAL_DEATH)*W;
+      // alive orange trace
+      vctx.lineWidth=1; vctx.lineJoin='round'; vctx.lineCap='round';
+      vctx.strokeStyle=LIVE; vctx.shadowColor=LIVE; vctx.shadowBlur=6;
+      vctx.beginPath();
+      var started=false;
+      for(var x=0;x<=aliveEnd;x++){ var y=mid-ekg(x/W);
+        if(!started){ vctx.moveTo(x,y); started=true; } else vctx.lineTo(x,y); }
+      vctx.stroke();
+      vctx.shadowBlur=0;
+      if(!dead && aliveEnd>2){
+        var hy=mid-ekg(aliveEnd/W);
+        vctx.fillStyle=LIVE; vctx.beginPath(); vctx.arc(aliveEnd,hy,2,0,7); vctx.fill();
+      }
+      if(dead){
+        // death tick + gap + faint flat red tail
+        vctx.strokeStyle=FAIL;
+        vctx.beginPath(); vctx.moveTo(deathX,mid-6); vctx.lineTo(deathX,mid+6); vctx.stroke();
+        var gapEnd = deathX + W*0.04;
+        vctx.globalAlpha=0.45;
+        vctx.beginPath(); vctx.moveTo(gapEnd,mid); vctx.lineTo(W,mid); vctx.stroke();
+        vctx.globalAlpha=1;
+      }
+    }
+
+    // ---- state helpers ----
+    function setButtons(id){
+      buttons.forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.persona===id ? 'true':'false'); });
+    }
+    function resetVisuals(plan){
+      chip.classList.remove('demo-chip--show');
+      death.classList.remove('demo-death--show');
+      heat.classList.remove('demo-heat--show');
+      cursor.classList.remove('demo-cursor--hidden');
+      cursor.classList.add('demo-cursor--ping');
+      place(cursor, plan.steps[0].to.x, plan.steps[0].to.y);
+      place(death, plan.death.x, plan.death.y);
+      place(heat, plan.death.x, plan.death.y);
+      nameEl.textContent = plan.name;
+      stepEl.textContent = '0 / ' + plan.steps.length;
+      clockEl.textContent = '00:00';
+      stateEl.textContent = 'live'; stateEl.style.color='var(--live)';
+      statusDot.style.background='var(--live)';
+    }
+    function showEnd(plan){
+      var n = plan.steps.length;
+      cursor.classList.remove('demo-cursor--ping');
+      cursor.classList.add('demo-cursor--hidden');
+      place(cursor, plan.death.x, plan.death.y);
+      heat.classList.add('demo-heat--show');
+      death.classList.add('demo-death--show');
+      drawVital(VITAL_DEATH, true);
+      capEl.textContent = plan.reason;
+      stepEl.textContent = n + ' / ' + n;
+      clockEl.textContent = mmss(plan.dur);
+      stateEl.textContent = 'abandoned'; stateEl.style.color='var(--fail)';
+      statusDot.style.background='var(--fail)';
+      chipText.textContent = 'abandoned · ' + plan.tag + ' · step ' + n + ' · ' + mmss(plan.dur);
+      chip.classList.add('demo-chip--show');
+    }
+
+    function run(id){
+      clearRun();
+      current = id;
+      var plan = PLANS[id];
+      setButtons(id);
+      resetVisuals(plan);
+      fitVital();
+      drawVital(0, false);
+
+      if(reduce){
+        capEl.textContent = plan.steps[0].cap;
+        showEnd(plan);
+        return;
+      }
+
+      // build timeline
+      var segs=[], acc=0, from=plan.steps[0].to;
+      for(var i=0;i<plan.steps.length;i++){
+        var s=plan.steps[i];
+        var seg={ from:(i===0?plan.steps[0].to:from), to:s.to, move:(i===0?0:s.move),
+                  hold:s.hold, cap:s.cap, jitter:!!s.jitter, start:acc };
+        seg.moveEnd = seg.start + seg.move;
+        seg.holdEnd = seg.moveEnd + seg.hold;
+        acc = seg.holdEnd;
+        segs.push(seg);
+        from = s.to;
+      }
+      var total = acc;
+      var shown = -1;
+      var t0 = performance.now();
+
+      function frame(now){
+        var e = now - t0;
+        if(e >= total){ showEnd(plan); raf=null; return; }
+        var seg=null, idx=0;
+        for(var i=0;i<segs.length;i++){ if(e < segs[i].holdEnd){ seg=segs[i]; idx=i; break; } }
+        if(!seg){ seg=segs[segs.length-1]; idx=segs.length-1; }
+
+        var cx, cy;
+        if(e < seg.moveEnd && seg.move>0){
+          var p = ease((e-seg.start)/seg.move);
+          cx = lerp(seg.from.x, seg.to.x, p);
+          cy = lerp(seg.from.y, seg.to.y, p);
+          if(seg.jitter){ cx += (Math.random()-0.5)*2.2; cy += (Math.random()-0.5)*2.2; }
+        } else {
+          cx = seg.to.x; cy = seg.to.y;
+          if(seg.jitter){ cx += (Math.random()-0.5)*4.0; cy += (Math.random()-0.5)*4.0; }
+        }
+        place(cursor, cx, cy);
+
+        if(idx !== shown){ shown = idx; capEl.textContent = seg.cap; }
+        stepEl.textContent = (idx+1) + ' / ' + segs.length;
+        var frac = e/total;
+        clockEl.textContent = mmss(plan.dur * frac);
+        drawVital(frac * VITAL_DEATH, false);
+
+        raf = requestAnimationFrame(frame);
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    // interactions
+    buttons.forEach(function(b){
+      b.addEventListener('click', function(){ run(b.dataset.persona); });
+    });
+    replay.addEventListener('click', function(){ run(current); });
+
+    window.addEventListener('resize', function(){ fitVital(); drawVital(lastReveal, lastDead); });
+
+    // kick off when scrolled into view (once)
+    var kicked=false;
+    function kick(){ if(kicked) return; kicked=true; run('rushed'); }
+    if('IntersectionObserver' in window){
+      var io = new IntersectionObserver(function(en){
+        en.forEach(function(x){ if(x.isIntersecting){ kick(); io.disconnect(); } });
+      }, {threshold:0.35});
+      io.observe(stage);
+    } else { kick(); }
+    // safety: ensure first paint even if observer never fires
+    setTimeout(function(){ if(!kicked){ fitVital(); drawVital(0,false); resetVisuals(PLANS.rushed); capEl.textContent='Select a behavior to begin.'; } }, 1200);
+  })();
+  </script>
+</section>
+    <section class="section" id="how">
+  <div class="wrap">
+    <p class="eyebrow">three steps</p>
+    <h2 class="h-sec">From flow to failure report.</h2>
+    <ol class="how-steps">
+      <li class="card how-step">
+        <span class="how-num mono">01</span>
+        <h3 class="how-title">Define your flow</h3>
+        <p class="how-desc">Give us a URL and a goal &mdash; sign up, check out, cancel &mdash; in one line.</p>
+      </li>
+      <li class="card how-step">
+        <span class="how-num mono">02</span>
+        <h3 class="how-title">Deploy behavioral personas</h3>
+        <p class="how-desc">A swarm of computer-use agents attempts the task the way real users would.</p>
+      </li>
+      <li class="card how-step">
+        <span class="how-num mono">03</span>
+        <h3 class="how-title">Get the failure report</h3>
+        <p class="how-desc">See the exact pixel where each persona quit, and why, with receipts.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+    <section class="section" id="what">
+  <div class="wrap">
+    <p class="eyebrow">the output</p>
+    <h2 class="h-sec">Receipts, not opinions.</h2>
+    <p class="lead">
+      Every run turns into hard evidence &mdash; and every run rolls up into a dashboard that
+      tracks the flow release over release.
+    </p>
+    <div class="what-groups">
+      <div class="what-group">
+        <p class="what-label mono">Per-run reports</p>
+        <ul class="what-list">
+          <li class="card what-item">
+            <span class="what-name">Survival curve</span>
+            <span class="what-detail">Who made it, and how far each one got.</span>
+          </li>
+          <li class="card what-item">
+            <span class="what-name">Abandonment heatmap</span>
+            <span class="what-detail">Where users die on your actual page.</span>
+          </li>
+          <li class="card what-item">
+            <span class="what-name">Video receipts</span>
+            <span class="what-detail">The recording of every failure, step by step.</span>
+          </li>
+          <li class="card what-item">
+            <span class="what-name">Cloned-voice exit interviews</span>
+            <span class="what-detail">Each persona explains why it gave up, out loud.</span>
+          </li>
+        </ul>
+      </div>
+      <div class="what-group what-group--platform">
+        <p class="what-label mono">Analytics dashboard <span class="what-tag mono">the platform layer</span></p>
+        <ul class="what-list">
+          <li class="card what-item">
+            <span class="what-name">Completion rate over releases</span>
+            <span class="what-detail">Is the flow getting better or worse?</span>
+          </li>
+          <li class="card what-item">
+            <span class="what-name">Failure points aggregated</span>
+            <span class="what-detail">The drop-offs that show up run after run.</span>
+          </li>
+          <li class="card what-item">
+            <span class="what-name">Persona-segmented breakdown</span>
+            <span class="what-detail">Which behaviors fail, and where.</span>
+          </li>
+          <li class="card what-item">
+            <span class="what-name">Before/after comparison</span>
+            <span class="what-detail">Prove the fix moved the number.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+    <section class="section" id="frames">
+  <div class="wrap">
+    <p class="eyebrow">one engine</p>
+    <h2 class="h-sec">Built for growth. Ready for more.</h2>
+    <div class="frames-grid">
+      <article class="card frames-card frames-card--primary">
+        <p class="frames-kicker mono">primary</p>
+        <h3 class="frames-title">CRO &amp; Growth teams</h3>
+        <p class="frames-desc">
+          Your highest-intent flows are where revenue leaks fastest. Simulation Labs finds the
+          exact step where signups and checkouts stall, ranks the worst drop-offs, and lets you
+          prove a fix lifted completion &mdash; before you spend a sprint on the wrong friction.
+        </p>
+      </article>
+      <article class="card frames-card frames-card--secondary">
+        <h3 class="frames-title">Product teams launching new flows</h3>
+        <p class="frames-desc">
+          Ship a new flow with eyes on it. Point the swarm at a staging build and see where
+          first-time users get stuck before your real users ever do.
+        </p>
+      </article>
+      <article class="card frames-card frames-card--secondary">
+        <div class="frames-head">
+          <h3 class="frames-title">QA &amp; CI/CD</h3>
+          <span class="frames-next mono">what's next</span>
+        </div>
+        <p class="frames-desc">
+          Turn survival into a check you run on every release &mdash; the build fails when completion
+          drops. A usability regression test, not a manual pass.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+    <section class="section" id="personas">
+  <div class="wrap">
+    <p class="eyebrow">behavioral personas</p>
+    <h2 class="h-sec">Real behavior, not roleplay.</h2>
+    <p class="lead">
+      Each persona attempts your task with its perception and actions mechanically shaped
+      to match how real people behave &mdash; so failure is measured, not imagined.
+    </p>
+    <ul class="persona-grid">
+      <li class="card persona-card">
+        <span class="persona-name">Rushed</span>
+        <span class="persona-desc">Races ahead, skips instructions, bounces the moment it stalls.</span>
+        <span class="persona-tag mono">races &middot; bounces</span>
+      </li>
+      <li class="card persona-card">
+        <span class="persona-name">Distracted</span>
+        <span class="persona-desc">Wanders off task, backtracks, loses the thread mid-flow.</span>
+        <span class="persona-tag mono">wanders</span>
+      </li>
+      <li class="card persona-card">
+        <span class="persona-name">Misclick-prone</span>
+        <span class="persona-desc">Jittery taps that land just off the target.</span>
+        <span class="persona-tag mono">jitter</span>
+      </li>
+      <li class="card persona-card">
+        <span class="persona-name">First-time visitor</span>
+        <span class="persona-desc">Reads everything literally, assumes nothing about the UI.</span>
+        <span class="persona-tag mono">hesitates</span>
+      </li>
+      <li class="card persona-card">
+        <span class="persona-name">Mobile (thumb precision)</span>
+        <span class="persona-desc">Small screen, fat-finger taps near tight targets.</span>
+        <span class="persona-tag mono">small viewport</span>
+      </li>
+      <li class="card persona-card">
+        <span class="persona-name">Slow connection</span>
+        <span class="persona-desc">Waits on loads, times out when the page lags.</span>
+        <span class="persona-tag mono">latency</span>
+      </li>
+    </ul>
+    <div class="persona-baselines">
+      <p class="persona-label mono">Baselines &mdash; neutral controls</p>
+      <ul class="persona-base-grid">
+        <li class="card persona-card persona-card--base">
+          <span class="persona-name">Fluent power user</span>
+          <span class="persona-desc">No constraints; the flow works, this proves it.</span>
+          <span class="persona-tag mono">control</span>
+        </li>
+        <li class="card persona-card persona-card--base">
+          <span class="persona-name">AI agent</span>
+          <span class="persona-desc">No constraints, machine-driven: is your flow usable by an agent at all?</span>
+          <span class="persona-tag mono">control</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+    <section class="section" id="powered">
+  <div class="wrap">
+    <p class="eyebrow">powered by</p>
+    <h2 class="h-sec">The engine under the hood.</h2>
+    <p class="lead">Real tools doing real work &mdash; here's exactly what each one does.</p>
+    <ul class="pw-list">
+      <li class="card pw-row pw-row--core">
+        <div class="pw-mark">
+          <span class="pw-name mono">H Company Holo</span>
+          <span class="pw-badge mono">core engine</span>
+        </div>
+        <p class="pw-desc">The core computer-use engine (<span class="mono">holo3-1-35b-a3b</span>). Every persona sees a screenshot and returns a real click.</p>
+      </li>
+      <li class="card pw-row">
+        <div class="pw-mark">
+          <span class="pw-name mono">Gradium</span>
+        </div>
+        <p class="pw-desc">Cloned per-persona voices for the spoken exit interviews.</p>
+      </li>
+      <li class="card pw-row">
+        <div class="pw-mark">
+          <span class="pw-name mono">Anthropic Claude</span>
+        </div>
+        <p class="pw-desc">Optional narration polish for exit interviews.<sup class="pw-fn">1</sup></p>
+      </li>
+      <li class="card pw-row">
+        <div class="pw-mark">
+          <span class="pw-name mono">NVIDIA NemoClaw</span>
+        </div>
+        <p class="pw-desc">A network-layer policy that keeps runs read-only &mdash; live form POSTs are blocked before they leave the machine.<sup class="pw-fn">2</sup></p>
+      </li>
+    </ul>
+    <div class="pw-footnotes">
+      <p class="pw-foot mono"><sup>1</sup> Claude is optional and narration-only. Without it, a grounded template is used &mdash; it is never central to the result.</p>
+      <p class="pw-foot mono"><sup>2</sup> On a laptop the same browse-only YAML policy is enforced in-process at the browser network layer; the full GPU sandbox is out of scope for the demo.</p>
+    </div>
+    <p class="pw-cred mono">
+      MIT licensed <span class="pw-sep">&middot;</span> frozen-contract architecture <span class="pw-sep">&middot;</span> 68 tests passing <span class="pw-sep">&middot;</span> built at the H Company Computer Use Hackathon
+    </p>
+  </div>
+</section>
+    <section class="section" id="apply">
+  <div class="wrap">
+    <p class="eyebrow">design partners</p>
+    <h2 class="h-sec">Test one flow with us.</h2>
+    <p class="lead">
+      We're taking on a small group of design partners. Bring one flow you care about &mdash;
+      we'll run the swarm and hand you the failure report, direct.
+    </p>
+    <form id="applyForm" class="apply-form" novalidate>
+      <div class="apply-field">
+        <label class="apply-label mono" for="apply-name">Name</label>
+        <input class="apply-input" id="apply-name" name="name" type="text" autocomplete="name">
+      </div>
+      <div class="apply-field">
+        <label class="apply-label mono" for="apply-company">Company</label>
+        <input class="apply-input" id="apply-company" name="company" type="text" autocomplete="organization">
+      </div>
+      <div class="apply-field">
+        <label class="apply-label mono" for="apply-email">Work email</label>
+        <input class="apply-input" id="apply-email" name="email" type="email" autocomplete="email" required>
+      </div>
+      <div class="apply-field apply-field--wide">
+        <label class="apply-label mono" for="apply-flow">What flow should we test?</label>
+        <textarea class="apply-input apply-textarea" id="apply-flow" name="flow" rows="3"></textarea>
+      </div>
+      <div class="apply-actions">
+        <button class="btn-cta" type="submit">Apply for design partner access</button>
+      </div>
+      <p id="applyStatus" class="apply-status" role="status" aria-live="polite" hidden></p>
+    </form>
+  </div>
+</section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="ftr">
+    <div class="wrap ftr__in">
+      <span data-slot="ftr-tagline">Simulate what users do, not what they say.</span>
+      <span>Powered by H Company Holo &amp; Gradium</span>
+      <span>Satyam Dave &amp; Udaya Vijay Anand</span>
+      <a href="https://github.com/SatyamDave/simulation-labs">github.com/SatyamDave/simulation-labs</a>
+      <span>© 2026</span>
+    </div>
+  </footer>
+
+  <script>
+  (function(){
+    "use strict";
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* ----- Hero EKG vital-line: alive blips, then flatlines with a red gap ----- */
+    var cv = document.getElementById("heroTrace");
+    if(cv){
+      var ctx = cv.getContext("2d");
+      var DPR = Math.min(window.devicePixelRatio||1, 2);
+      var W=0,H=0;
+      function size(){
+        W = cv.clientWidth; H = cv.clientHeight;
+        cv.width = W*DPR; cv.height = H*DPR;
+        ctx.setTransform(DPR,0,0,DPR,0,0);
+      }
+      size();
+      window.addEventListener("resize", size);
+
+      var LIVE="#DE8248", FAIL="#E0605A", LINE="#2C2C2E", MUT="#9A9A97";
+      // A single heartbeat spike shape sampled across x; returns y offset.
+      function beat(t){ // t in [0,1) position within a beat
+        if(t<0.46||t>0.60) return 0;
+        var u=(t-0.46)/0.14;            // 0..1 across the spike
+        if(u<0.35) return -Math.sin(u/0.35*Math.PI)*0.32;      // small pre-bump
+        if(u<0.6){ var v=(u-0.35)/0.25; return v*1.0; }        // down-up to peak
+        var w=(u-0.6)/0.4; return (1-w)*1.0 - Math.sin(w*Math.PI)*0.18;
+      }
+      var deathX = 0.82;   // fraction of width where it flatlines
+      var phase = 0;
+      function drawStatic(){
+        ctx.clearRect(0,0,W,H);
+        var mid=H*0.55, amp=H*0.34;
+        // baseline grid tick
+        ctx.strokeStyle=LINE; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.moveTo(0,mid); ctx.lineTo(W,mid); ctx.stroke();
+        // alive portion (orange) up to deathX with a couple beats
+        ctx.strokeStyle=LIVE; ctx.lineWidth=1.5; ctx.lineJoin="round"; ctx.lineCap="round";
+        ctx.shadowColor=LIVE; ctx.shadowBlur=6;
+        ctx.beginPath();
+        var dpx=W*deathX;
+        for(var x=0;x<=dpx;x++){
+          var beats=(x/W)*6;             // 6 beats across full width
+          var y=mid - beat(beats%1)*amp;
+          if(x===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.stroke(); ctx.shadowBlur=0;
+        // red flatline after a small gap
+        var gap=10;
+        ctx.strokeStyle=FAIL; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.moveTo(dpx+gap,mid); ctx.lineTo(W,mid); ctx.stroke();
+        // death mark
+        ctx.fillStyle=FAIL; ctx.beginPath(); ctx.arc(dpx,mid,2.4,0,7); ctx.fill();
+        ctx.strokeStyle=FAIL; ctx.globalAlpha=.55; ctx.lineWidth=1;
+        ctx.beginPath(); ctx.arc(dpx,mid,6,0,7); ctx.stroke(); ctx.globalAlpha=1;
+      }
+      if(reduce){ drawStatic(); }
+      else{
+        var scan=0;
+        function frame(){
+          ctx.clearRect(0,0,W,H);
+          var mid=H*0.55, amp=H*0.34;
+          ctx.strokeStyle=LINE; ctx.lineWidth=1;
+          ctx.beginPath(); ctx.moveTo(0,mid); ctx.lineTo(W,mid); ctx.stroke();
+          var dpx=W*deathX;
+          var lead=(scan%(W+120)); // sweeping reveal
+          ctx.strokeStyle=LIVE; ctx.lineWidth=1.5; ctx.lineJoin="round"; ctx.lineCap="round";
+          ctx.shadowColor=LIVE; ctx.shadowBlur=6; ctx.beginPath();
+          var started=false;
+          for(var x=0;x<=Math.min(dpx,lead);x++){
+            var beats=(x/W)*6; var y=mid - beat(beats%1)*amp;
+            if(!started){ctx.moveTo(x,y);started=true;} else ctx.lineTo(x,y);
+          }
+          ctx.stroke(); ctx.shadowBlur=0;
+          if(lead>dpx){
+            var gap=10;
+            ctx.strokeStyle=FAIL; ctx.lineWidth=1.5; ctx.beginPath();
+            ctx.moveTo(dpx+gap,mid); ctx.lineTo(Math.min(W,lead),mid); ctx.stroke();
+            ctx.fillStyle=FAIL; ctx.beginPath(); ctx.arc(dpx,mid,2.4,0,7); ctx.fill();
+          }
+          // leading blip dot while alive
+          if(lead<=dpx){
+            var by=mid - beat(((lead/W)*6)%1)*amp;
+            ctx.fillStyle=LIVE; ctx.shadowColor=LIVE; ctx.shadowBlur=8;
+            ctx.beginPath(); ctx.arc(lead,by,2.6,0,7); ctx.fill(); ctx.shadowBlur=0;
+          }
+          scan += 2.2;
+          requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      }
+    }
+
+    /* ----- smooth-scroll for in-page anchors ----- */
+    document.addEventListener("click", function(e){
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if(!a) return;
+      var id = a.getAttribute("href");
+      if(id.length<2) return;
+      var el = document.querySelector(id);
+      if(el){ e.preventDefault(); el.scrollIntoView({behavior: reduce?"auto":"smooth", block:"start"});
+        var f=el.querySelector("input,button,a"); }
+    });
+  })();
+  </script>
+  <script>
+  (function(){
+    "use strict";
+    var form = document.getElementById('applyForm');
+    if(!form) return;
+    var status = document.getElementById('applyStatus');
+    var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var d = new FormData(form);
+      var name = (d.get('name')||'').toString().trim();
+      var company = (d.get('company')||'').toString().trim();
+      var email = (d.get('email')||'').toString().trim();
+      var flow = (d.get('flow')||'').toString().trim();
+      var emailEl = document.getElementById('apply-email');
+      if(!emailRe.test(email)){
+        status.hidden = false;
+        status.style.color = 'var(--fail)';
+        status.textContent = 'Please enter a valid work email so we can reach you.';
+        if(emailEl && emailEl.focus) emailEl.focus();
+        return;
+      }
+      var subject = 'Design partner application \u2014 ' + (company || name || email);
+      var body = 'Name: ' + name + '\nCompany: ' + company +
+                 '\nWork email: ' + email + '\nFlow to test: ' + flow + '\n';
+      var href = 'mailto:satyam@agentmade.ai?subject=' + encodeURIComponent(subject) +
+                 '&body=' + encodeURIComponent(body);
+      window.location.href = href;
+      status.hidden = false;
+      status.style.color = 'var(--ok)';
+      status.textContent = "Got it \u2014 we'll be in touch about your flow shortly.";
+    });
+  })();
+  </script>
+</body>
+</html>
