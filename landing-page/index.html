@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Simulation Labs — Find where your funnel loses money</title>
-<meta name="description" content="Simulation Labs runs a swarm of computer-use agents through your signup, checkout, or cancel flow and shows the exact pixel where users give up. We simulate what users do, not what they say." />
-<meta property="og:title" content="Simulation Labs — Find where your funnel loses money" />
-<meta property="og:description" content="Synthetic users that do, not say. Watch real behavior break your checkout before it costs you revenue." />
+<title>Simulation Labs — See where real users give up</title>
+<meta name="description" content="Simulation Labs runs a swarm of computer-use agents through any flow — new or live — and shows the exact pixel where each user gives up. We simulate what users do, not what they say." />
+<meta property="og:title" content="Simulation Labs — See where real users give up" />
+<meta property="og:description" content="Synthetic users that do, not say. Watch real behavior break a flow before your users do — for growth, product, and QA teams." />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Simulation Labs" />
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="Simulation Labs — Find where your funnel loses money" />
-<meta name="twitter:description" content="Synthetic users that do, not say. Watch real behavior break your checkout before it costs you revenue." />
+<meta name="twitter:title" content="Simulation Labs — See where real users give up" />
+<meta name="twitter:description" content="Synthetic users that do, not say. Watch real behavior break a flow before your users do — for growth, product, and QA teams." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23131314'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%23DE8248' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -230,7 +230,7 @@
     margin-bottom: 0.6rem;
     flex-wrap: wrap;
   }
-  .frames-head .frames-title { margin: 0; }
+  .frames-head .frames-kicker { margin: 0; }
   .frames-next {
     font-size: 10px;
     text-transform: uppercase;
@@ -385,15 +385,7 @@
   @media (min-width: 720px) {
     .how-steps { grid-template-columns: repeat(3, 1fr); }
     .what-groups { grid-template-columns: 1fr 1fr; }
-    .frames-grid {
-      grid-template-columns: 1.4fr 1fr;
-      grid-template-areas:
-        "primary secondary1"
-        "primary secondary2";
-    }
-    .frames-card--primary { grid-area: primary; }
-    .frames-grid .frames-card--secondary:nth-of-type(2) { grid-area: secondary1; }
-    .frames-grid .frames-card--secondary:nth-of-type(3) { grid-area: secondary2; }
+    .frames-grid { grid-template-columns: repeat(3, 1fr); align-items: start; }
     .persona-grid { grid-template-columns: repeat(3, 1fr); }
     .persona-base-grid { grid-template-columns: repeat(2, 1fr); }
     .apply-form { grid-template-columns: 1fr 1fr; }
@@ -422,11 +414,12 @@
     <section class="hero section--plain">
       <div class="wrap">
         <canvas class="hero__trace" id="heroTrace" aria-hidden="true"></canvas>
-        <h1 data-slot="hero-headline">Find where your funnel loses money.</h1>
+        <h1 data-slot="hero-headline">See where real users give up.</h1>
         <p class="hero__sub" data-slot="hero-sub">
-          Simulation Labs runs a swarm of computer-use agents through your signup,
-          checkout, or cancel flow — and shows you the exact pixel where users give up.
-          We simulate what users <em>do</em>, not what they <em>say</em>.
+          Simulation Labs runs a swarm of computer-use agents through any flow that
+          matters — a new onboarding, a live checkout, an upgrade — and shows the exact
+          pixel where each one gives up. We simulate what users <em>do</em>, not what
+          they <em>say</em>.
         </p>
         <div class="hero__cta">
           <a class="btn-cta" href="#apply">Apply for design partner access</a>
@@ -1030,33 +1023,36 @@
 </section>
     <section class="section" id="frames">
   <div class="wrap">
-    <p class="eyebrow">one engine</p>
-    <h2 class="h-sec">Built for growth. Ready for more.</h2>
+    <p class="eyebrow">who it's for</p>
+    <h2 class="h-sec">One engine, three teams.</h2>
     <div class="frames-grid">
-      <article class="card frames-card frames-card--primary">
-        <p class="frames-kicker mono">primary</p>
-        <h3 class="frames-title">CRO &amp; Growth teams</h3>
+      <article class="card frames-card">
+        <p class="frames-kicker mono">cro / growth</p>
+        <h3 class="frames-title">Optimize flows you already run</h3>
         <p class="frames-desc">
-          Your highest-intent flows are where revenue leaks fastest. Simulation Labs finds the
-          exact step where signups and checkouts stall, ranks the worst drop-offs, and lets you
-          prove a fix lifted completion &mdash; before you spend a sprint on the wrong friction.
+          Tune the flows that already carry intent &mdash; checkout, signup, subscription upgrade.
+          Run before/after tests on every redesign and watch completion move in the dashboard
+          over time.
         </p>
       </article>
-      <article class="card frames-card frames-card--secondary">
-        <h3 class="frames-title">Product teams launching new flows</h3>
+      <article class="card frames-card">
+        <p class="frames-kicker mono">product launch</p>
+        <h3 class="frames-title">Validate what you're about to ship</h3>
         <p class="frames-desc">
-          Ship a new flow with eyes on it. Point the swarm at a staging build and see where
-          first-time users get stuck before your real users ever do.
+          Check a new onboarding flow, dashboard, or feature before launch. There's no user data
+          yet, so a simulation is often your only pre-launch signal &mdash; and the moment you most
+          want reassurance.
         </p>
       </article>
-      <article class="card frames-card frames-card--secondary">
+      <article class="card frames-card">
         <div class="frames-head">
-          <h3 class="frames-title">QA &amp; CI/CD</h3>
-          <span class="frames-next mono">what's next</span>
+          <p class="frames-kicker mono">qa / engineering</p>
+          <span class="frames-next mono">natural expansion</span>
         </div>
+        <h3 class="frames-title">Test every deploy automatically</h3>
         <p class="frames-desc">
-          Turn survival into a check you run on every release &mdash; the build fails when completion
-          drops. A usability regression test, not a manual pass.
+          Plug into CI/CD and run the personas against every build before it ships &mdash; a
+          pre-deploy check, not a manual pass. The build fails when users would.
         </p>
       </article>
     </div>
