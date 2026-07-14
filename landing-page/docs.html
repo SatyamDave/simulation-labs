@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Docs — Simulation Labs</title>
+<meta name="description" content="Technical documentation for the Simulation Labs engine." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='white'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%231a56db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead__in">
+      <a class="brand" href="index.html" aria-label="Simulation Labs — home">
+        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#1a56db" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Simulation Labs</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="vision.html">Vision</a>
+        <a href="product.html">Product</a>
+        <a href="research.html">Research</a>
+        <a href="docs.html" aria-current="page">Docs</a>
+        <span class="sep" aria-hidden="true"></span>
+        <a class="apply" href="mailto:satyam@agentmade.ai?subject=Design%20partner%20access">Apply</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page">
+<div class="docs">
+  <nav class="docs__side">
+    <h4>Getting started</h4>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+    </ul>
+
+    <h4>The engine</h4>
+    <ul>
+      <li><a href="#run-loop">The run loop</a></li>
+      <li><a href="#perturbation">Perturbation channels</a></li>
+      <li><a href="#coordinates">Coordinate space</a></li>
+    </ul>
+
+    <h4>Personas &amp; output</h4>
+    <ul>
+      <li><a href="#personas">Behavioral models</a></li>
+      <li><a href="#outputs">Outputs &amp; scoring</a></li>
+    </ul>
+
+    <h4>Reference</h4>
+    <ul>
+      <li><a href="#policy">Policy &amp; safety</a></li>
+      <li><a href="#contracts">Contracts reference</a></li>
+    </ul>
+  </nav>
+
+  <div class="docs__main">
+    <p class="eyebrow">Documentation</p>
+
+    <h2 id="overview">Overview</h2>
+    <p>
+      Simulation Labs builds synthetic users that <em>do</em>, not <em>say</em>. Instead of asking a
+      language model to opine about your checkout flow, we point a swarm of synthetic users at a live
+      website with a concrete goal (sign up, check out, cancel) and watch each one either finish or
+      abandon at a specific recorded pixel. Failure is the product.
+    </p>
+    <p>
+      The engine (internal package <code>ghostpanel</code>) drives a screenshot-in / action-out
+      vision model — H Company's Holo (<code>holo3-1-35b-a3b</code>, a pre-trained model we consume;
+      we do not train it) — around a real browser via Playwright. Because Holo sees pixels and emits
+      clicks, we control both channels and <strong>mechanically degrade</strong> them to model real
+      perceptual and motor constraints. We do not claim psychological fidelity — we claim
+      <strong>mechanical fidelity</strong>: the constraints are real even if the personality is
+      synthetic. Prompted LLM personas match real users only about 11.86% of the time
+      (arXiv 2503.20749); the argument here is to degrade the channel, not to prompt a personality.
+    </p>
+    <p>
+      <strong>Status.</strong> Working end-to-end — five backend modules plus a React frontend,
+      verified live. The test suite has 173 tests. MIT-licensed. Built at H Company's Computer Use
+      Hackathon, San Francisco, Jul 2026 (Track 2 — Browser Use).
+    </p>
+
+    <h2 id="architecture">Architecture</h2>
+    <p>
+      The system is a five-module frozen-contract design. Every message that crosses a module
+      boundary is a Pydantic v2 model or a <code>@runtime_checkable</code> Protocol defined in
+      <code>shared/ghostpanel_contracts/contracts.py</code> — never a bare dict or tuple. That file
+      is frozen (<code>CONTRACT_VERSION = "1.0.0"</code>); each module can assert against the version
+      to detect a stale checkout. The design let five parallel agents build on five branches under a
+      no-overlap file-ownership map, so the branches merged without conflicts.
+    </p>
+    <ul>
+      <li><strong>engine</strong> — perturbation transforms, the Live/Fake Holo clients, the persona
+        agent, and the persona loader.</li>
+      <li><strong>runner</strong> — <code>PlaywrightSessionRunner</code>: the per-session loop, video
+        capture, thumbnails, stuck/success detection, and network policy.</li>
+      <li><strong>server</strong> — a FastAPI orchestrator that acts as the composition root, wiring
+        the concrete classes together, fanning out over personas with
+        <code>asyncio.gather</code>, and running a WebSocket hub plus the runs/leaderboard API.</li>
+      <li><strong>report</strong> — <code>SurvivalReportBuilder</code>: survival curve, abandonment
+        heatmap, the composite score and per-run statistics, and a standalone HTML report.</li>
+      <li><strong>voice</strong> — <code>GradiumVoiceEngine</code>: cloned-voice exit interviews with
+        optional Claude narration polish (the default is a template; narration is not always on).</li>
+    </ul>
+    <p>
+      The composition root builds one Chromium browser and shares it; each persona runs as its own
+      <code>asyncio</code> task with its own isolated browser context. Live progress is pushed to the
+      frontend over a WebSocket as a discriminated union of <code>RunEvent</code> messages
+      (<code>run_started</code>, <code>persona_started</code>, <code>step</code>,
+      <code>persona_finished</code>, <code>run_finished</code>), so the grid stays alive step by step.
+    </p>
+
+    <h2 id="run-loop">The run loop</h2>
+    <p>
+      One session drives a single persona from the target URL to a terminal outcome. Each step
+      captures a screenshot, hands a perturbed copy to Holo, jitters the returned coordinates, and
+      executes the action verbatim, emitting a <code>StepEvent</code> (thumbnail + human caption)
+      every step (<code>src/ghostpanel/runner/session.py</code>).
+    </p>
+    <pre><code>for step in range(persona.max_steps):
+    png    = page.screenshot()                 # true viewport, un-perturbed
+    frame  = perceive(png, persona)             # downscale -> blur -> CVD (dims preserved)
+    action = holo.navigate(frame, task, hist)   # Holo returns an Action
+    action = actuate(action, persona, w, h)     # add tremor jitter, clamp to viewport
+    emit StepEvent(caption, thumbnail, x, y)    # live grid tile
+
+    if action is ANSWER and success_predicate holds:  outcome = SUCCESS;      break
+    if is_stuck(history):                              outcome = STUCK;        break
+    execute_action(page, action); settle()             # real page time charged to sim-clock
+    if success_predicate holds:                        outcome = SUCCESS;      break
+    if sim_seconds >= persona.deadline_s:              outcome = TIME_BUDGET;  break
+else:
+    outcome = STEP_BUDGET                               # ran out of steps</code></pre>
+    <p>
+      A session ends in exactly one of five outcomes: <code>success</code> (a claimed completion is
+      verified against a success predicate — "receipts, not vibes"), <code>step_budget</code>,
+      <code>time_budget</code>, <code>stuck</code> (a loop / no-progress detector tripped), or
+      <code>error</code> (infra failure — excluded from survival statistics, never a persona
+      verdict). Time is measured on a simulated persona clock — page loads, waits, actions, and a
+      fixed per-step think cost — which excludes Holo inference latency and rate-limiter queueing, so
+      the time verdict is rate-limit-independent.
+    </p>
+
+    <h2 id="perturbation">Perturbation channels</h2>
+    <p>
+      Perturbations are pure, deterministic functions
+      (<code>src/ghostpanel/engine/perturbation.py</code>). Perception transforms run in the order
+      <strong>downscale &rarr; blur &rarr; CVD</strong>. Tremor is an actuation transform applied to
+      coordinates after Holo decides.
+    </p>
+    <table class="doc">
+      <thead>
+        <tr><th>Channel</th><th>Mechanism</th><th>Parameter</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Blur</td>
+          <td>PIL <code>GaussianBlur</code> over the frame before Holo sees it</td>
+          <td><code>blur_sigma</code> (radius, px)</td>
+        </tr>
+        <tr>
+          <td>Downscale</td>
+          <td>Resize down by a factor then back up in place — drops high-frequency detail</td>
+          <td><code>downscale_factor</code> (0&ndash;1)</td>
+        </tr>
+        <tr>
+          <td>Colour</td>
+          <td>DaltonLens Machado-2009 simulator (deutan / protan / tritan)</td>
+          <td><code>cvd_type</code>, <code>cvd_severity</code> (0&ndash;1)</td>
+        </tr>
+        <tr>
+          <td>Tremor</td>
+          <td>Add <code>N(0, &sigma;)</code> Gaussian noise to click (x, y), then round and clamp</td>
+          <td><code>tremor_sigma_px</code></td>
+        </tr>
+        <tr>
+          <td>Small viewport</td>
+          <td>A tiny Playwright viewport (typically with tremor)</td>
+          <td><code>viewport</code> (e.g. 390&times;844)</td>
+        </tr>
+        <tr>
+          <td>Impatience</td>
+          <td>Hard step ceiling plus a wall-clock deadline on the sim-clock</td>
+          <td><code>max_steps</code>, <code>deadline_s</code></td>
+        </tr>
+        <tr>
+          <td>Literal reading</td>
+          <td>A note appended to the navigation prompt constraining to literal, low-inference reading</td>
+          <td><code>literacy_note</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>The golden rule:</strong> every perception transform is dimension-preserving. Holo
+      tokenizes at the image's dimensions (smart-resize), so keeping dimensions constant means the
+      coordinates it returns never have to be remapped. Blur and CVD change pixel <em>values</em>
+      only; downscale resizes down then back up in place. The pipeline asserts
+      <code>img.size == original_size</code> before returning.
+    </p>
+
+    <h2 id="coordinates">Coordinate space</h2>
+    <p>
+      The hosted Holo 3.1 API returns coordinates <strong>normalized to a 0&ndash;1000 grid</strong>,
+      not absolute pixels. <code>LiveHoloClient</code> always denormalizes them against the image it
+      sent (<code>x / 1000 &times; w</code>, <code>y / 1000 &times; h</code>) and clamps to the
+      viewport, so downstream code receives true viewport pixels and the runner executes them verbatim
+      with <code>page.mouse.click(x, y)</code>. (<code>FakeHoloClient</code> returns pixel coords
+      directly and does not denormalize.)
+    </p>
+    <pre><code># Verified live: a button whose true centre is (547, 430) in a 1280x800 shot
+Holo returns   Click(426, 536)        # 0-1000 normalized grid
+denormalize    426/1000 * 1280 = 545  # x, rounded
+               536/1000 *  800 = 429  # y, rounded
+runner clicks  (545, 429)             # true viewport pixels, back on target</code></pre>
+    <p>
+      Inference runs at <code>temperature 0</code>. A single shared <code>asyncio</code> token-bucket
+      rate limiter paces the whole swarm to one RPM budget (the free tier is 10 RPM). The parser is
+      tolerant of malformed model output: it tries JSON first, repairs Holo's known key-dropped
+      coordinate shapes (e.g. <code>{"action": "click", "x": 426, 536}</code> with a missing
+      <code>"y"</code> key), then falls back to a <code>Click(x, y)</code> short form and finally a
+      keyword or center-click salvage so the run keeps making progress.
+    </p>
+
+    <h2 id="personas">Behavioral models</h2>
+    <p>
+      Persona physics are mechanical, not roleplayed. Each model is a JSON file
+      (<code>personas/*.json</code>) validated against <code>PersonaConfig</code>. The two control
+      models apply no perturbation at all.
+    </p>
+    <table class="doc">
+      <thead>
+        <tr><th>id</th><th>Behaviour</th><th>Mechanics</th><th>Steps / time</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>power-user</code></td>
+          <td>Fluent, patient baseline — the control for comparison</td>
+          <td>No perturbation</td>
+          <td>40 / 240s</td>
+        </tr>
+        <tr>
+          <td><code>ai-agent</code></td>
+          <td>Headless agent — is the site usable by an agent at all?</td>
+          <td>No perturbation</td>
+          <td>40 / 240s</td>
+        </tr>
+        <tr>
+          <td><code>low-vision</code></td>
+          <td>Can't read small or low-contrast text</td>
+          <td>blur &sigma;=3.5 + downscale &times;0.4</td>
+          <td>25 / 150s</td>
+        </tr>
+        <tr>
+          <td><code>tremor</code></td>
+          <td>Clicks land off-target and miss tiny controls</td>
+          <td>tremor &sigma;=14px</td>
+          <td>30 / 150s</td>
+        </tr>
+        <tr>
+          <td><code>colorblind</code></td>
+          <td>Colour-only cues and error states vanish</td>
+          <td>deutan severity 0.9</td>
+          <td>30 / 120s</td>
+        </tr>
+        <tr>
+          <td><code>impatient-mobile</code></td>
+          <td>In a hurry on a small phone; abandons the moment a flow feels slow</td>
+          <td>390&times;844 viewport + tremor &sigma;=6 + literal prompt</td>
+          <td>8 / 30s</td>
+        </tr>
+        <tr>
+          <td><code>grandma-72</code></td>
+          <td>Reads every label literally, mistrusts icons, gives up quickly</td>
+          <td>blur &sigma;=1.2 + tremor &sigma;=4 + literal prompt</td>
+          <td>12 / 90s</td>
+        </tr>
+        <tr>
+          <td><code>non-native</code></td>
+          <td>Idioms and jargon slow them down</td>
+          <td>literal prompt + impatience (language <code>it</code>)</td>
+          <td>20 / 100s</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 id="outputs">Outputs &amp; scoring</h2>
+    <p>
+      A finished run produces a stepped survival curve (how many personas are still alive at each
+      step), an abandonment heatmap (where sessions died, in viewport pixels), and per-persona
+      statistics: average and 95th-percentile Holo latency, <code>blocked_actions</code>, and
+      <code>max_repeated_action</code> — the longest run of consecutive identical captions, our
+      "rage-click" metric (<code>src/ghostpanel/report/insights.py</code>).
+    </p>
+    <p>
+      The composite <strong>Simulation Score</strong> (<code>ghostpanel_score</code> in the JSON) is
+      0&ndash;100, with equal weight per non-error persona:
+    </p>
+    <pre><code>credit(persona) = 1.0                                  if outcome == SUCCESS
+                = min(0.5, 0.5 * steps_survived / max_steps)   otherwise
+
+score = round(100 * sum(credit) / count(non-error personas))</code></pre>
+    <p>
+      A success earns full credit; a failure earns partial credit for distance travelled, capped at
+      0.5 — so dying at step 2 drags the score down more than dying at step 25. A separate
+      <strong>agent-readiness</strong> score is derived from the unimpaired <code>ai-agent</code>
+      control (100 on success; the same partial credit otherwise): if an unimpaired agent can't finish,
+      the site isn't agent-ready.
+    </p>
+    <p>
+      We also emit a WCAG "evidence of risk" table that maps each persona's active perturbation
+      channels to WCAG 2.2 success criteria (with the corresponding EN 301 549 clause). Each entry is
+      grounded in the action trace — the failure step, the failure pixel, and the last action. This is
+      <strong>evidence of risk, not an automated conformance verdict</strong> and not a legal
+      certification.
+    </p>
+
+    <h2 id="policy">Policy &amp; safety</h2>
+    <p>
+      Runs are browse-only. A YAML request policy (a NemoClaw mirror) is enforced in-process at the
+      Playwright network layer: every browser request is intercepted, and anything the policy denies —
+      including form <code>POST</code>s — is aborted before it leaves the machine (fail-closed: a
+      broken policy engine blocks rather than bypasses). A blocked request is recorded against the step
+      and surfaced as a shielded <code>StepEvent</code> in the live grid.
+    </p>
+    <p>
+      As a result we do not complete real purchases or submissions on third-party sites; a persona
+      that claims it is "done" after a blocked submission is not scored as a success. The full NVIDIA
+      OpenShell / Docker sandbox and on-device Nemotron are out of scope — they need a GPU — so on a
+      laptop the policy is the in-process network gate described above, not the full sandbox.
+    </p>
+
+    <h2 id="contracts">Contracts reference</h2>
+    <p>
+      These are the key models in <code>shared/ghostpanel_contracts/contracts.py</code>. Everything
+      crossing a module boundary is one of them.
+    </p>
+    <pre><code>PersonaConfig    a synthetic user: perturbation params, budgets, literacy note
+Viewport         width x height for the browser context
+Observation      one frame handed to the agent (raw un-perturbed PNG + metadata)
+Action           a decoded Holo action in TRUE viewport pixels (+ caption, raw)
+ActionType       click | write | scroll | go_back | refresh | wait | goto | restart | answer
+PerturbationKind blur | downscale | cvd | tremor | small_viewport | impatience | low_literacy
+PersonaOutcome   success | step_budget | time_budget | stuck | error
+StepRecord       one step: action + thumbnail + latency + note
+PersonaResult    a full session: outcome, steps, failure coords/step/reason, video, transcript
+SurvivalPoint    one persona's survival summary for the curve
+HeatPoint        an (x, y, weight) point for the abandonment heatmap
+RunReport        the aggregate: results + survival + heatmap + completion rate
+RunEvent         discriminated union on `event` (the exact WebSocket JSON):
+                   RunStarted | PersonaStarted | StepEvent | PersonaFinished | RunFinished
+
+# Protocols (@runtime_checkable interfaces)
+HoloClient  PersonaAgent  SessionRunner  EventSink  VoiceEngine  ReportBuilder</code></pre>
+  </div>
+</div>
+  </main>
+  <footer class="foot">
+    <div class="foot__in">
+      <span>Simulation Labs · Behavioral simulation research</span>
+      <span>Built at the H Company Computer Use Hackathon · SF · Jul 2026 · MIT-licensed</span>
+      <span><a href="https://github.com/SatyamDave/simulation-labs">GitHub</a> · <a href="mailto:satyam@agentmade.ai">Contact</a> · © 2026</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Research — Simulation Labs</title>
+<meta name="description" content="Technical notes on our method and measurements." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='white'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%231a56db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead__in">
+      <a class="brand" href="index.html" aria-label="Simulation Labs — home">
+        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#1a56db" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Simulation Labs</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="vision.html">Vision</a>
+        <a href="product.html">Product</a>
+        <a href="research.html" aria-current="page">Research</a>
+        <a href="docs.html">Docs</a>
+        <span class="sep" aria-hidden="true"></span>
+        <a class="apply" href="mailto:satyam@agentmade.ai?subject=Design%20partner%20access">Apply</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page">
+<div class="wrap">
+  <h1>Research</h1>
+
+  <p class="lead">These are honest technical notes on how Simulation Labs works and what we have measured so far. They are work in progress, not peer-reviewed, and every number is tagged in-text with how it was produced (offline Monte-Carlo, synthetic labeled traces, a small live probe, or measured in rehearsal).</p>
+
+  <p class="pub-year">2026</p>
+
+  <article class="pub">
+    <p class="pub__meta">Jul 2026 · Technical note</p>
+    <h3 class="pub__title"><a href="note-mechanical-fidelity.html">Mechanical fidelity: degrading perception and action instead of prompting personas</a></h3>
+    <p class="pub__authors">S. Dave, U. Vijay Anand</p>
+    <p class="pub__sum">Prompted personas match real users only about 11.86% of the time (arXiv 2503.20749); we instead mechanically degrade a screenshot-in / action-out model's channels, which lets us keep coordinates exact.</p>
+  </article>
+
+  <article class="pub">
+    <p class="pub__meta">Jul 2026 · Technical note</p>
+    <h3 class="pub__title"><a href="note-tremor-targets.html">Tremor and target size: a Monte-Carlo study of click miss-rates</a></h3>
+    <p class="pub__authors">S. Dave, U. Vijay Anand</p>
+    <p class="pub__sum">In an offline Monte-Carlo of our tremor actuation (20,000 trials per cell), a 14px jitter misses a 44px target 20.5% of the time and needs targets of at least 62px to hold the miss-rate under 5%.</p>
+  </article>
+
+  <article class="pub">
+    <p class="pub__meta">Jul 2026 · Technical note</p>
+    <h3 class="pub__title"><a href="note-perturbation-invariants.html">Perturbation invariants and pipeline cost</a></h3>
+    <p class="pub__authors">S. Dave, U. Vijay Anand</p>
+    <p class="pub__sum">Offline: our perturbations preserve image dimensions and are byte-deterministic (100%, 8/8), the perception pipeline costs a median 61.4 ms/frame, and the stuck-detector scored perfectly on 225 synthetic labeled histories.</p>
+  </article>
+</div>
+  </main>
+  <footer class="foot">
+    <div class="foot__in">
+      <span>Simulation Labs · Behavioral simulation research</span>
+      <span>Built at the H Company Computer Use Hackathon · SF · Jul 2026 · MIT-licensed</span>
+      <span><a href="https://github.com/SatyamDave/simulation-labs">GitHub</a> · <a href="mailto:satyam@agentmade.ai">Contact</a> · © 2026</span>
+    </div>
+  </footer>
+</body>
+</html>
