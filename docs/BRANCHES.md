@@ -1,6 +1,6 @@
 # Branch Topology & Lineage
 
-All work landed on **2026-07-12**. Two authors: **SatyamDave** (scaffold + a first monolithic pass) and **Udaya Tejas** (the five-agent parallel build, integration, and all later reskins/fixes). Several AI-assisted commits are co-authored by `Claude Fable 5`.
+All work landed on **2026-07-12**. Author: **SatyamDave**. Several AI-assisted commits are co-authored by `Claude Fable 5`.
 
 There are **two live lineages** you care about:
 - The **`main` / `debug` line** — the integrated five-agent system, UI reskins (v2 → v3), and the sim-clock patience fix. `origin/main` is the tip of this line.
