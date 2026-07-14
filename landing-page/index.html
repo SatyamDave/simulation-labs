@@ -4,66 +4,762 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Simulation Labs — behavioral simulation research</title>
-<meta name="description" content="Simulation Labs is a research lab studying how real users behave — by running mechanically-degraded computer-use agents against real flows to find exactly where users abandon." />
+<meta name="description" content="Simulation Labs is a research lab studying how real users behave — we run mechanically-degraded computer-use agents against your real flows, tuned to your ICP, to find exactly where users give up. We're taking on design partners." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='white'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%231a56db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body id="top">
   <header class="masthead">
     <div class="masthead__in">
-      <a class="brand" href="index.html" aria-label="Simulation Labs — home">
+      <a class="brand" href="#top" aria-label="Simulation Labs — home">
         <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#1a56db" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Simulation Labs</span>
       </a>
       <nav class="nav" aria-label="Primary">
-        <a href="vision.html">Vision</a>
-        <a href="product.html">Product</a>
-        <a href="research.html">Research</a>
-        <a href="docs.html">Docs</a>
+        <a href="#vision">Vision</a>
+        <a href="#product">Product</a>
+        <a href="#research">Research</a>
+        <a href="#docs">Docs</a>
         <span class="sep" aria-hidden="true"></span>
-        <a class="apply" href="mailto:satyam@agentmade.ai?subject=Design%20partner%20access">Apply</a>
+        <a class="apply" href="#apply">Design partners</a>
       </nav>
     </div>
   </header>
-  <main class="page">
-<div class="wrap">
-  <p class="mission">Simulation Labs is a research lab studying how real users behave, by running mechanically degraded computer-use agents against real flows to find where people abandon.</p>
 
-  <p class="home-sub">Every synthetic-user tool today captures what people <em>say</em>; we simulate what they <em>do</em>. We take a pre-trained computer-use model and degrade its perception and action channels — blur, coordinate jitter, tight step and time budgets — so it attempts your real task and either finishes or rage-quits at a specific pixel. We don't claim psychological fidelity; we claim mechanical fidelity, not psychological fidelity — the perceptual and motor constraints are real even if the personality is synthetic.</p>
+  <main>
+    <!-- ===== HERO ===== -->
+    <section class="hero-sp">
+      <div class="hero-sp__in">
+        <p class="eyebrow">simulation research lab</p>
+        <h1>See where real users give up.</h1>
+        <p class="hero-sp__sub">
+          We study how real users behave by running a swarm of computer-use agents through
+          your real flow — mechanically degraded and tuned to your ICP — and recording the
+          exact pixel where each one gives up. We simulate what users <em>do</em>, not what
+          they <em>say</em>.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-lg" href="#apply">Apply for design-partner access</a>
+          <a class="textlink" href="#product">See it run →</a>
+        </div>
+        <p class="hero-note">
+          <span class="pill">Now</span>
+          We're taking on a small number of design partners. Built at the H Company Computer Use Hackathon · SF · Jul 2026 · MIT-licensed.
+        </p>
+      </div>
+    </section>
 
-  <p class="pub-year">2026</p>
+    <!-- ===== VISION ===== -->
+    <section class="sect" id="vision">
+      <div class="sect__in">
+        <div class="sect__label"><span class="sect__k">01 — Vision</span><h2>Synthetic users that do, not say</h2></div>
+        <div class="sect__body">
+          <div class="prose">
+            <p>Synthetic-user research has quietly become a way to interview a model instead of a person. You describe a persona, ask what it thinks of your checkout, and it answers — fluently, agreeably, and at a comfortable distance from anything it would actually have done. The answers are shallow and people-pleasing, a pattern the Nielsen Norman Group has written about plainly. When prompted LLM personas were measured against the real people they were meant to stand in for, the match was around 11.86% (arXiv 2503.20749). A survey is not a user; a stated preference is not a click.</p>
+            <h2>Mechanical fidelity, not psychological fidelity</h2>
+            <p>We are not reconstructing a human personality inside a language model. What we can reproduce faithfully are the constraints on the channel between a user and the screen: how sharply they see it, how precisely their clicks land, how little time and patience they bring. So we take a pre-trained computer-use model — a system that reads a screenshot and emits an action — and mechanically degrade its perception and action rather than prompt it to act impaired. We blur the frame, add Gaussian noise to the click coordinates, cap the number of steps, shrink the viewport, strip colour cues.</p>
+            <p>It is a deliberately narrow claim. We do not say these agents feel what a person feels or reason as they reason. We say the perceptual and motor limits we impose are real, measured, and reproducible even though the personality is synthetic — a smaller promise than the field usually makes, and one we can keep.</p>
+            <h2>What we're building toward</h2>
+            <p>We want the behavioral check to become a normal part of shipping — something you run before release the way you run a test suite, to see who fails your site before your users do. Not a forecast of conversion, and not a compliance verdict, but a rank-order signal: which page is worse, which fix helped, where abandonment clusters.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <article class="pub">
-    <p class="pub__meta">Jul 2026 · Technical note</p>
-    <h3 class="pub__title"><a href="note-mechanical-fidelity.html">Mechanical fidelity, not psychological fidelity</a></h3>
-    <p class="pub__authors">S. Dave</p>
-    <p class="pub__sum">Prompted LLM personas match real users only about 11.86% of the time, so we degrade the perception and action channel of a computer-use model rather than prompt a personality.</p>
-  </article>
-
-  <article class="pub">
-    <p class="pub__meta">Jul 2026 · Technical note</p>
-    <h3 class="pub__title"><a href="note-tremor-targets.html">Tremor and target size</a></h3>
-    <p class="pub__authors">S. Dave</p>
-    <p class="pub__sum">In an offline Monte-Carlo simulation, click jitter at σ=14px misses a 44px target 20.5% of the time, and targets need to be at least 62px to hold the miss-rate under 5%.</p>
-  </article>
-
-  <article class="pub">
-    <p class="pub__meta">Jul 2026 · Technical note</p>
-    <h3 class="pub__title"><a href="note-perturbation-invariants.html">Perturbation invariants</a></h3>
-    <p class="pub__authors">S. Dave</p>
-    <p class="pub__sum">Every perception transform preserves image dimensions (8/8) and is byte-identical across runs, so degrading what the model sees never remaps the coordinates it clicks.</p>
-  </article>
-
-  <div class="home-links">
-    <a href="vision.html">Read the vision →</a>
-    <a href="product.html">What we ship →</a>
-    <a href="research.html">Research →</a>
-    <a href="docs.html">Docs →</a>
+    <!-- ===== PRODUCT (interactive) ===== -->
+    <section class="sect" id="product">
+      <div class="sect__in">
+        <div class="sect__label"><span class="sect__k">02 — Product</span><h2>Watch the agents behave like your users</h2></div>
+        <div class="sect__body">
+          <div class="prose" style="max-width:64ch">
+            <p>Pick a wedge and an ICP model. A behavioral agent — tuned to that ideal-customer profile — attempts the flow the way that user actually would: it scans, hesitates, mis-taps, and either finishes or gives up at a specific point, with a plain reason. This is an illustrative, in-browser run; the real product does it on your live site.</p>
+          </div>
+          <div class="pdemo" id="pdemo">
+  <div class="pdemo-head">
+    <div class="pdemo-kicker">SIMULATION LABS · LIVE DEMO</div>
+    <h3 class="pdemo-title">Synthetic users that <em>do</em>, not say.</h3>
+    <p class="pdemo-sub">A swarm of behavioral agents attempts your flow like real people &mdash; hesitating, mis-tapping, and giving up at a specific point. Failure is the product.</p>
   </div>
 
-  <p class="meta">Built at the H Company Computer Use Hackathon, SF · Jul 2026 · MIT-licensed.</p>
+  <div class="pdemo-tabs" id="pdemo-tablist" role="tablist" aria-label="Product wedges">
+    <button class="pdemo-tab" id="pdemo-tab-optimize" role="tab" aria-selected="true" aria-controls="pdemo-panelwrap" tabindex="0">
+      <span class="pdemo-tab-name">Optimize a live flow</span>
+      <span class="pdemo-tab-tag">growth · CRO — existing checkout</span>
+    </button>
+    <button class="pdemo-tab" id="pdemo-tab-validate" role="tab" aria-selected="false" aria-controls="pdemo-panelwrap" tabindex="-1">
+      <span class="pdemo-tab-name">Validate a launch</span>
+      <span class="pdemo-tab-tag">product — new onboarding wizard</span>
+    </button>
+    <button class="pdemo-tab" id="pdemo-tab-cicd" role="tab" aria-selected="false" aria-controls="pdemo-panelwrap" tabindex="-1">
+      <span class="pdemo-tab-name">Wire into CI/CD</span>
+      <span class="pdemo-tab-tag">QA · eng — pre-deploy gate</span>
+    </button>
+  </div>
+
+  <div class="pdemo-controls">
+    <label class="pdemo-icp-label" for="pdemo-icp">ICP model</label>
+    <span class="pdemo-select" >
+      <select id="pdemo-icp" aria-label="ICP model — tuned to your users">
+        <option value="returning">Returning mobile shopper</option>
+        <option value="trial">First-time trial user</option>
+        <option value="enterprise">Enterprise buyer</option>
+      </select>
+    </span>
+    <span class="pdemo-tuned">tuned to your users</span>
+    <button class="pdemo-run" id="pdemo-run" type="button">Run</button>
+  </div>
+
+  <div class="pdemo-main" id="pdemo-panelwrap" role="tabpanel" aria-labelledby="pdemo-tab-optimize">
+    <div class="pdemo-left">
+      <div class="pdemo-stagewrap" id="pdemo-stagewrap">
+        <div class="pdemo-stage" id="pdemo-stage">
+          <div class="pdemo-screen" id="pdemo-screen"></div>
+          <div class="pdemo-scrim" id="pdemo-scrim"></div>
+          <div class="pdemo-reveal" id="pdemo-reveal" aria-hidden="true"></div>
+          <svg class="pdemo-cursor" id="pdemo-cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2 L4 20 L9 15 L12 22 L15 20 L12 13 L19 13 Z"/></svg>
+          <svg class="pdemo-mark" id="pdemo-mark" viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+        </div>
+        <div class="pdemo-stagenote">illustrative run · drawn mock, not your real site</div>
+      </div>
+
+      <div class="pdemo-build" id="pdemo-build" hidden></div>
+    </div>
+
+    <div class="pdemo-panel" id="pdemo-panel">
+      <div class="pdemo-p-cursor" id="pdemo-p-cursor">
+        <div class="pdemo-narrwrap">
+          <span class="pdemo-narr-label">THINKING</span>
+          <p class="pdemo-narr" id="pdemo-narr">&nbsp;</p>
+        </div>
+        <div class="pdemo-telemetry" id="pdemo-telemetry"></div>
+        <div class="pdemo-outcome" id="pdemo-outcome"></div>
+      </div>
+
+      <div class="pdemo-p-cicd" id="pdemo-p-cicd" hidden>
+        <div class="pdemo-gate" id="pdemo-gate"></div>
+      </div>
+
+      <p class="pdemo-honesty">Mechanical fidelity, not psychology. Numbers are rank-order signals, not forecasts.</p>
+    </div>
+  </div>
+
+  <div class="pdemo-caption" id="pdemo-caption" aria-live="polite"></div>
 </div>
+
+<style>
+  .pdemo{
+    --ok:#1f9d57; --bad:#d64545;
+    box-sizing:border-box; width:100%; max-width:100%; overflow:hidden;
+    color:var(--text,#16181d); background:var(--bg,#ffffff);
+    font-family:var(--ui, system-ui, -apple-system, sans-serif);
+    -webkit-font-smoothing:antialiased;
+  }
+  .pdemo *,.pdemo *::before,.pdemo *::after{box-sizing:border-box;}
+  .pdemo svg{max-width:100%;}
+
+  .pdemo-head{margin-bottom:18px;}
+  .pdemo-kicker{font-family:var(--mono, ui-monospace, monospace); font-size:11px; letter-spacing:.09em; color:var(--muted,#6b7280); margin-bottom:8px;}
+  .pdemo-title{font-family:var(--serif, Georgia, serif); font-weight:500; font-size:clamp(20px,5vw,28px); line-height:1.15; margin:0 0 8px;}
+  .pdemo-title em{font-style:italic; color:var(--accent,#1a56db);}
+  .pdemo-sub{margin:0; max-width:56ch; color:var(--muted,#6b7280); font-size:14px; line-height:1.5;}
+
+  .pdemo-tabs{display:grid; grid-template-columns:1fr; gap:0; border:1px solid var(--rule,#e5e7eb); border-radius:8px; overflow:hidden; margin-bottom:16px;}
+  .pdemo-tab{
+    -webkit-appearance:none; appearance:none; text-align:left; cursor:pointer;
+    background:var(--bg,#fff); border:0; border-bottom:1px solid var(--rule,#e5e7eb);
+    padding:12px 14px; display:flex; flex-direction:column; gap:2px; color:var(--text,#16181d);
+    font-family:inherit;
+  }
+  .pdemo-tab:last-child{border-bottom:0;}
+  .pdemo-tab-name{font-size:14px; font-weight:600;}
+  .pdemo-tab-tag{font-family:var(--mono, monospace); font-size:11px; color:var(--muted,#6b7280); letter-spacing:.02em;}
+  .pdemo-tab[aria-selected="true"]{background:var(--code-bg,#f6f7f8); box-shadow:inset 3px 0 0 var(--accent,#1a56db);}
+  .pdemo-tab[aria-selected="true"] .pdemo-tab-name{color:var(--accent,#1a56db);}
+  .pdemo-tab:focus-visible{outline:2px solid var(--accent,#1a56db); outline-offset:-2px;}
+
+  .pdemo-controls{display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px; margin-bottom:18px;}
+  .pdemo-icp-label{font-family:var(--mono, monospace); font-size:11px; letter-spacing:.06em; color:var(--muted,#6b7280);}
+  .pdemo-select{position:relative; display:inline-flex;}
+  .pdemo-select::after{content:"▾"; position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--muted,#6b7280); font-size:11px;}
+  .pdemo-select select{
+    -webkit-appearance:none; appearance:none; font-family:inherit; font-size:13px; color:var(--text,#16181d);
+    background:var(--bg,#fff); border:1px solid var(--rule,#e5e7eb); border-radius:6px;
+    padding:7px 30px 7px 11px; cursor:pointer; max-width:100%;
+  }
+  .pdemo-select select:focus-visible{outline:2px solid var(--accent,#1a56db); outline-offset:1px;}
+  .pdemo-tuned{font-size:12px; font-style:italic; color:var(--muted,#6b7280);}
+  .pdemo-run{
+    margin-left:auto; -webkit-appearance:none; appearance:none; cursor:pointer;
+    font-family:var(--mono, monospace); font-size:12px; letter-spacing:.05em;
+    background:var(--accent,#1a56db); color:#fff; border:0; border-radius:6px; padding:8px 18px;
+  }
+  .pdemo-run:focus-visible{outline:2px solid var(--text,#16181d); outline-offset:2px;}
+  .pdemo-run:disabled{opacity:.5; cursor:default;}
+
+  .pdemo-main{display:grid; grid-template-columns:1fr; gap:16px; align-items:start;}
+  .pdemo-left{min-width:0;}
+  .pdemo-panel{min-width:0;}
+
+  /* ---- stage (drawn mock) ---- */
+  .pdemo-stagewrap{min-width:0;}
+  .pdemo-stage{
+    container-type:inline-size; position:relative; width:100%; max-width:100%;
+    aspect-ratio:4/5; border:1px solid var(--rule,#e5e7eb); border-radius:10px; overflow:hidden;
+    background:var(--bg,#fff);
+  }
+  .pdemo-screen{position:absolute; inset:0;}
+  .pdemo-el{position:absolute; display:flex; align-items:center; font-size:clamp(8px,2.7cqw,13px); line-height:1.2;}
+  .pdemo-el-head{align-items:flex-end; padding-bottom:2cqw; font-weight:600; color:var(--text,#16181d); border-bottom:1px solid var(--rule,#e5e7eb); font-size:clamp(9px,3.2cqw,15px);}
+  .pdemo-el-text{color:var(--muted,#6b7280);}
+  .pdemo-el-field{border:1px solid var(--rule,#e5e7eb); border-radius:5px; padding-left:2.5cqw; color:var(--muted,#6b7280); background:var(--bg,#fff);}
+  .pdemo-el-card{border:1px solid var(--rule,#e5e7eb); border-radius:6px; align-items:flex-start; padding:2cqw; color:var(--text,#16181d); font-weight:600; background:var(--bg,#fff);}
+  .pdemo-el-primary{justify-content:center; background:var(--accent,#1a56db); color:#fff; border-radius:6px; font-weight:600;}
+
+  .pdemo-scrim{position:absolute; inset:0; background:rgba(255,255,255,.55); opacity:0; pointer-events:none; transition:opacity .25s ease;}
+  .pdemo-scrim.on{opacity:1;}
+  .pdemo-reveal{
+    position:absolute; display:flex; align-items:center; justify-content:center; text-align:center;
+    padding:3cqw; background:var(--bg,#fff); border:1px solid var(--bad,#d64545); border-radius:8px;
+    color:var(--text,#16181d); font-size:clamp(9px,3cqw,14px); font-weight:600; line-height:1.25;
+    opacity:0; transform:scale(.98); transition:opacity .22s ease, transform .22s ease; pointer-events:none;
+  }
+  .pdemo-reveal.on{opacity:1; transform:scale(1);}
+
+  .pdemo-cursor{position:absolute; width:clamp(15px,4.5cqw,24px); height:auto; left:50%; top:95%;
+    fill:var(--text,#16181d); stroke:#fff; stroke-width:1.1; opacity:0; transition:opacity .2s ease;
+    pointer-events:none; filter:drop-shadow(0 0 .5px rgba(0,0,0,.25));}
+  .pdemo-cursor.on{opacity:1;}
+  .pdemo-mark{position:absolute; width:clamp(16px,5cqw,26px); height:auto; stroke:var(--bad,#d64545); stroke-width:2.6;
+    stroke-linecap:round; opacity:0; transform:translate(-50%,-50%) scale(.6); pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;}
+  .pdemo-mark.on{opacity:1; transform:translate(-50%,-50%) scale(1);}
+  .pdemo-clickfx{position:absolute; width:5cqw; height:5cqw; border:1.5px solid var(--accent,#1a56db); border-radius:50%;
+    transform:translate(-50%,-50%) scale(.3); opacity:.9; pointer-events:none;}
+  .pdemo-clickfx.miss{border-color:var(--bad,#d64545);}
+  .pdemo-clickfx.go{transform:translate(-50%,-50%) scale(1.6); opacity:0; transition:transform .45s ease, opacity .45s ease;}
+
+  .pdemo-stagenote{font-family:var(--mono, monospace); font-size:10.5px; color:var(--muted,#6b7280); margin-top:7px; letter-spacing:.02em;}
+
+  /* ---- right panel ---- */
+  .pdemo-narrwrap{border:1px solid var(--rule,#e5e7eb); border-radius:8px; padding:14px 15px; min-height:96px; margin-bottom:12px;}
+  .pdemo-narr-label{font-family:var(--mono, monospace); font-size:10px; letter-spacing:.12em; color:var(--muted,#6b7280);}
+  .pdemo-narr{font-family:var(--serif, Georgia, serif); font-style:italic; font-size:clamp(15px,4.4vw,19px); line-height:1.4; margin:8px 0 0;}
+  .pdemo-narr::before{content:"“";} .pdemo-narr::after{content:"”";}
+  .pdemo-narr.empty::before,.pdemo-narr.empty::after{content:"";}
+
+  .pdemo-telemetry{font-family:var(--mono, monospace); font-size:11.5px; color:var(--muted,#6b7280); letter-spacing:.02em; display:flex; flex-wrap:wrap; gap:4px 14px; padding:0 2px; min-height:16px;}
+  .pdemo-telemetry b{color:var(--text,#16181d); font-weight:600;}
+
+  .pdemo-outcome{margin-top:14px; min-height:20px;}
+  .pdemo-outcome.on{border-top:1px solid var(--rule,#e5e7eb); padding-top:14px;}
+  .pdemo-outcome-row{display:flex; align-items:baseline; gap:8px;}
+  .pdemo-dot{width:9px; height:9px; border-radius:50%; flex:0 0 auto; position:relative; top:1px;}
+  .pdemo-outcome-tag{font-family:var(--mono, monospace); font-size:11px; letter-spacing:.03em; color:var(--bad,#d64545); text-transform:uppercase;}
+  .pdemo-outcome-reason{margin:8px 0 0; font-size:13.5px; line-height:1.5; color:var(--text,#16181d);}
+
+  .pdemo-honesty{margin:16px 0 0; font-size:11.5px; line-height:1.5; color:var(--muted,#6b7280); border-top:1px solid var(--rule,#e5e7eb); padding-top:12px;}
+
+  /* ---- CI/CD build panel ---- */
+  .pdemo-build{border:1px solid var(--rule,#e5e7eb); border-radius:10px; overflow:hidden; font-family:var(--mono, monospace);}
+  .pdemo-build-head{display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px; padding:11px 14px; border-bottom:1px solid var(--rule,#e5e7eb); background:var(--code-bg,#f6f7f8); font-size:12px;}
+  .pdemo-build-head b{color:var(--text,#16181d);} .pdemo-build-head span{color:var(--muted,#6b7280);}
+  .pdemo-build-rows{padding:4px 0;}
+  .pdemo-brow{display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:8px; padding:9px 14px; border-bottom:1px solid var(--rule,#e5e7eb); font-size:12px;}
+  .pdemo-brow:last-child{border-bottom:0;}
+  .pdemo-brow.sel{background:var(--code-bg,#f6f7f8);}
+  .pdemo-brow-name{min-width:0; color:var(--text,#16181d);}
+  .pdemo-brow-name small{display:block; color:var(--muted,#6b7280); font-size:10.5px; letter-spacing:.02em;}
+  .pdemo-brow-delta{color:var(--muted,#6b7280); font-variant-numeric:tabular-nums; text-align:right;}
+  .pdemo-brow-delta.neg{color:var(--bad,#d64545);} .pdemo-brow-delta.pos{color:var(--ok,#1f9d57);}
+  .pdemo-pill{font-size:10px; letter-spacing:.06em; padding:3px 8px; border-radius:20px; border:1px solid var(--rule,#e5e7eb); color:var(--muted,#6b7280); min-width:56px; text-align:center;}
+  .pdemo-pill.run{color:var(--muted,#6b7280);}
+  .pdemo-pill.pass{color:var(--ok,#1f9d57); border-color:var(--ok,#1f9d57);}
+  .pdemo-pill.fail{color:#fff; background:var(--bad,#d64545); border-color:var(--bad,#d64545);}
+  .pdemo-verdict{padding:12px 14px; font-size:12.5px; letter-spacing:.03em; border-top:1px solid var(--rule,#e5e7eb); min-height:20px;}
+  .pdemo-verdict.blocked{background:var(--bad,#d64545); color:#fff;}
+  .pdemo-verdict.blocked b{font-weight:700;}
+
+  .pdemo-gate{border:1px solid var(--rule,#e5e7eb); border-radius:8px; padding:14px 15px; font-size:13px; line-height:1.55; color:var(--text,#16181d);}
+  .pdemo-gate .pdemo-gate-k{font-family:var(--mono, monospace); font-size:10px; letter-spacing:.12em; color:var(--muted,#6b7280); display:block; margin-bottom:7px;}
+  .pdemo-gate code{font-family:var(--mono, monospace); font-size:12px; background:var(--code-bg,#f6f7f8); padding:1px 5px; border-radius:4px;}
+
+  .pdemo-caption{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
+
+  @media (min-width:720px){
+    .pdemo-tabs{grid-template-columns:repeat(3,1fr);}
+    .pdemo-tab{border-bottom:0; border-right:1px solid var(--rule,#e5e7eb);}
+    .pdemo-tab:last-child{border-right:0;}
+    .pdemo-tab[aria-selected="true"]{box-shadow:inset 0 3px 0 var(--accent,#1a56db);}
+    .pdemo-main{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:22px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .pdemo-scrim,.pdemo-reveal,.pdemo-cursor,.pdemo-mark{transition:none;}
+    .pdemo-clickfx{display:none;}
+  }
+</style>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.getElementById('pdemo');
+  if(!root) return;
+
+  var $ = function(id){ return document.getElementById(id); };
+  var stage=$('pdemo-stage'), screen=$('pdemo-screen'), scrim=$('pdemo-scrim'),
+      reveal=$('pdemo-reveal'), cursor=$('pdemo-cursor'), mark=$('pdemo-mark'),
+      narr=$('pdemo-narr'), telem=$('pdemo-telemetry'), outcome=$('pdemo-outcome'),
+      caption=$('pdemo-caption'), runBtn=$('pdemo-run'), icpSel=$('pdemo-icp'),
+      tablist=$('pdemo-tablist'), stagewrap=$('pdemo-stagewrap'), build=$('pdemo-build'),
+      pCursor=$('pdemo-p-cursor'), pCicd=$('pdemo-p-cicd'), gate=$('pdemo-gate'),
+      panelwrap=$('pdemo-panelwrap');
+
+  var reduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : {matches:false};
+
+  var ICP_LABEL = { returning:'Returning mobile shopper', trial:'First-time trial user', enterprise:'Enterprise buyer' };
+  var PACE = {
+    returning:{ ms:9,  dwell:0.55, jit:3 },
+    trial:    { ms:17, dwell:1.45, jit:7 },
+    enterprise:{ ms:13, dwell:1.0, jit:2 }
+  };
+
+  /* ---------- drawn layouts (percent geometry) ---------- */
+  var LAYOUTS = {
+    optimize:[
+      {id:'head', k:'head', x:5,y:4,w:90,h:9, t:'Checkout'},
+      {id:'sum1', k:'text', x:5,y:16,w:55,h:4, t:'Cart · 3 items'},
+      {id:'sum2', k:'text', x:5,y:22,w:55,h:5, t:'Subtotal   $48.00'},
+      {id:'promo',k:'field',x:5,y:31,w:90,h:9, t:'Promo code'},
+      {id:'card', k:'field',x:5,y:43,w:90,h:9, t:'Card number'},
+      {id:'exp',  k:'field',x:5,y:55,w:43,h:9, t:'MM / YY'},
+      {id:'cvc',  k:'field',x:52,y:55,w:43,h:9, t:'CVC'},
+      {id:'pay',  k:'primary',x:5,y:84,w:90,h:10, t:'Pay  $48.00'}
+    ],
+    validate:[
+      {id:'head', k:'head', x:5,y:4,w:90,h:9, t:'Set up your workspace · Step 2 of 4'},
+      {id:'planB',k:'card', x:5,y:17,w:43,h:22, t:'Basic'},
+      {id:'planP',k:'card', x:52,y:17,w:43,h:22, t:'Pro'},
+      {id:'tog1', k:'field',x:5,y:44,w:90,h:8, t:'Import your contacts'},
+      {id:'tog2', k:'field',x:5,y:55,w:90,h:8, t:'Enable notifications'},
+      {id:'cont', k:'primary',x:5,y:84,w:90,h:10, t:'Continue'}
+    ]
+  };
+
+  /* ---------- scripts: deterministic per (wedge, icp) ---------- */
+  var SCRIPTS = {
+    optimize:{
+      returning:{ steps:[
+        {el:'head', say:"Back again — let me just pay.", act:'scan', t:400},
+        {el:'pay',  say:"Straight to the pay button.", act:'move', t:250},
+        {el:'pay',  say:"Tapping Pay.", act:'click', t:450},
+        {reveal:{x:10,y:34,w:80,h:30,t:'Create an account to continue'}, x:50,y:49, say:"Wait — I have to make an account?", act:'move', t:800},
+        {x:50,y:49, say:"I only wanted to check out. I'm gone.", act:'leave'}
+      ], outcome:{tag:'forced sign-up', reason:'Abandoned at a forced account-creation gate placed after the pay button.'}},
+      trial:{ steps:[
+        {el:'head', say:"Okay… where do I even start?", act:'scan', t:650},
+        {el:'sum2', say:"Let me check the total first.", act:'move', t:850},
+        {el:'promo',say:"Is there a discount code field?", act:'move', t:750},
+        {el:'promo',say:"Typing the code I found online.", act:'click', t:650},
+        {x:72,y:31, say:"…that didn't apply. A typo, maybe?", act:'miss', t:800},
+        {reveal:{x:10,y:17,w:80,h:13,t:'Shipping +$12.00 — total now $60.00'}, el:'sum2', say:"Hang on — shipping pushed it to $60?", act:'move', t:950},
+        {el:'sum2', say:"That's more than I expected. I'll think about it.", act:'leave'}
+      ], outcome:{tag:'surprise cost', reason:'Abandoned after an unexpected shipping charge changed the total late in the flow.'}},
+      enterprise:{ steps:[
+        {el:'head', say:"Reviewing the payment options.", act:'scan', t:550},
+        {el:'card', say:"Card entry — is there another method?", act:'move', t:800},
+        {reveal:{x:5,y:69,w:90,h:8,t:'Payment: Card only'}, x:50,y:73, say:"Scanning for invoice or PO billing.", act:'move', t:900},
+        {x:50,y:73, say:"Card only — no invoicing. I can't expense this.", act:'leave'}
+      ], outcome:{tag:'no invoicing', reason:'Abandoned — no invoice / PO payment path for procurement sign-off.'}}
+    },
+    validate:{
+      returning:{ steps:[
+        {el:'head', say:"New tool — let me breeze through setup.", act:'scan', t:400},
+        {el:'cont', say:"Skipping the options, hitting Continue.", act:'move', t:300},
+        {el:'cont', say:"Continue.", act:'click', t:450},
+        {reveal:{x:10,y:34,w:80,h:30,t:'Verify your email to continue'}, x:50,y:49, say:"An email-verification wall already?", act:'move', t:800},
+        {x:50,y:49, say:"Don't have my inbox handy — later.", act:'leave'}
+      ], outcome:{tag:'email wall', reason:'Abandoned at an email-verification wall dropped in mid-setup.'}},
+      trial:{ steps:[
+        {el:'head', say:"First time here — what do I pick?", act:'scan', t:650},
+        {el:'planB',say:"Basic… or Pro? Not sure what's different.", act:'move', t:900},
+        {el:'planP',say:"I'll try Pro, I guess.", act:'move', t:800},
+        {x:70,y:20, say:"Missed the card — tapping again.", act:'miss', t:700},
+        {el:'cont', say:"Continue, to start the trial.", act:'move', t:700},
+        {reveal:{x:10,y:34,w:80,h:30,t:'Add a card to start your free trial'}, el:'cont', say:"It wants a card before the trial even starts?", act:'move', t:900},
+        {el:'cont', say:"Not giving my card yet. Bailing.", act:'leave'}
+      ], outcome:{tag:'card-gated trial', reason:'Abandoned — the "free" trial demanded a credit card up front.'}},
+      enterprise:{ steps:[
+        {el:'head', say:"Evaluating this for the whole team.", act:'scan', t:550},
+        {el:'tog1', say:"Looking for team / SSO provisioning.", act:'move', t:800},
+        {el:'tog2', say:"Only personal toggles here.", act:'move', t:800},
+        {reveal:{x:10,y:34,w:80,h:26,t:'Personal workspace only — no SSO / team setup'}, x:50,y:47, say:"No SSO or team seats in onboarding.", act:'move', t:900},
+        {x:50,y:47, say:"Can't roll this out without SSO. Stopping here.", act:'leave'}
+      ], outcome:{tag:'no SSO', reason:'Abandoned — no SSO / team provisioning path for a company rollout.'}}
+    }
+  };
+
+  /* ---------- CI/CD data ---------- */
+  var CICD = {
+    pass:{
+      returning:{ Checkout:{d:'−4%',c:'6/6 steps'}, Onboarding:{d:'+2%',c:'4/4 steps'} },
+      trial:    { Checkout:{d:'−3%',c:'7/7 steps'}, Onboarding:{d:'−5%',c:'5/5 steps'} },
+      enterprise:{Checkout:{d:'+1%',c:'5/5 steps'}, Onboarding:{d:'−2%',c:'4/4 steps'} }
+    },
+    fail:{
+      returning:{ d:'−17%', c:'abandons 3/5 steps', why:'forced sign-up gate' },
+      trial:    { d:'−12%', c:'abandons 6/7 steps', why:'surprise shipping cost' },
+      enterprise:{d:'−11%', c:'abandons 3/4 steps', why:'no invoicing option' }
+    }
+  };
+  var MODELS = ['returning','trial','enterprise'];
+  var FLOWS = ['Checkout','Onboarding'];
+
+  /* ---------- state ---------- */
+  var wedge='optimize', icp='returning';
+  var raf=null, timers=[], clockTimer=null, token=0, runStart=0, running=false;
+  var cur={x:50,y:95};
+
+  function stopAll(){
+    token++;
+    if(raf){ cancelAnimationFrame(raf); raf=null; }
+    for(var i=0;i<timers.length;i++){ clearTimeout(timers[i]); }
+    timers=[];
+    if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
+    var fx=stage.querySelectorAll('.pdemo-clickfx');
+    for(var j=0;j<fx.length;j++){ fx[j].parentNode.removeChild(fx[j]); }
+    running=false;
+    runBtn.disabled=false;
+  }
+  function later(fn,ms){ var id=setTimeout(fn,ms); timers.push(id); return id; }
+  function ease(p){ return p<0.5 ? 4*p*p*p : 1-Math.pow(-2*p+2,3)/2; }
+
+  /* ---------- rendering helpers ---------- */
+  function elCenter(id){
+    var arr=LAYOUTS[wedge]; for(var i=0;i<arr.length;i++){ if(arr[i].id===id) return [arr[i].x+arr[i].w/2, arr[i].y+arr[i].h/2]; }
+    return [50,50];
+  }
+  function targetOf(s){
+    if(s.el) return elCenter(s.el);
+    if(typeof s.x==='number') return [s.x, s.y];
+    return [cur.x, cur.y];
+  }
+  function drawScreen(){
+    var arr=LAYOUTS[wedge]; var html='';
+    for(var i=0;i<arr.length;i++){ var e=arr[i];
+      html += '<div class="pdemo-el pdemo-el-'+e.k+'" style="left:'+e.x+'%;top:'+e.y+'%;width:'+e.w+'%;height:'+e.h+'%">'+esc(e.t)+'</div>';
+    }
+    screen.innerHTML=html;
+  }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function placeCursor(){ cursor.style.left=cur.x+'%'; cursor.style.top=cur.y+'%'; }
+  function showCursor(on){ cursor.classList.toggle('on', !!on); }
+  function hideReveal(){ reveal.classList.remove('on'); reveal.setAttribute('aria-hidden','true'); scrim.classList.remove('on'); }
+  function showReveal(r){
+    reveal.style.left=r.x+'%'; reveal.style.top=r.y+'%'; reveal.style.width=r.w+'%'; reveal.style.height=r.h+'%';
+    reveal.textContent=r.t; reveal.setAttribute('aria-hidden','false');
+    scrim.classList.add('on'); reveal.classList.add('on');
+  }
+  function hideMark(){ mark.classList.remove('on'); }
+  function placeMark(x,y){ mark.style.left=x+'%'; mark.style.top=y+'%'; mark.classList.add('on'); }
+
+  function setNarr(txt){ narr.textContent=txt; narr.classList.toggle('empty', !txt); caption.textContent=txt; }
+  function setTelem(step,total){
+    telem.innerHTML = 'model <b>'+esc(ICP_LABEL[icp])+'</b>'
+      + '<span>step <b>'+step+'/'+total+'</b></span>'
+      + '<span><b id="pdemo-clock">'+fmtClock()+'</b></span>';
+  }
+  function fmtClock(){ return ((performance.now()-runStart)/1000).toFixed(1)+'s'; }
+  function tickClock(){ var c=$('pdemo-clock'); if(c) c.textContent=fmtClock(); }
+
+  function clearOutcome(){ outcome.className='pdemo-outcome'; outcome.innerHTML=''; }
+  function showOutcome(o){
+    outcome.className='pdemo-outcome on';
+    outcome.innerHTML =
+      '<div class="pdemo-outcome-row"><span class="pdemo-dot" style="background:var(--bad,#d64545)"></span>'
+      + '<span class="pdemo-outcome-tag">abandoned · '+esc(o.tag)+'</span></div>'
+      + '<p class="pdemo-outcome-reason">'+esc(o.reason)+'</p>';
+    caption.textContent = 'Outcome: abandoned — '+o.reason;
+  }
+
+  function clickFx(x,y,miss){
+    if(reduce.matches) return;
+    var d=document.createElement('div');
+    d.className='pdemo-clickfx'+(miss?' miss':'');
+    d.style.left=x+'%'; d.style.top=y+'%';
+    stage.appendChild(d);
+    requestAnimationFrame(function(){ d.classList.add('go'); });
+    later(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 480);
+  }
+
+  /* ---------- cursor run engine ---------- */
+  function duration(tx,ty){
+    var dx=tx-cur.x, dy=ty-cur.y, dist=Math.sqrt(dx*dx+dy*dy);
+    var d=dist*PACE[icp].ms;
+    return Math.max(260, Math.min(1500, d));
+  }
+  function moveTo(tx,ty,dur,done){
+    var myTok=token, sx=cur.x, sy=cur.y, start=performance.now();
+    (function frame(now){
+      if(myTok!==token) return;
+      var p=dur<=0?1:Math.min(1,(now-start)/dur), e=ease(p);
+      cur.x=sx+(tx-sx)*e; cur.y=sy+(ty-sy)*e;
+      placeCursor(); tickClock();
+      if(p<1){ raf=requestAnimationFrame(frame); } else { done(); }
+    })(start);
+  }
+
+  function runSteps(steps,i){
+    if(i>=steps.length) return;
+    var s=steps[i], myTok=token, pace=PACE[icp];
+    if(s.reveal) showReveal(s.reveal);
+    var tgt=targetOf(s), tx=tgt[0], ty=tgt[1];
+    if(s.act==='miss'){ tx += (Math.random()*2-1)*pace.jit*1.4; ty += (Math.random()*2-1)*pace.jit*1.4; }
+    else { tx += (Math.random()*2-1)*pace.jit*0.4; ty += (Math.random()*2-1)*pace.jit*0.4; }
+    setNarr(s.say); setTelem(i+1, steps.length);
+    moveTo(tx,ty,duration(tx,ty), function(){
+      if(myTok!==token) return;
+      if(s.act==='click'||s.act==='miss') clickFx(cur.x,cur.y, s.act==='miss');
+      if(s.act==='leave'){
+        placeMark(cur.x,cur.y); showCursor(false);
+        showOutcome(SCRIPTS[wedge][icp].outcome);
+        runBtn.textContent='Replay'; runBtn.disabled=false; running=false;
+        if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
+        return;
+      }
+      later(function(){ if(myTok===token) runSteps(steps, i+1); }, (s.t||400)*pace.dwell);
+    });
+  }
+
+  /* ---------- CI/CD run ---------- */
+  function buildRows(){
+    var rows=[];
+    for(var m=0;m<MODELS.length;m++){
+      for(var f=0;f<FLOWS.length;f++){
+        var model=MODELS[m], flow=FLOWS[f];
+        var isFail = (model===icp && flow==='Checkout');
+        var data = isFail ? CICD.fail[model] : CICD.pass[model][flow];
+        rows.push({ model:model, flow:flow, fail:isFail, d:data.d, c:data.c, sel:(model===icp) });
+      }
+    }
+    return rows;
+  }
+  function deltaClass(d){ return d.charAt(0)==='+' ? 'pos' : (d.charAt(0)==='−'||d.charAt(0)==='-') ? 'neg':''; }
+  function renderBuild(animate){
+    var rows=buildRows();
+    var head='<div class="pdemo-build-head"><b>Build #482 · pre-deploy check</b><span>commit 3f9c1a2 · illustrative</span></div>';
+    var body='<div class="pdemo-build-rows">';
+    for(var i=0;i<rows.length;i++){ var r=rows[i];
+      body += '<div class="pdemo-brow'+(r.sel?' sel':'')+'">'
+        + '<div class="pdemo-brow-name">'+esc(ICP_LABEL[r.model])+'<small>'+esc(r.flow)+' flow'+(r.sel?' · selected ICP':'')+'</small></div>'
+        + '<div class="pdemo-brow-delta" data-d="'+r.d+'" data-fail="'+(r.fail?1:0)+'"></div>'
+        + '<div class="pdemo-pill run" data-i="'+i+'">···</div>'
+        + '</div>';
+    }
+    body+='</div>';
+    build.innerHTML = head + body + '<div class="pdemo-verdict" id="pdemo-verdict"></div>';
+
+    var pills=build.querySelectorAll('.pdemo-pill');
+    var deltas=build.querySelectorAll('.pdemo-brow-delta');
+    var verdict=$('pdemo-verdict');
+    var failModel=null;
+    for(var k=0;k<rows.length;k++){ if(rows[k].fail){ failModel=rows[k]; } }
+
+    function resolve(idx){
+      var r=rows[idx]; var p=pills[idx]; var d=deltas[idx];
+      p.className='pdemo-pill '+(r.fail?'fail':'pass'); p.textContent=r.fail?'FAIL':'PASS';
+      d.textContent=r.d+' · '+r.c; d.className='pdemo-brow-delta '+deltaClass(r.d);
+    }
+    function showVerdict(){
+      verdict.className='pdemo-verdict blocked';
+      verdict.innerHTML='<b>BUILD BLOCKED</b> — Checkout regressed '+esc(failModel.d)+' for '+esc(ICP_LABEL[failModel.model])+' ('+esc(failModel.fail?CICD.fail[failModel.model].why:'')+').';
+      caption.textContent='Build blocked — Checkout regressed '+failModel.d+' for '+ICP_LABEL[failModel.model];
+      runBtn.textContent='Re-run'; runBtn.disabled=false; running=false;
+    }
+
+    if(!animate){
+      for(var a=0;a<rows.length;a++) resolve(a);
+      showVerdict();
+      return;
+    }
+    var myTok=token, step=350;
+    for(var b=0;b<rows.length;b++){
+      (function(idx){ later(function(){ if(myTok===token) resolve(idx); }, step*(idx+1)); })(b);
+    }
+    later(function(){ if(myTok===token) showVerdict(); }, step*(rows.length+1)+250);
+  }
+
+  /* ---------- final-frame (reduced motion) ---------- */
+  function renderFinalCursor(){
+    var sc=SCRIPTS[wedge][icp], steps=sc.steps, last=steps[steps.length-1];
+    drawScreen();
+    var revStep=null; for(var i=0;i<steps.length;i++){ if(steps[i].reveal) revStep=steps[i]; }
+    if(revStep) showReveal(revStep.reveal); else hideReveal();
+    var t=targetOf(last); cur.x=t[0]; cur.y=t[1]; placeCursor(); showCursor(false);
+    placeMark(cur.x,cur.y);
+    setNarr(last.say);
+    runStart=performance.now();
+    telem.innerHTML='model <b>'+esc(ICP_LABEL[icp])+'</b><span>step <b>'+steps.length+'/'+steps.length+'</b></span><span>final frame</span>';
+    showOutcome(sc.outcome);
+    runBtn.textContent='Replay';
+  }
+
+  /* ---------- run controllers ---------- */
+  function run(){
+    stopAll();
+    token++; var myTok=token;
+    if(wedge==='cicd'){
+      renderCicdPanel();
+      if(reduce.matches){ renderBuild(false); return; }
+      running=true; runBtn.disabled=true; runBtn.textContent='Running…';
+      renderBuild(true);
+      return;
+    }
+    // cursor wedges
+    drawScreen(); hideReveal(); hideMark(); clearOutcome();
+    if(reduce.matches){ renderFinalCursor(); return; }
+    cur={x:50,y:96}; placeCursor(); showCursor(true);
+    setNarr('Scanning the page…');
+    runStart=performance.now();
+    running=true; runBtn.disabled=true; runBtn.textContent='Running…';
+    setTelem(0, SCRIPTS[wedge][icp].steps.length);
+    clockTimer=setInterval(tickClock,100);
+    later(function(){ if(myTok===token) runSteps(SCRIPTS[wedge][icp].steps, 0); }, 350);
+  }
+
+  /* ---------- view switching ---------- */
+  function renderCicdPanel(){
+    stagewrap.hidden=true; build.hidden=false;
+    pCursor.hidden=true; pCicd.hidden=false;
+    gate.innerHTML='<span class="pdemo-gate-k">GATE POLICY</span>'
+      + 'Block the deploy if any ICP model regresses more than <code>8%</code> completion on a critical flow. '
+      + 'The gate is <em>tuned to your users</em> — swapping the ICP model above re-scopes what "critical" means for your traffic.';
+  }
+  function renderCursorView(){
+    stagewrap.hidden=false; build.hidden=true;
+    pCursor.hidden=false; pCicd.hidden=true;
+  }
+
+  function setWedge(w){
+    if(w===wedge && running) return;
+    wedge=w;
+    var tabs=tablist.querySelectorAll('.pdemo-tab');
+    tabs.forEach(function(tb){
+      var on = tb.id==='pdemo-tab-'+w;
+      tb.setAttribute('aria-selected', on?'true':'false');
+      tb.tabIndex = on?0:-1;
+      if(on) panelwrap.setAttribute('aria-labelledby', tb.id);
+    });
+    stopAll();
+    if(w==='cicd') renderCicdPanel(); else renderCursorView();
+    run();
+  }
+
+  /* ---------- events ---------- */
+  runBtn.addEventListener('click', run);
+  icpSel.addEventListener('change', function(){ icp=icpSel.value; stopAll(); run(); });
+
+  tablist.addEventListener('click', function(e){
+    var b=e.target.closest ? e.target.closest('.pdemo-tab') : null;
+    if(b) setWedge(b.id.replace('pdemo-tab-',''));
+  });
+  tablist.addEventListener('keydown', function(e){
+    var tabs=Array.prototype.slice.call(tablist.querySelectorAll('.pdemo-tab'));
+    var idx=tabs.indexOf(document.activeElement);
+    if(idx<0) return;
+    var ni=-1;
+    if(e.key==='ArrowRight'||e.key==='ArrowDown') ni=(idx+1)%tabs.length;
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp') ni=(idx-1+tabs.length)%tabs.length;
+    else if(e.key==='Home') ni=0;
+    else if(e.key==='End') ni=tabs.length-1;
+    if(ni>=0){ e.preventDefault(); tabs[ni].focus(); setWedge(tabs[ni].id.replace('pdemo-tab-','')); }
+  });
+
+  if(reduce.addEventListener) reduce.addEventListener('change', function(){ stopAll(); run(); });
+
+  /* ---------- init ---------- */
+  renderCursorView();
+  run();
+})();
+</script>
+          <a class="sect__more" href="#docs">How a run works, in the docs →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RESEARCH ===== -->
+    <section class="sect" id="research">
+      <div class="sect__in">
+        <div class="sect__label"><span class="sect__k">03 — Research</span><h2>Technical notes</h2></div>
+        <div class="sect__body">
+          <p class="prose" style="color:#33363d;margin-bottom:1.6em">Honest technical notes on how the system works and what we've measured. Work in progress, not peer-reviewed; every number is tagged with how it was produced.</p>
+          <div class="pub-grid">
+            <article class="pub">
+              <p class="pub__meta">Jul 2026 · Technical note</p>
+              <h3 class="pub__title"><a href="note-mechanical-fidelity.html">Mechanical fidelity: degrading perception and action instead of prompting personas</a></h3>
+              <p class="pub__authors">S. Dave</p>
+              <p class="pub__sum">Prompted personas match real users only ~11.86% of the time (arXiv 2503.20749); we degrade a screenshot-in / action-out model's channels instead, which keeps coordinates exact.</p>
+            </article>
+            <article class="pub">
+              <p class="pub__meta">Jul 2026 · Technical note</p>
+              <h3 class="pub__title"><a href="note-tremor-targets.html">Tremor and target size: a Monte-Carlo study of click miss-rates</a></h3>
+              <p class="pub__authors">S. Dave</p>
+              <p class="pub__sum">In an offline Monte-Carlo of our tremor actuation (20,000 trials/cell), a 14px jitter misses a 44px target 20.5% of the time and needs ≥62px targets to hold the miss-rate under 5%.</p>
+            </article>
+            <article class="pub">
+              <p class="pub__meta">Jul 2026 · Technical note</p>
+              <h3 class="pub__title"><a href="note-perturbation-invariants.html">Perturbation invariants and pipeline cost</a></h3>
+              <p class="pub__authors">S. Dave</p>
+              <p class="pub__sum">Offline: perturbations preserve image dimensions and are byte-deterministic (8/8), the perception pipeline costs a median 61.4 ms/frame, and the stuck-detector scored perfectly on 225 synthetic labeled histories.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== DOCS ===== -->
+    <section class="sect" id="docs">
+      <div class="sect__in">
+        <div class="sect__label"><span class="sect__k">04 — Docs</span><h2>How it works</h2></div>
+        <div class="sect__body">
+          <div class="prose">
+            <p>The engine (internal package <code>ghostpanel</code>) drives H Company's Holo — a pre-trained, screenshot-in / action-out model (<code>holo3-1-35b-a3b</code>, which we consume, not train) — around a real browser via Playwright. Each step: take a screenshot, <strong>perceive</strong> (perturb the frame), get an action from the model, <strong>actuate</strong> (add tremor jitter), execute the click verbatim, emit an event. The loop ends on success, a step budget, a time budget, or the stuck-detector.</p>
+            <p>It's a five-module, frozen-contract design (engine · runner · server · report · voice) where modules talk only through Pydantic contracts. Coordinates from the model arrive on a 0–1000 grid and are denormalised to true viewport pixels. Every run produces a survival curve, an abandonment heatmap, per-persona stats, and a 0–100 Simulation Score. Findings are a rank-order signal and "evidence of risk", never a conformance verdict. Working end-to-end; 173 tests; MIT-licensed.</p>
+          </div>
+          <a class="sect__more" href="docs.html">Read the full documentation →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== DESIGN PARTNERS ===== -->
+    <section class="sect" id="apply">
+      <div class="sect__in">
+        <div class="sect__label"><span class="sect__k">05 — Design partners</span><h2>Test one flow with us</h2></div>
+        <div class="sect__body">
+          <p class="prose" style="color:#33363d">We're taking on a small number of design partners. Bring one flow you care about — a checkout, a signup, a new onboarding — and we'll run the swarm against it and hand you the failure report, direct. Early, hands-on, and free while we're in this phase.</p>
+          <div class="dp-grid">
+            <div class="dp-item"><h3>Your flow, your ICP</h3><p>We build ICP models tuned to your real user segments and run them against your actual flow.</p></div>
+            <div class="dp-item"><h3>A real failure report</h3><p>Survival curve, abandonment heatmap, the exact pixels, and per-model reasons — not a survey.</p></div>
+            <div class="dp-item"><h3>Direct access</h3><p>You work with us directly and help shape what we build next.</p></div>
+            <div class="dp-item"><h3>Rank-order, honest</h3><p>Signals on where risk is and whether a fix helped — never conversion forecasts or a compliance verdict.</p></div>
+          </div>
+          <form class="apply-form" id="applyForm" novalidate>
+            <div class="row">
+              <label class="field"><span>Name</span><input type="text" name="name" autocomplete="name" /></label>
+              <label class="field"><span>Company</span><input type="text" name="company" autocomplete="organization" /></label>
+            </div>
+            <div class="row">
+              <label class="field"><span>Work email</span><input type="email" name="email" autocomplete="email" required /></label>
+              <label class="field"><span>What flow should we test?</span><input type="text" name="flow" placeholder="e.g. mobile checkout" /></label>
+            </div>
+            <button class="btn btn-lg" type="submit">Apply for design-partner access</button>
+            <p class="apply-status" id="applyStatus" role="status" aria-live="polite" hidden></p>
+          </form>
+        </div>
+      </div>
+    </section>
   </main>
+
   <footer class="foot">
     <div class="foot__in">
       <span>Simulation Labs · Behavioral simulation research</span>

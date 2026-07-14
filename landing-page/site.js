@@ -141,8 +141,54 @@
     if (history.replaceState) history.replaceState(null, "", id);
   });
 
+  /* Single-page top-nav scroll-spy. */
+  function navSpy() {
+    var nav = document.querySelector(".masthead .nav");
+    if (!nav) return;
+    var links = nav.querySelectorAll('a[href^="#"]');
+    if (!links.length) return;
+    var targets = [];
+    links.forEach(function (a) {
+      var t = document.getElementById((a.getAttribute("href") || "").slice(1));
+      if (t) targets.push(t);
+    });
+    scrollspy(links, targets);
+  }
+
+  /* Design-partner application form -> mailto. */
+  function applyForm() {
+    var form = document.getElementById("applyForm");
+    if (!form) return;
+    var status = document.getElementById("applyStatus");
+    var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var d = new FormData(form);
+      function v(k) { return String(d.get(k) || "").trim(); }
+      var name = v("name"), company = v("company"), email = v("email"), flow = v("flow");
+      if (!re.test(email)) {
+        status.hidden = false;
+        status.className = "apply-status err";
+        status.textContent = "Please enter a valid work email so we can reach you.";
+        var el = form.querySelector('[name="email"]');
+        if (el) el.focus();
+        return;
+      }
+      var subject = "Design partner application — " + (company || name || email);
+      var body = "Name: " + name + "\nCompany: " + company +
+        "\nWork email: " + email + "\nFlow to test: " + flow + "\n";
+      window.location.href = "mailto:satyam@agentmade.ai?subject=" +
+        encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+      status.hidden = false;
+      status.className = "apply-status ok";
+      status.textContent = "Thanks — we'll be in touch about your flow shortly.";
+    });
+  }
+
   buildEditorial();
   gridPubs();
   docsSpy();
   copyButtons();
+  navSpy();
+  applyForm();
 })();
