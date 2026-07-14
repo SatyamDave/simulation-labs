@@ -67,619 +67,456 @@
     </section>
 
     <!-- ===== PRODUCT (interactive) ===== -->
-    <section class="sect" id="product">
+    <section class="sect sect--band" id="product">
       <div class="sect__in">
-        <div class="sect__label"><span class="sect__k">02 — Product</span><h2>Watch the agents behave like your users</h2></div>
+        <div class="sect__label"><span class="sect__k">02 — Product</span><h2>Feel what your users feel</h2></div>
         <div class="sect__body">
           <div class="prose" style="max-width:64ch">
-            <p>Pick a wedge and an ICP model. A behavioral agent — tuned to that ideal-customer profile — attempts the flow the way that user actually would: it scans, hesitates, mis-taps, and either finishes or gives up at a specific point, with a plain reason. This is an illustrative, in-browser run; the real product does it on your live site.</p>
+            <p><strong>Your turn.</strong> Pick a behavioral model, then try to finish a simple checkout the way that user experiences it — with shaky taps, a blurred page, or a ticking clock. You&rsquo;ll feel exactly what your users are up against. Our agents do this at scale, on your live flow.</p>
           </div>
-          <div class="pdemo" id="pdemo">
-  <div class="pdemo-head">
-    <div class="pdemo-kicker">SIMULATION LABS · LIVE DEMO</div>
-    <h3 class="pdemo-title">Synthetic users that <em>do</em>, not say.</h3>
-    <p class="pdemo-sub">A swarm of behavioral agents attempts your flow like real people &mdash; hesitating, mis-tapping, and giving up at a specific point. Failure is the product.</p>
+          <div class="feel" id="feel-root">
+  <div class="feel-head">
+    <div class="feel-kicker">YOUR TURN &middot; HANDS-ON</div>
+    <h3 class="feel-title">Be the user. Try to pay.</h3>
+    <p class="feel-sub">Pick an ICP model, hit <b>Start</b>, then find and tap the small <b>Pay&nbsp;$48</b> button before you give up. You&rsquo;ll feel the exact friction our agents measure.</p>
   </div>
 
-  <div class="pdemo-tabs" id="pdemo-tablist" role="tablist" aria-label="Product wedges">
-    <button class="pdemo-tab" id="pdemo-tab-optimize" role="tab" aria-selected="true" aria-controls="pdemo-panelwrap" tabindex="0">
-      <span class="pdemo-tab-name">Optimize a live flow</span>
-      <span class="pdemo-tab-tag">growth · CRO — existing checkout</span>
+  <div class="feel-conds" role="group" aria-label="ICP model — tuned to your users">
+    <button class="feel-cond" id="feel-c-shaky"  type="button" aria-pressed="true">
+      <span class="feel-cond-name">Shaky hands</span>
+      <span class="feel-cond-tag">clicks land off-target</span>
     </button>
-    <button class="pdemo-tab" id="pdemo-tab-validate" role="tab" aria-selected="false" aria-controls="pdemo-panelwrap" tabindex="-1">
-      <span class="pdemo-tab-name">Validate a launch</span>
-      <span class="pdemo-tab-tag">product — new onboarding wizard</span>
+    <button class="feel-cond" id="feel-c-rushed" type="button" aria-pressed="false">
+      <span class="feel-cond-name">Rushed</span>
+      <span class="feel-cond-tag">in a hurry &middot; ~4s</span>
     </button>
-    <button class="pdemo-tab" id="pdemo-tab-cicd" role="tab" aria-selected="false" aria-controls="pdemo-panelwrap" tabindex="-1">
-      <span class="pdemo-tab-name">Wire into CI/CD</span>
-      <span class="pdemo-tab-tag">QA · eng — pre-deploy gate</span>
+    <button class="feel-cond" id="feel-c-skims"  type="button" aria-pressed="false">
+      <span class="feel-cond-name">Skims the page</span>
+      <span class="feel-cond-tag">can&rsquo;t read the labels</span>
+    </button>
+    <button class="feel-cond" id="feel-c-first"  type="button" aria-pressed="false">
+      <span class="feel-cond-name">First-timer</span>
+      <span class="feel-cond-tag">controls look alike</span>
     </button>
   </div>
 
-  <div class="pdemo-controls">
-    <label class="pdemo-icp-label" for="pdemo-icp">ICP model</label>
-    <span class="pdemo-select" >
-      <select id="pdemo-icp" aria-label="ICP model — tuned to your users">
-        <option value="returning">Returning mobile shopper</option>
-        <option value="trial">First-time trial user</option>
-        <option value="enterprise">Enterprise buyer</option>
-      </select>
-    </span>
-    <span class="pdemo-tuned">tuned to your users</span>
-    <button class="pdemo-run" id="pdemo-run" type="button">Run</button>
+  <div class="feel-prompt-row">
+    <p class="feel-prompt" id="feel-prompt">&#128073; Your turn: find and tap <b>&ldquo;Pay&nbsp;$48&rdquo;</b>.</p>
+    <button class="feel-start" id="feel-start" type="button">Start</button>
   </div>
 
-  <div class="pdemo-main" id="pdemo-panelwrap" role="tabpanel" aria-labelledby="pdemo-tab-optimize">
-    <div class="pdemo-left">
-      <div class="pdemo-stagewrap" id="pdemo-stagewrap">
-        <div class="pdemo-stage" id="pdemo-stage">
-          <div class="pdemo-screen" id="pdemo-screen"></div>
-          <div class="pdemo-scrim" id="pdemo-scrim"></div>
-          <div class="pdemo-reveal" id="pdemo-reveal" aria-hidden="true"></div>
-          <svg class="pdemo-cursor" id="pdemo-cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2 L4 20 L9 15 L12 22 L15 20 L12 13 L19 13 Z"/></svg>
-          <svg class="pdemo-mark" id="pdemo-mark" viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+  <div class="feel-body">
+    <div class="feel-stagewrap">
+      <div class="feel-stage" id="feel-stage" aria-label="Mock checkout — click the correct control">
+        <div class="feel-mock" id="feel-mock">
+          <div class="feel-bar">
+            <span class="feel-dot"></span><span class="feel-dot"></span><span class="feel-dot"></span>
+            <span class="feel-url" id="feel-url">checkout.yourshop.com</span>
+          </div>
+          <div class="feel-page">
+            <div class="feel-mtitle" data-txt>Confirm &amp; pay</div>
+            <label class="feel-field">
+              <span class="feel-lbl" data-txt>Email</span>
+              <span class="feel-input" data-txt>you@example.com</span>
+            </label>
+            <label class="feel-field">
+              <span class="feel-lbl" data-txt>Card number</span>
+              <span class="feel-input" data-txt>&bull;&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;&bull;&nbsp;4242</span>
+            </label>
+            <div class="feel-summary">
+              <span data-txt>Order total</span><span class="feel-total" data-txt>$48.00</span>
+            </div>
+            <div class="feel-actions">
+              <button class="feel-decoy"  id="feel-decoy"  type="button"><span data-txt>Keep shopping</span></button>
+              <button class="feel-target" id="feel-target" type="button"><span data-txt>Pay&nbsp;$48</span></button>
+            </div>
+          </div>
         </div>
-        <div class="pdemo-stagenote">illustrative run · drawn mock, not your real site</div>
+        <div class="feel-veil" id="feel-veil"><span>Press <b>Start</b> to begin</span></div>
       </div>
-
-      <div class="pdemo-build" id="pdemo-build" hidden></div>
+      <div class="feel-stagenote">illustrative &middot; drawn mock, not your real site</div>
     </div>
 
-    <div class="pdemo-panel" id="pdemo-panel">
-      <div class="pdemo-p-cursor" id="pdemo-p-cursor">
-        <div class="pdemo-narrwrap">
-          <span class="pdemo-narr-label">THINKING</span>
-          <p class="pdemo-narr" id="pdemo-narr">&nbsp;</p>
-        </div>
-        <div class="pdemo-telemetry" id="pdemo-telemetry"></div>
-        <div class="pdemo-outcome" id="pdemo-outcome"></div>
+    <div class="feel-side">
+      <div class="feel-clock" id="feel-clock" hidden>
+        <div class="feel-clock-track"><div class="feel-clock-fill" id="feel-clock-fill"></div></div>
+        <span class="feel-clock-txt" id="feel-clock-txt">4.5s</span>
       </div>
-
-      <div class="pdemo-p-cicd" id="pdemo-p-cicd" hidden>
-        <div class="pdemo-gate" id="pdemo-gate"></div>
+      <div class="feel-hud">
+        <div class="feel-stat"><span class="feel-stat-n" id="feel-tries">0</span><span class="feel-stat-l">taps</span></div>
+        <div class="feel-stat"><span class="feel-stat-n feel-bad-n" id="feel-misses">0</span><span class="feel-stat-l">misses</span></div>
+        <div class="feel-stat"><span class="feel-stat-n" id="feel-time">0.0s</span><span class="feel-stat-l">elapsed</span></div>
       </div>
-
-      <p class="pdemo-honesty">Mechanical fidelity, not psychology. Numbers are rank-order signals, not forecasts.</p>
+      <p class="feel-status" id="feel-status" role="status" aria-live="polite">Pick a model, then press Start.</p>
     </div>
   </div>
 
-  <div class="pdemo-caption" id="pdemo-caption" aria-live="polite"></div>
+  <div class="feel-payoff" id="feel-payoff" hidden>
+    <p class="feel-payoff-lead" id="feel-payoff-lead"></p>
+    <p class="feel-payoff-body">Simulation&nbsp;Labs runs agents like this against <b>your real flow</b> &mdash; a live checkout, a new launch, or wired into CI/CD &mdash; with perception and clicks mechanically degraded, and records the exact pixel where each ICP gives up.</p>
+    <p class="feel-fine">Illustrative demo. We claim mechanical fidelity, not psychology &mdash; a rank-order signal (which flow is worse, which fix helped), not a forecast.</p>
+  </div>
 </div>
 
 <style>
-  .pdemo{
-    --ok:#1f9d57; --bad:#d64545;
-    box-sizing:border-box; width:100%; max-width:100%; overflow:hidden;
-    color:var(--text,#16181d); background:var(--bg,#ffffff);
-    font-family:var(--ui, system-ui, -apple-system, sans-serif);
-    -webkit-font-smoothing:antialiased;
+  .feel{
+    --feel-ok:#1f9d57; --feel-bad:#d64545;
+    --feel-surface:var(--surface,#ffffff);
+    --feel-bg:var(--code-bg,#f6f7f8);
+    --feel-text:var(--text,#16181d);
+    --feel-muted:var(--muted,#6b7280);
+    --feel-accent:var(--accent,#1a56db);
+    --feel-rule:var(--rule,#e5e7eb);
+    --feel-ui:var(--ui,'Inter',system-ui,-apple-system,sans-serif);
+    --feel-mono:var(--mono,ui-monospace,Menlo,Consolas,monospace);
+    box-sizing:border-box; min-width:0; width:100%; overflow:hidden;
+    font-family:var(--feel-ui); color:var(--feel-text);
+    background:var(--feel-surface);
+    border:1px solid var(--feel-rule); border-radius:14px;
+    padding:20px; line-height:1.5;
   }
-  .pdemo *,.pdemo *::before,.pdemo *::after{box-sizing:border-box;}
-  .pdemo svg{max-width:100%;}
+  .feel *,.feel *::before,.feel *::after{box-sizing:border-box}
+  .feel button{font-family:inherit}
 
-  .pdemo-head{margin-bottom:18px;}
-  .pdemo-kicker{font-family:var(--mono, ui-monospace, monospace); font-size:11px; letter-spacing:.09em; color:var(--muted,#6b7280); margin-bottom:8px;}
-  .pdemo-title{font-family:var(--serif, Georgia, serif); font-weight:500; font-size:clamp(20px,5vw,28px); line-height:1.15; margin:0 0 8px;}
-  .pdemo-title em{font-style:italic; color:var(--accent,#1a56db);}
-  .pdemo-sub{margin:0; max-width:56ch; color:var(--muted,#6b7280); font-size:14px; line-height:1.5;}
+  .feel-kicker{font-size:.7rem;font-weight:600;letter-spacing:.09em;color:var(--feel-accent)}
+  .feel-title{font-family:var(--display,var(--feel-ui));font-size:clamp(1.25rem,3.6vw,1.6rem);
+    font-weight:600;line-height:1.15;margin:.35em 0 .2em}
+  .feel-sub{font-size:.95rem;color:var(--feel-muted);margin:0;max-width:56ch}
+  .feel-sub b,.feel-prompt b{color:var(--feel-text);font-weight:600}
 
-  .pdemo-tabs{display:grid; grid-template-columns:1fr; gap:0; border:1px solid var(--rule,#e5e7eb); border-radius:8px; overflow:hidden; margin-bottom:16px;}
-  .pdemo-tab{
-    -webkit-appearance:none; appearance:none; text-align:left; cursor:pointer;
-    background:var(--bg,#fff); border:0; border-bottom:1px solid var(--rule,#e5e7eb);
-    padding:12px 14px; display:flex; flex-direction:column; gap:2px; color:var(--text,#16181d);
-    font-family:inherit;
+  /* ---- condition selector ---- */
+  .feel-conds{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
+  .feel-cond{flex:1 1 130px;min-width:0;text-align:left;cursor:pointer;
+    background:var(--feel-bg);border:1px solid var(--feel-rule);border-radius:10px;
+    padding:9px 11px;display:flex;flex-direction:column;gap:2px;color:var(--feel-text);
+    transition:border-color .12s,background .12s,box-shadow .12s}
+  .feel-cond:hover{border-color:var(--feel-accent)}
+  .feel-cond:focus-visible{outline:2px solid var(--feel-accent);outline-offset:2px}
+  .feel-cond[aria-pressed="true"]{background:var(--feel-surface);border-color:var(--feel-accent);
+    box-shadow:inset 0 0 0 1px var(--feel-accent)}
+  .feel-cond-name{font-size:.9rem;font-weight:600}
+  .feel-cond-tag{font-size:.72rem;color:var(--feel-muted)}
+
+  /* ---- prompt row ---- */
+  .feel-prompt-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+    margin:16px 0 12px;padding:11px 13px;border:1px dashed var(--feel-rule);border-radius:10px;
+    background:var(--feel-bg)}
+  .feel-prompt{margin:0;font-size:1rem;font-weight:500;flex:1 1 200px;min-width:0}
+  .feel-start{cursor:pointer;border:0;border-radius:9px;padding:10px 20px;
+    background:var(--feel-accent);color:#fff;font-size:.95rem;font-weight:600;white-space:nowrap}
+  .feel-start:focus-visible{outline:2px solid var(--feel-accent);outline-offset:3px}
+  .feel-start:hover{filter:brightness(1.06)}
+  .feel.is-idle .feel-start{animation:feel-pulse 1.7s ease-in-out infinite}
+  @keyframes feel-pulse{0%,100%{box-shadow:0 0 0 0 rgba(26,86,219,.45)}50%{box-shadow:0 0 0 7px rgba(26,86,219,0)}}
+
+  /* ---- layout ---- */
+  .feel-body{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+  .feel-stagewrap{flex:1 1 300px;min-width:0}
+  .feel-side{flex:1 1 200px;min-width:0}
+
+  /* ---- mock ---- */
+  .feel-stage{position:relative;border:1px solid var(--feel-rule);border-radius:12px;
+    overflow:hidden;background:var(--feel-surface)}
+  .feel-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--feel-bg);
+    border-bottom:1px solid var(--feel-rule)}
+  .feel-dot{width:9px;height:9px;border-radius:50%;background:var(--feel-rule)}
+  .feel-url{margin-left:8px;font-family:var(--feel-mono);font-size:.72rem;color:var(--feel-muted)}
+  .feel-page{padding:16px 16px 18px}
+  .feel-mtitle{font-family:var(--display,var(--feel-ui));font-size:1.15rem;font-weight:600;margin-bottom:14px}
+  .feel-field{display:block;margin-bottom:11px}
+  .feel-lbl{display:block;font-size:.72rem;font-weight:600;color:var(--feel-muted);margin-bottom:3px}
+  .feel-input{display:block;border:1px solid var(--feel-rule);border-radius:7px;padding:8px 10px;
+    font-size:.86rem;color:var(--feel-text);background:var(--feel-surface)}
+  .feel-summary{display:flex;justify-content:space-between;align-items:baseline;
+    padding:10px 0 14px;font-size:.85rem;color:var(--feel-muted)}
+  .feel-total{font-size:1rem;font-weight:600;color:var(--feel-text)}
+  .feel-actions{display:flex;align-items:center;gap:10px}
+  .feel-decoy{flex:0 0 auto;cursor:pointer;border:1px solid var(--feel-rule);border-radius:9px;
+    padding:12px 18px;font-size:1rem;font-weight:600;background:var(--feel-bg);color:var(--feel-text)}
+  .feel-target{flex:0 0 auto;cursor:pointer;border:0;border-radius:7px;
+    padding:7px 13px;font-size:.82rem;font-weight:600;background:var(--feel-accent);color:#fff;
+    margin-left:auto}
+  .feel-decoy:focus-visible,.feel-target:focus-visible{outline:2px solid var(--feel-accent);outline-offset:2px}
+  .feel-target.is-hit{background:var(--feel-ok)}
+
+  /* condition visuals */
+  .feel.cond-skims .feel-page{filter:blur(3px)}
+  .feel.cond-skims .feel-target{background:var(--feel-bg);color:var(--feel-text);border:1px solid var(--feel-rule)}
+  .feel.cond-first .feel-target{background:var(--feel-bg);color:var(--feel-text);
+    border:1px solid var(--feel-rule);font-size:1rem;padding:12px 18px;font-weight:500}
+  .feel.cond-first .feel-decoy{font-weight:500}
+
+  /* start veil */
+  .feel-veil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:color-mix(in srgb,var(--feel-surface) 72%,transparent);backdrop-filter:blur(1px);
+    font-size:.9rem;color:var(--feel-muted);cursor:default}
+  .feel-veil span b{color:var(--feel-text)}
+  .feel.is-running .feel-veil,.feel.is-done .feel-veil{display:none}
+
+  /* marks (tremor landing) */
+  .feel-mark{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;pointer-events:none;
+    z-index:5;font-weight:700;font-size:20px;line-height:22px;text-align:center}
+  .feel-mark.is-miss{color:var(--feel-bad)}
+  .feel-mark.is-hit{color:var(--feel-ok)}
+  .feel-mark::before{content:"\2715"}
+  .feel-mark.is-hit::before{content:"\2713"}
+  .feel-mark.anim{animation:feel-ripple .8s ease-out forwards}
+  @keyframes feel-ripple{0%{transform:scale(.4);opacity:0}25%{transform:scale(1.25);opacity:1}100%{transform:scale(1);opacity:0}}
+  .feel.shake .feel-mock{animation:feel-shake .28s}
+  @keyframes feel-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+  /* ---- side: clock / hud / status ---- */
+  .feel-clock{margin-bottom:12px}
+  .feel-clock-track{height:8px;border-radius:6px;background:var(--feel-bg);overflow:hidden;
+    border:1px solid var(--feel-rule)}
+  .feel-clock-fill{height:100%;width:100%;background:var(--feel-accent);transform-origin:left}
+  .feel-clock-txt{display:block;margin-top:4px;font-family:var(--feel-mono);font-size:.75rem;color:var(--feel-muted)}
+  .feel-hud{display:flex;gap:10px;margin-bottom:12px}
+  .feel-stat{flex:1 1 0;min-width:0;background:var(--feel-bg);border:1px solid var(--feel-rule);
+    border-radius:9px;padding:9px 8px;text-align:center}
+  .feel-stat-n{display:block;font-family:var(--feel-mono);font-size:1.25rem;font-weight:600;line-height:1.1}
+  .feel-stat-l{display:block;font-size:.68rem;color:var(--feel-muted);letter-spacing:.03em}
+  .feel-bad-n{color:var(--feel-bad)}
+  .feel-status{margin:0;font-size:.9rem;color:var(--feel-muted);min-height:2.4em}
+  .feel-status.ok{color:var(--feel-ok);font-weight:600}
+  .feel-status.bad{color:var(--feel-bad);font-weight:600}
+
+  .feel-stagenote{margin-top:7px;font-size:.72rem;color:var(--feel-muted);text-align:center}
+
+  /* ---- payoff ---- */
+  .feel-payoff{margin-top:16px;padding:14px 15px;border:1px solid var(--feel-rule);border-radius:11px;
+    background:var(--feel-bg)}
+  .feel-payoff-lead{margin:0 0 .5em;font-size:.98rem;font-weight:600}
+  .feel-payoff-body{margin:0 0 .5em;font-size:.9rem;color:var(--feel-text)}
+  .feel-payoff-body b{font-weight:600}
+  .feel-fine{margin:0;font-size:.78rem;color:var(--feel-muted)}
+
+  @media (max-width:520px){
+    .feel{padding:15px}
+    .feel-cond{flex:1 1 46%}
+    .feel-target,.feel-decoy{padding-left:12px;padding-right:12px}
   }
-  .pdemo-tab:last-child{border-bottom:0;}
-  .pdemo-tab-name{font-size:14px; font-weight:600;}
-  .pdemo-tab-tag{font-family:var(--mono, monospace); font-size:11px; color:var(--muted,#6b7280); letter-spacing:.02em;}
-  .pdemo-tab[aria-selected="true"]{background:var(--code-bg,#f6f7f8); box-shadow:inset 3px 0 0 var(--accent,#1a56db);}
-  .pdemo-tab[aria-selected="true"] .pdemo-tab-name{color:var(--accent,#1a56db);}
-  .pdemo-tab:focus-visible{outline:2px solid var(--accent,#1a56db); outline-offset:-2px;}
-
-  .pdemo-controls{display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px; margin-bottom:18px;}
-  .pdemo-icp-label{font-family:var(--mono, monospace); font-size:11px; letter-spacing:.06em; color:var(--muted,#6b7280);}
-  .pdemo-select{position:relative; display:inline-flex;}
-  .pdemo-select::after{content:"▾"; position:absolute; right:10px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--muted,#6b7280); font-size:11px;}
-  .pdemo-select select{
-    -webkit-appearance:none; appearance:none; font-family:inherit; font-size:13px; color:var(--text,#16181d);
-    background:var(--bg,#fff); border:1px solid var(--rule,#e5e7eb); border-radius:6px;
-    padding:7px 30px 7px 11px; cursor:pointer; max-width:100%;
-  }
-  .pdemo-select select:focus-visible{outline:2px solid var(--accent,#1a56db); outline-offset:1px;}
-  .pdemo-tuned{font-size:12px; font-style:italic; color:var(--muted,#6b7280);}
-  .pdemo-run{
-    margin-left:auto; -webkit-appearance:none; appearance:none; cursor:pointer;
-    font-family:var(--mono, monospace); font-size:12px; letter-spacing:.05em;
-    background:var(--accent,#1a56db); color:#fff; border:0; border-radius:6px; padding:8px 18px;
-  }
-  .pdemo-run:focus-visible{outline:2px solid var(--text,#16181d); outline-offset:2px;}
-  .pdemo-run:disabled{opacity:.5; cursor:default;}
-
-  .pdemo-main{display:grid; grid-template-columns:1fr; gap:16px; align-items:start;}
-  .pdemo-left{min-width:0;}
-  .pdemo-panel{min-width:0;}
-
-  /* ---- stage (drawn mock) ---- */
-  .pdemo-stagewrap{min-width:0;}
-  .pdemo-stage{
-    container-type:inline-size; position:relative; width:100%; max-width:100%;
-    aspect-ratio:4/5; border:1px solid var(--rule,#e5e7eb); border-radius:10px; overflow:hidden;
-    background:var(--bg,#fff);
-  }
-  .pdemo-screen{position:absolute; inset:0;}
-  .pdemo-el{position:absolute; display:flex; align-items:center; font-size:clamp(8px,2.7cqw,13px); line-height:1.2;}
-  .pdemo-el-head{align-items:flex-end; padding-bottom:2cqw; font-weight:600; color:var(--text,#16181d); border-bottom:1px solid var(--rule,#e5e7eb); font-size:clamp(9px,3.2cqw,15px);}
-  .pdemo-el-text{color:var(--muted,#6b7280);}
-  .pdemo-el-field{border:1px solid var(--rule,#e5e7eb); border-radius:5px; padding-left:2.5cqw; color:var(--muted,#6b7280); background:var(--bg,#fff);}
-  .pdemo-el-card{border:1px solid var(--rule,#e5e7eb); border-radius:6px; align-items:flex-start; padding:2cqw; color:var(--text,#16181d); font-weight:600; background:var(--bg,#fff);}
-  .pdemo-el-primary{justify-content:center; background:var(--accent,#1a56db); color:#fff; border-radius:6px; font-weight:600;}
-
-  .pdemo-scrim{position:absolute; inset:0; background:rgba(255,255,255,.55); opacity:0; pointer-events:none; transition:opacity .25s ease;}
-  .pdemo-scrim.on{opacity:1;}
-  .pdemo-reveal{
-    position:absolute; display:flex; align-items:center; justify-content:center; text-align:center;
-    padding:3cqw; background:var(--bg,#fff); border:1px solid var(--bad,#d64545); border-radius:8px;
-    color:var(--text,#16181d); font-size:clamp(9px,3cqw,14px); font-weight:600; line-height:1.25;
-    opacity:0; transform:scale(.98); transition:opacity .22s ease, transform .22s ease; pointer-events:none;
-  }
-  .pdemo-reveal.on{opacity:1; transform:scale(1);}
-
-  .pdemo-cursor{position:absolute; width:clamp(15px,4.5cqw,24px); height:auto; left:50%; top:95%;
-    fill:var(--text,#16181d); stroke:#fff; stroke-width:1.1; opacity:0; transition:opacity .2s ease;
-    pointer-events:none; filter:drop-shadow(0 0 .5px rgba(0,0,0,.25));}
-  .pdemo-cursor.on{opacity:1;}
-  .pdemo-mark{position:absolute; width:clamp(16px,5cqw,26px); height:auto; stroke:var(--bad,#d64545); stroke-width:2.6;
-    stroke-linecap:round; opacity:0; transform:translate(-50%,-50%) scale(.6); pointer-events:none;
-    transition:opacity .2s ease, transform .2s ease;}
-  .pdemo-mark.on{opacity:1; transform:translate(-50%,-50%) scale(1);}
-  .pdemo-clickfx{position:absolute; width:5cqw; height:5cqw; border:1.5px solid var(--accent,#1a56db); border-radius:50%;
-    transform:translate(-50%,-50%) scale(.3); opacity:.9; pointer-events:none;}
-  .pdemo-clickfx.miss{border-color:var(--bad,#d64545);}
-  .pdemo-clickfx.go{transform:translate(-50%,-50%) scale(1.6); opacity:0; transition:transform .45s ease, opacity .45s ease;}
-
-  .pdemo-stagenote{font-family:var(--mono, monospace); font-size:10.5px; color:var(--muted,#6b7280); margin-top:7px; letter-spacing:.02em;}
-
-  /* ---- right panel ---- */
-  .pdemo-narrwrap{border:1px solid var(--rule,#e5e7eb); border-radius:8px; padding:14px 15px; min-height:96px; margin-bottom:12px;}
-  .pdemo-narr-label{font-family:var(--mono, monospace); font-size:10px; letter-spacing:.12em; color:var(--muted,#6b7280);}
-  .pdemo-narr{font-family:var(--serif, Georgia, serif); font-style:italic; font-size:clamp(15px,4.4vw,19px); line-height:1.4; margin:8px 0 0;}
-  .pdemo-narr::before{content:"“";} .pdemo-narr::after{content:"”";}
-  .pdemo-narr.empty::before,.pdemo-narr.empty::after{content:"";}
-
-  .pdemo-telemetry{font-family:var(--mono, monospace); font-size:11.5px; color:var(--muted,#6b7280); letter-spacing:.02em; display:flex; flex-wrap:wrap; gap:4px 14px; padding:0 2px; min-height:16px;}
-  .pdemo-telemetry b{color:var(--text,#16181d); font-weight:600;}
-
-  .pdemo-outcome{margin-top:14px; min-height:20px;}
-  .pdemo-outcome.on{border-top:1px solid var(--rule,#e5e7eb); padding-top:14px;}
-  .pdemo-outcome-row{display:flex; align-items:baseline; gap:8px;}
-  .pdemo-dot{width:9px; height:9px; border-radius:50%; flex:0 0 auto; position:relative; top:1px;}
-  .pdemo-outcome-tag{font-family:var(--mono, monospace); font-size:11px; letter-spacing:.03em; color:var(--bad,#d64545); text-transform:uppercase;}
-  .pdemo-outcome-reason{margin:8px 0 0; font-size:13.5px; line-height:1.5; color:var(--text,#16181d);}
-
-  .pdemo-honesty{margin:16px 0 0; font-size:11.5px; line-height:1.5; color:var(--muted,#6b7280); border-top:1px solid var(--rule,#e5e7eb); padding-top:12px;}
-
-  /* ---- CI/CD build panel ---- */
-  .pdemo-build{border:1px solid var(--rule,#e5e7eb); border-radius:10px; overflow:hidden; font-family:var(--mono, monospace);}
-  .pdemo-build-head{display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px; padding:11px 14px; border-bottom:1px solid var(--rule,#e5e7eb); background:var(--code-bg,#f6f7f8); font-size:12px;}
-  .pdemo-build-head b{color:var(--text,#16181d);} .pdemo-build-head span{color:var(--muted,#6b7280);}
-  .pdemo-build-rows{padding:4px 0;}
-  .pdemo-brow{display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:8px; padding:9px 14px; border-bottom:1px solid var(--rule,#e5e7eb); font-size:12px;}
-  .pdemo-brow:last-child{border-bottom:0;}
-  .pdemo-brow.sel{background:var(--code-bg,#f6f7f8);}
-  .pdemo-brow-name{min-width:0; color:var(--text,#16181d);}
-  .pdemo-brow-name small{display:block; color:var(--muted,#6b7280); font-size:10.5px; letter-spacing:.02em;}
-  .pdemo-brow-delta{color:var(--muted,#6b7280); font-variant-numeric:tabular-nums; text-align:right;}
-  .pdemo-brow-delta.neg{color:var(--bad,#d64545);} .pdemo-brow-delta.pos{color:var(--ok,#1f9d57);}
-  .pdemo-pill{font-size:10px; letter-spacing:.06em; padding:3px 8px; border-radius:20px; border:1px solid var(--rule,#e5e7eb); color:var(--muted,#6b7280); min-width:56px; text-align:center;}
-  .pdemo-pill.run{color:var(--muted,#6b7280);}
-  .pdemo-pill.pass{color:var(--ok,#1f9d57); border-color:var(--ok,#1f9d57);}
-  .pdemo-pill.fail{color:#fff; background:var(--bad,#d64545); border-color:var(--bad,#d64545);}
-  .pdemo-verdict{padding:12px 14px; font-size:12.5px; letter-spacing:.03em; border-top:1px solid var(--rule,#e5e7eb); min-height:20px;}
-  .pdemo-verdict.blocked{background:var(--bad,#d64545); color:#fff;}
-  .pdemo-verdict.blocked b{font-weight:700;}
-
-  .pdemo-gate{border:1px solid var(--rule,#e5e7eb); border-radius:8px; padding:14px 15px; font-size:13px; line-height:1.55; color:var(--text,#16181d);}
-  .pdemo-gate .pdemo-gate-k{font-family:var(--mono, monospace); font-size:10px; letter-spacing:.12em; color:var(--muted,#6b7280); display:block; margin-bottom:7px;}
-  .pdemo-gate code{font-family:var(--mono, monospace); font-size:12px; background:var(--code-bg,#f6f7f8); padding:1px 5px; border-radius:4px;}
-
-  .pdemo-caption{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
-
-  @media (min-width:720px){
-    .pdemo-tabs{grid-template-columns:repeat(3,1fr);}
-    .pdemo-tab{border-bottom:0; border-right:1px solid var(--rule,#e5e7eb);}
-    .pdemo-tab:last-child{border-right:0;}
-    .pdemo-tab[aria-selected="true"]{box-shadow:inset 0 3px 0 var(--accent,#1a56db);}
-    .pdemo-main{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:22px;}
-  }
-
-  @media (prefers-reduced-motion: reduce){
-    .pdemo-scrim,.pdemo-reveal,.pdemo-cursor,.pdemo-mark{transition:none;}
-    .pdemo-clickfx{display:none;}
+  @media (prefers-reduced-motion:reduce){
+    .feel.is-idle .feel-start{animation:none}
+    .feel-mark.anim{animation:none}
+    .feel.shake .feel-mock{animation:none}
   }
 </style>
 
 <script>
 (function(){
   "use strict";
-  var root = document.getElementById('pdemo');
+  var root = document.getElementById('feel-root');
   if(!root) return;
-
   var $ = function(id){ return document.getElementById(id); };
-  var stage=$('pdemo-stage'), screen=$('pdemo-screen'), scrim=$('pdemo-scrim'),
-      reveal=$('pdemo-reveal'), cursor=$('pdemo-cursor'), mark=$('pdemo-mark'),
-      narr=$('pdemo-narr'), telem=$('pdemo-telemetry'), outcome=$('pdemo-outcome'),
-      caption=$('pdemo-caption'), runBtn=$('pdemo-run'), icpSel=$('pdemo-icp'),
-      tablist=$('pdemo-tablist'), stagewrap=$('pdemo-stagewrap'), build=$('pdemo-build'),
-      pCursor=$('pdemo-p-cursor'), pCicd=$('pdemo-p-cicd'), gate=$('pdemo-gate'),
-      panelwrap=$('pdemo-panelwrap');
+  var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-  var reduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : {matches:false};
+  var stage   = $('feel-stage');
+  var mock    = $('feel-mock');
+  var target  = $('feel-target');
+  var startBtn= $('feel-start');
+  var promptEl= $('feel-prompt');
+  var statusEl= $('feel-status');
+  var triesEl = $('feel-tries');
+  var missesEl= $('feel-misses');
+  var timeEl  = $('feel-time');
+  var clockEl = $('feel-clock');
+  var clockFill=$('feel-clock-fill');
+  var clockTxt= $('feel-clock-txt');
+  var payoff  = $('feel-payoff');
+  var payoffLead=$('feel-payoff-lead');
 
-  var ICP_LABEL = { returning:'Returning mobile shopper', trial:'First-time trial user', enterprise:'Enterprise buyer' };
-  var PACE = {
-    returning:{ ms:9,  dwell:0.55, jit:3 },
-    trial:    { ms:17, dwell:1.45, jit:7 },
-    enterprise:{ ms:13, dwell:1.0, jit:2 }
+  var COND = {
+    shaky : {btn:'feel-c-shaky', label:'Shaky-hands', sigma:24, deadline:0,
+             who:'a user whose clicks keep landing off-target'},
+    rushed: {btn:'feel-c-rushed',label:'Rushed',      sigma:0,  deadline:4500,
+             who:'a user in a hurry who runs out of patience'},
+    skims : {btn:'feel-c-skims', label:'Skims-the-page',sigma:0,deadline:0,
+             who:"a user who skims and can't read the labels"},
+    first : {btn:'feel-c-first', label:'First-timer', sigma:0,  deadline:0,
+             who:'a first-time user facing look-alike controls'}
   };
 
-  /* ---------- drawn layouts (percent geometry) ---------- */
-  var LAYOUTS = {
-    optimize:[
-      {id:'head', k:'head', x:5,y:4,w:90,h:9, t:'Checkout'},
-      {id:'sum1', k:'text', x:5,y:16,w:55,h:4, t:'Cart · 3 items'},
-      {id:'sum2', k:'text', x:5,y:22,w:55,h:5, t:'Subtotal   $48.00'},
-      {id:'promo',k:'field',x:5,y:31,w:90,h:9, t:'Promo code'},
-      {id:'card', k:'field',x:5,y:43,w:90,h:9, t:'Card number'},
-      {id:'exp',  k:'field',x:5,y:55,w:43,h:9, t:'MM / YY'},
-      {id:'cvc',  k:'field',x:52,y:55,w:43,h:9, t:'CVC'},
-      {id:'pay',  k:'primary',x:5,y:84,w:90,h:10, t:'Pay  $48.00'}
-    ],
-    validate:[
-      {id:'head', k:'head', x:5,y:4,w:90,h:9, t:'Set up your workspace · Step 2 of 4'},
-      {id:'planB',k:'card', x:5,y:17,w:43,h:22, t:'Basic'},
-      {id:'planP',k:'card', x:52,y:17,w:43,h:22, t:'Pro'},
-      {id:'tog1', k:'field',x:5,y:44,w:90,h:8, t:'Import your contacts'},
-      {id:'tog2', k:'field',x:5,y:55,w:90,h:8, t:'Enable notifications'},
-      {id:'cont', k:'primary',x:5,y:84,w:90,h:10, t:'Continue'}
-    ]
-  };
+  var state = { cond:'shaky', phase:'idle', tries:0, misses:0, start:0, remain:0, raf:0, payoffShown:false };
 
-  /* ---------- scripts: deterministic per (wedge, icp) ---------- */
-  var SCRIPTS = {
-    optimize:{
-      returning:{ steps:[
-        {el:'head', say:"Back again — let me just pay.", act:'scan', t:400},
-        {el:'pay',  say:"Straight to the pay button.", act:'move', t:250},
-        {el:'pay',  say:"Tapping Pay.", act:'click', t:450},
-        {reveal:{x:10,y:34,w:80,h:30,t:'Create an account to continue'}, x:50,y:49, say:"Wait — I have to make an account?", act:'move', t:800},
-        {x:50,y:49, say:"I only wanted to check out. I'm gone.", act:'leave'}
-      ], outcome:{tag:'forced sign-up', reason:'Abandoned at a forced account-creation gate placed after the pay button.'}},
-      trial:{ steps:[
-        {el:'head', say:"Okay… where do I even start?", act:'scan', t:650},
-        {el:'sum2', say:"Let me check the total first.", act:'move', t:850},
-        {el:'promo',say:"Is there a discount code field?", act:'move', t:750},
-        {el:'promo',say:"Typing the code I found online.", act:'click', t:650},
-        {x:72,y:31, say:"…that didn't apply. A typo, maybe?", act:'miss', t:800},
-        {reveal:{x:10,y:17,w:80,h:13,t:'Shipping +$12.00 — total now $60.00'}, el:'sum2', say:"Hang on — shipping pushed it to $60?", act:'move', t:950},
-        {el:'sum2', say:"That's more than I expected. I'll think about it.", act:'leave'}
-      ], outcome:{tag:'surprise cost', reason:'Abandoned after an unexpected shipping charge changed the total late in the flow.'}},
-      enterprise:{ steps:[
-        {el:'head', say:"Reviewing the payment options.", act:'scan', t:550},
-        {el:'card', say:"Card entry — is there another method?", act:'move', t:800},
-        {reveal:{x:5,y:69,w:90,h:8,t:'Payment: Card only'}, x:50,y:73, say:"Scanning for invoice or PO billing.", act:'move', t:900},
-        {x:50,y:73, say:"Card only — no invoicing. I can't expense this.", act:'leave'}
-      ], outcome:{tag:'no invoicing', reason:'Abandoned — no invoice / PO payment path for procurement sign-off.'}}
-    },
-    validate:{
-      returning:{ steps:[
-        {el:'head', say:"New tool — let me breeze through setup.", act:'scan', t:400},
-        {el:'cont', say:"Skipping the options, hitting Continue.", act:'move', t:300},
-        {el:'cont', say:"Continue.", act:'click', t:450},
-        {reveal:{x:10,y:34,w:80,h:30,t:'Verify your email to continue'}, x:50,y:49, say:"An email-verification wall already?", act:'move', t:800},
-        {x:50,y:49, say:"Don't have my inbox handy — later.", act:'leave'}
-      ], outcome:{tag:'email wall', reason:'Abandoned at an email-verification wall dropped in mid-setup.'}},
-      trial:{ steps:[
-        {el:'head', say:"First time here — what do I pick?", act:'scan', t:650},
-        {el:'planB',say:"Basic… or Pro? Not sure what's different.", act:'move', t:900},
-        {el:'planP',say:"I'll try Pro, I guess.", act:'move', t:800},
-        {x:70,y:20, say:"Missed the card — tapping again.", act:'miss', t:700},
-        {el:'cont', say:"Continue, to start the trial.", act:'move', t:700},
-        {reveal:{x:10,y:34,w:80,h:30,t:'Add a card to start your free trial'}, el:'cont', say:"It wants a card before the trial even starts?", act:'move', t:900},
-        {el:'cont', say:"Not giving my card yet. Bailing.", act:'leave'}
-      ], outcome:{tag:'card-gated trial', reason:'Abandoned — the "free" trial demanded a credit card up front.'}},
-      enterprise:{ steps:[
-        {el:'head', say:"Evaluating this for the whole team.", act:'scan', t:550},
-        {el:'tog1', say:"Looking for team / SSO provisioning.", act:'move', t:800},
-        {el:'tog2', say:"Only personal toggles here.", act:'move', t:800},
-        {reveal:{x:10,y:34,w:80,h:26,t:'Personal workspace only — no SSO / team setup'}, x:50,y:47, say:"No SSO or team seats in onboarding.", act:'move', t:900},
-        {x:50,y:47, say:"Can't roll this out without SSO. Stopping here.", act:'leave'}
-      ], outcome:{tag:'no SSO', reason:'Abandoned — no SSO / team provisioning path for a company rollout.'}}
+  function randn(){ var u=1-Math.random(), v=1-Math.random();
+    return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+
+  function setPhase(p){
+    state.phase = p;
+    root.classList.toggle('is-idle', p==='idle');
+    root.classList.toggle('is-running', p==='running');
+    root.classList.toggle('is-done', p==='win' || p==='lose');
+  }
+  function setStatus(msg, cls){
+    statusEl.textContent = msg;
+    statusEl.className = 'feel-status' + (cls ? ' '+cls : '');
+  }
+  function elapsedSec(){ return ((performance.now()-state.start)/1000).toFixed(1); }
+  function updateHud(){
+    triesEl.textContent = state.tries;
+    missesEl.textContent = state.misses;
+    if(state.phase==='running') timeEl.textContent = elapsedSec()+'s';
+  }
+
+  function applyCond(){
+    var cfg = COND[state.cond];
+    root.className = 'feel is-'+state.phase+' cond-'+state.cond;
+    for(var k in COND){
+      var b = $(COND[k].btn);
+      if(b) b.setAttribute('aria-pressed', k===state.cond ? 'true' : 'false');
     }
-  };
+    clockEl.hidden = cfg.deadline<=0;
+  }
 
-  /* ---------- CI/CD data ---------- */
-  var CICD = {
-    pass:{
-      returning:{ Checkout:{d:'−4%',c:'6/6 steps'}, Onboarding:{d:'+2%',c:'4/4 steps'} },
-      trial:    { Checkout:{d:'−3%',c:'7/7 steps'}, Onboarding:{d:'−5%',c:'5/5 steps'} },
-      enterprise:{Checkout:{d:'+1%',c:'5/5 steps'}, Onboarding:{d:'−2%',c:'4/4 steps'} }
-    },
-    fail:{
-      returning:{ d:'−17%', c:'abandons 3/5 steps', why:'forced sign-up gate' },
-      trial:    { d:'−12%', c:'abandons 6/7 steps', why:'surprise shipping cost' },
-      enterprise:{d:'−11%', c:'abandons 3/4 steps', why:'no invoicing option' }
+  function stopLoop(){ if(state.raf){ cancelAnimationFrame(state.raf); state.raf=0; } }
+  function clearMarks(){
+    var m = stage.querySelectorAll('.feel-mark');
+    for(var i=0;i<m.length;i++) m[i].remove();
+  }
+
+  function loop(){
+    if(state.phase!=='running'){ return; }
+    timeEl.textContent = elapsedSec()+'s';
+    var cfg = COND[state.cond];
+    if(cfg.deadline>0){
+      var left = state.start + cfg.deadline - performance.now();
+      if(left<=0){ clockFill.style.transform='scaleX(0)'; clockTxt.textContent='0.0s'; return bounce(); }
+      state.remain = left;
+      clockFill.style.transform = 'scaleX('+(left/cfg.deadline)+')';
+      clockTxt.textContent = (left/1000).toFixed(1)+'s left';
     }
-  };
-  var MODELS = ['returning','trial','enterprise'];
-  var FLOWS = ['Checkout','Onboarding'];
-
-  /* ---------- state ---------- */
-  var wedge='optimize', icp='returning';
-  var raf=null, timers=[], clockTimer=null, token=0, runStart=0, running=false;
-  var cur={x:50,y:95};
-
-  function stopAll(){
-    token++;
-    if(raf){ cancelAnimationFrame(raf); raf=null; }
-    for(var i=0;i<timers.length;i++){ clearTimeout(timers[i]); }
-    timers=[];
-    if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
-    var fx=stage.querySelectorAll('.pdemo-clickfx');
-    for(var j=0;j<fx.length;j++){ fx[j].parentNode.removeChild(fx[j]); }
-    running=false;
-    runBtn.disabled=false;
-  }
-  function later(fn,ms){ var id=setTimeout(fn,ms); timers.push(id); return id; }
-  function ease(p){ return p<0.5 ? 4*p*p*p : 1-Math.pow(-2*p+2,3)/2; }
-
-  /* ---------- rendering helpers ---------- */
-  function elCenter(id){
-    var arr=LAYOUTS[wedge]; for(var i=0;i<arr.length;i++){ if(arr[i].id===id) return [arr[i].x+arr[i].w/2, arr[i].y+arr[i].h/2]; }
-    return [50,50];
-  }
-  function targetOf(s){
-    if(s.el) return elCenter(s.el);
-    if(typeof s.x==='number') return [s.x, s.y];
-    return [cur.x, cur.y];
-  }
-  function drawScreen(){
-    var arr=LAYOUTS[wedge]; var html='';
-    for(var i=0;i<arr.length;i++){ var e=arr[i];
-      html += '<div class="pdemo-el pdemo-el-'+e.k+'" style="left:'+e.x+'%;top:'+e.y+'%;width:'+e.w+'%;height:'+e.h+'%">'+esc(e.t)+'</div>';
-    }
-    screen.innerHTML=html;
-  }
-  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  function placeCursor(){ cursor.style.left=cur.x+'%'; cursor.style.top=cur.y+'%'; }
-  function showCursor(on){ cursor.classList.toggle('on', !!on); }
-  function hideReveal(){ reveal.classList.remove('on'); reveal.setAttribute('aria-hidden','true'); scrim.classList.remove('on'); }
-  function showReveal(r){
-    reveal.style.left=r.x+'%'; reveal.style.top=r.y+'%'; reveal.style.width=r.w+'%'; reveal.style.height=r.h+'%';
-    reveal.textContent=r.t; reveal.setAttribute('aria-hidden','false');
-    scrim.classList.add('on'); reveal.classList.add('on');
-  }
-  function hideMark(){ mark.classList.remove('on'); }
-  function placeMark(x,y){ mark.style.left=x+'%'; mark.style.top=y+'%'; mark.classList.add('on'); }
-
-  function setNarr(txt){ narr.textContent=txt; narr.classList.toggle('empty', !txt); caption.textContent=txt; }
-  function setTelem(step,total){
-    telem.innerHTML = 'model <b>'+esc(ICP_LABEL[icp])+'</b>'
-      + '<span>step <b>'+step+'/'+total+'</b></span>'
-      + '<span><b id="pdemo-clock">'+fmtClock()+'</b></span>';
-  }
-  function fmtClock(){ return ((performance.now()-runStart)/1000).toFixed(1)+'s'; }
-  function tickClock(){ var c=$('pdemo-clock'); if(c) c.textContent=fmtClock(); }
-
-  function clearOutcome(){ outcome.className='pdemo-outcome'; outcome.innerHTML=''; }
-  function showOutcome(o){
-    outcome.className='pdemo-outcome on';
-    outcome.innerHTML =
-      '<div class="pdemo-outcome-row"><span class="pdemo-dot" style="background:var(--bad,#d64545)"></span>'
-      + '<span class="pdemo-outcome-tag">abandoned · '+esc(o.tag)+'</span></div>'
-      + '<p class="pdemo-outcome-reason">'+esc(o.reason)+'</p>';
-    caption.textContent = 'Outcome: abandoned — '+o.reason;
+    state.raf = requestAnimationFrame(loop);
   }
 
-  function clickFx(x,y,miss){
-    if(reduce.matches) return;
-    var d=document.createElement('div');
-    d.className='pdemo-clickfx'+(miss?' miss':'');
-    d.style.left=x+'%'; d.style.top=y+'%';
-    stage.appendChild(d);
-    requestAnimationFrame(function(){ d.classList.add('go'); });
-    later(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 480);
+  function start(){
+    stopLoop(); clearMarks();
+    state.tries=0; state.misses=0; state.start=performance.now(); state.remain=COND[state.cond].deadline;
+    target.classList.remove('is-hit');
+    setPhase('running'); applyCond(); updateHud();
+    clockFill.style.transform='scaleX(1)';
+    startBtn.textContent = 'Restart';
+    setStatus('Go — find and tap the Pay $48 button.');
+    state.raf = requestAnimationFrame(loop);
   }
 
-  /* ---------- cursor run engine ---------- */
-  function duration(tx,ty){
-    var dx=tx-cur.x, dy=ty-cur.y, dist=Math.sqrt(dx*dx+dy*dy);
-    var d=dist*PACE[icp].ms;
-    return Math.max(260, Math.min(1500, d));
-  }
-  function moveTo(tx,ty,dur,done){
-    var myTok=token, sx=cur.x, sy=cur.y, start=performance.now();
-    (function frame(now){
-      if(myTok!==token) return;
-      var p=dur<=0?1:Math.min(1,(now-start)/dur), e=ease(p);
-      cur.x=sx+(tx-sx)*e; cur.y=sy+(ty-sy)*e;
-      placeCursor(); tickClock();
-      if(p<1){ raf=requestAnimationFrame(frame); } else { done(); }
-    })(start);
+  function reset(){
+    stopLoop(); clearMarks();
+    state.tries=0; state.misses=0;
+    target.classList.remove('is-hit');
+    timeEl.textContent='0.0s'; triesEl.textContent='0'; missesEl.textContent='0';
+    clockFill.style.transform='scaleX(1)'; clockTxt.textContent=(COND[state.cond].deadline/1000).toFixed(1)+'s';
+    setPhase('idle'); applyCond();
+    startBtn.textContent='Start';
+    setStatus('Pick a model, then press Start.');
   }
 
-  function runSteps(steps,i){
-    if(i>=steps.length) return;
-    var s=steps[i], myTok=token, pace=PACE[icp];
-    if(s.reveal) showReveal(s.reveal);
-    var tgt=targetOf(s), tx=tgt[0], ty=tgt[1];
-    if(s.act==='miss'){ tx += (Math.random()*2-1)*pace.jit*1.4; ty += (Math.random()*2-1)*pace.jit*1.4; }
-    else { tx += (Math.random()*2-1)*pace.jit*0.4; ty += (Math.random()*2-1)*pace.jit*0.4; }
-    setNarr(s.say); setTelem(i+1, steps.length);
-    moveTo(tx,ty,duration(tx,ty), function(){
-      if(myTok!==token) return;
-      if(s.act==='click'||s.act==='miss') clickFx(cur.x,cur.y, s.act==='miss');
-      if(s.act==='leave'){
-        placeMark(cur.x,cur.y); showCursor(false);
-        showOutcome(SCRIPTS[wedge][icp].outcome);
-        runBtn.textContent='Replay'; runBtn.disabled=false; running=false;
-        if(clockTimer){ clearInterval(clockTimer); clockTimer=null; }
-        return;
-      }
-      later(function(){ if(myTok===token) runSteps(steps, i+1); }, (s.t||400)*pace.dwell);
-    });
+  function showMark(clientX, clientY, hit){
+    var r = stage.getBoundingClientRect();
+    var el = document.createElement('span');
+    el.className = 'feel-mark ' + (hit?'is-hit':'is-miss') + (RM?'':' anim');
+    el.style.left = (clientX - r.left) + 'px';
+    el.style.top  = (clientY - r.top) + 'px';
+    stage.appendChild(el);
+    setTimeout(function(){ el.remove(); }, RM?650:820);
   }
 
-  /* ---------- CI/CD run ---------- */
-  function buildRows(){
-    var rows=[];
-    for(var m=0;m<MODELS.length;m++){
-      for(var f=0;f<FLOWS.length;f++){
-        var model=MODELS[m], flow=FLOWS[f];
-        var isFail = (model===icp && flow==='Checkout');
-        var data = isFail ? CICD.fail[model] : CICD.pass[model][flow];
-        rows.push({ model:model, flow:flow, fail:isFail, d:data.d, c:data.c, sel:(model===icp) });
-      }
-    }
-    return rows;
+  function nudge(){
+    if(RM) return;
+    root.classList.add('shake');
+    setTimeout(function(){ root.classList.remove('shake'); }, 300);
   }
-  function deltaClass(d){ return d.charAt(0)==='+' ? 'pos' : (d.charAt(0)==='−'||d.charAt(0)==='-') ? 'neg':''; }
-  function renderBuild(animate){
-    var rows=buildRows();
-    var head='<div class="pdemo-build-head"><b>Build #482 · pre-deploy check</b><span>commit 3f9c1a2 · illustrative</span></div>';
-    var body='<div class="pdemo-build-rows">';
-    for(var i=0;i<rows.length;i++){ var r=rows[i];
-      body += '<div class="pdemo-brow'+(r.sel?' sel':'')+'">'
-        + '<div class="pdemo-brow-name">'+esc(ICP_LABEL[r.model])+'<small>'+esc(r.flow)+' flow'+(r.sel?' · selected ICP':'')+'</small></div>'
-        + '<div class="pdemo-brow-delta" data-d="'+r.d+'" data-fail="'+(r.fail?1:0)+'"></div>'
-        + '<div class="pdemo-pill run" data-i="'+i+'">···</div>'
-        + '</div>';
-    }
-    body+='</div>';
-    build.innerHTML = head + body + '<div class="pdemo-verdict" id="pdemo-verdict"></div>';
 
-    var pills=build.querySelectorAll('.pdemo-pill');
-    var deltas=build.querySelectorAll('.pdemo-brow-delta');
-    var verdict=$('pdemo-verdict');
-    var failModel=null;
-    for(var k=0;k<rows.length;k++){ if(rows[k].fail){ failModel=rows[k]; } }
+  function revealPayoff(){
+    var cfg = COND[state.cond];
+    payoffLead.textContent = 'That’s the friction a “'+cfg.label+'” user hits — '+cfg.who+'.';
+    payoff.hidden = false;
+    state.payoffShown = true;
+  }
 
-    function resolve(idx){
-      var r=rows[idx]; var p=pills[idx]; var d=deltas[idx];
-      p.className='pdemo-pill '+(r.fail?'fail':'pass'); p.textContent=r.fail?'FAIL':'PASS';
-      d.textContent=r.d+' · '+r.c; d.className='pdemo-brow-delta '+deltaClass(r.d);
-    }
-    function showVerdict(){
-      verdict.className='pdemo-verdict blocked';
-      verdict.innerHTML='<b>BUILD BLOCKED</b> — Checkout regressed '+esc(failModel.d)+' for '+esc(ICP_LABEL[failModel.model])+' ('+esc(failModel.fail?CICD.fail[failModel.model].why:'')+').';
-      caption.textContent='Build blocked — Checkout regressed '+failModel.d+' for '+ICP_LABEL[failModel.model];
-      runBtn.textContent='Re-run'; runBtn.disabled=false; running=false;
-    }
+  function win(){
+    stopLoop();
+    target.classList.add('is-hit');
+    setPhase('win'); applyCond();
+    startBtn.textContent = 'Try again';
+    var t = elapsedSec();
+    var msg = 'You made it in '+t+'s';
+    if(state.tries>1) msg += ' — but it took '+state.tries+' taps ('+state.misses+' missed)';
+    else msg += ' — first tap, clean';
+    if(state.cond==='rushed' && state.remain>0 && state.remain<1300) msg += '. You nearly bounced';
+    setStatus(msg+'.', 'ok');
+    revealPayoff();
+  }
 
-    if(!animate){
-      for(var a=0;a<rows.length;a++) resolve(a);
-      showVerdict();
+  function bounce(){
+    stopLoop();
+    setPhase('lose'); applyCond();
+    startBtn.textContent = 'Try again';
+    setStatus('You bounced — out of patience after '+state.tries+' taps, just like a real user would.', 'bad');
+    revealPayoff();
+  }
+
+  function attempt(clientX, clientY, viaKeyboard){
+    if(state.phase!=='running') return;
+    var cfg = COND[state.cond];
+    state.tries++;
+
+    if(viaKeyboard){
+      // accessibility path: keyboard activation, no tremor
+      var hitK = document.activeElement === target;
+      updateHud();
+      if(hitK) return win();
+      state.misses++; updateHud();
+      setStatus('Wrong control. Tab to the Pay $48 button and press Enter.', 'bad');
+      if(!state.payoffShown) revealPayoff();
       return;
     }
-    var myTok=token, step=350;
-    for(var b=0;b<rows.length;b++){
-      (function(idx){ later(function(){ if(myTok===token) resolve(idx); }, step*(idx+1)); })(b);
+
+    var lx = clientX, ly = clientY;
+    if(cfg.sigma>0){ lx = clientX + randn()*cfg.sigma; ly = clientY + randn()*cfg.sigma; }
+    var el = document.elementFromPoint(lx, ly);
+    var hit = !!(el && (el===target || target.contains(el)));
+
+    if(cfg.sigma>0) showMark(lx, ly, hit);
+    updateHud();
+
+    if(hit) return win();
+
+    // miss
+    state.misses++; updateHud();
+    nudge();
+    if(cfg.sigma>0) setStatus('Missed — your tap landed off-target ('+state.misses+' so far). Try again.', 'bad');
+    else setStatus('That wasn’t it ('+state.misses+' missed). Look again and tap Pay $48.', 'bad');
+    if(!state.payoffShown) revealPayoff();
+  }
+
+  // ---- events ----
+  stage.addEventListener('click', function(e){
+    if(state.phase!=='running') return;
+    if(e.detail === 0){  // keyboard-activated button (Enter/Space)
+      attempt(0,0,true);
+    } else {
+      attempt(e.clientX, e.clientY, false);
     }
-    later(function(){ if(myTok===token) showVerdict(); }, step*(rows.length+1)+250);
-  }
-
-  /* ---------- final-frame (reduced motion) ---------- */
-  function renderFinalCursor(){
-    var sc=SCRIPTS[wedge][icp], steps=sc.steps, last=steps[steps.length-1];
-    drawScreen();
-    var revStep=null; for(var i=0;i<steps.length;i++){ if(steps[i].reveal) revStep=steps[i]; }
-    if(revStep) showReveal(revStep.reveal); else hideReveal();
-    var t=targetOf(last); cur.x=t[0]; cur.y=t[1]; placeCursor(); showCursor(false);
-    placeMark(cur.x,cur.y);
-    setNarr(last.say);
-    runStart=performance.now();
-    telem.innerHTML='model <b>'+esc(ICP_LABEL[icp])+'</b><span>step <b>'+steps.length+'/'+steps.length+'</b></span><span>final frame</span>';
-    showOutcome(sc.outcome);
-    runBtn.textContent='Replay';
-  }
-
-  /* ---------- run controllers ---------- */
-  function run(){
-    stopAll();
-    token++; var myTok=token;
-    if(wedge==='cicd'){
-      renderCicdPanel();
-      if(reduce.matches){ renderBuild(false); return; }
-      running=true; runBtn.disabled=true; runBtn.textContent='Running…';
-      renderBuild(true);
-      return;
-    }
-    // cursor wedges
-    drawScreen(); hideReveal(); hideMark(); clearOutcome();
-    if(reduce.matches){ renderFinalCursor(); return; }
-    cur={x:50,y:96}; placeCursor(); showCursor(true);
-    setNarr('Scanning the page…');
-    runStart=performance.now();
-    running=true; runBtn.disabled=true; runBtn.textContent='Running…';
-    setTelem(0, SCRIPTS[wedge][icp].steps.length);
-    clockTimer=setInterval(tickClock,100);
-    later(function(){ if(myTok===token) runSteps(SCRIPTS[wedge][icp].steps, 0); }, 350);
-  }
-
-  /* ---------- view switching ---------- */
-  function renderCicdPanel(){
-    stagewrap.hidden=true; build.hidden=false;
-    pCursor.hidden=true; pCicd.hidden=false;
-    gate.innerHTML='<span class="pdemo-gate-k">GATE POLICY</span>'
-      + 'Block the deploy if any ICP model regresses more than <code>8%</code> completion on a critical flow. '
-      + 'The gate is <em>tuned to your users</em> — swapping the ICP model above re-scopes what "critical" means for your traffic.';
-  }
-  function renderCursorView(){
-    stagewrap.hidden=false; build.hidden=true;
-    pCursor.hidden=false; pCicd.hidden=true;
-  }
-
-  function setWedge(w){
-    if(w===wedge && running) return;
-    wedge=w;
-    var tabs=tablist.querySelectorAll('.pdemo-tab');
-    tabs.forEach(function(tb){
-      var on = tb.id==='pdemo-tab-'+w;
-      tb.setAttribute('aria-selected', on?'true':'false');
-      tb.tabIndex = on?0:-1;
-      if(on) panelwrap.setAttribute('aria-labelledby', tb.id);
-    });
-    stopAll();
-    if(w==='cicd') renderCicdPanel(); else renderCursorView();
-    run();
-  }
-
-  /* ---------- events ---------- */
-  runBtn.addEventListener('click', run);
-  icpSel.addEventListener('change', function(){ icp=icpSel.value; stopAll(); run(); });
-
-  tablist.addEventListener('click', function(e){
-    var b=e.target.closest ? e.target.closest('.pdemo-tab') : null;
-    if(b) setWedge(b.id.replace('pdemo-tab-',''));
-  });
-  tablist.addEventListener('keydown', function(e){
-    var tabs=Array.prototype.slice.call(tablist.querySelectorAll('.pdemo-tab'));
-    var idx=tabs.indexOf(document.activeElement);
-    if(idx<0) return;
-    var ni=-1;
-    if(e.key==='ArrowRight'||e.key==='ArrowDown') ni=(idx+1)%tabs.length;
-    else if(e.key==='ArrowLeft'||e.key==='ArrowUp') ni=(idx-1+tabs.length)%tabs.length;
-    else if(e.key==='Home') ni=0;
-    else if(e.key==='End') ni=tabs.length-1;
-    if(ni>=0){ e.preventDefault(); tabs[ni].focus(); setWedge(tabs[ni].id.replace('pdemo-tab-','')); }
   });
 
-  if(reduce.addEventListener) reduce.addEventListener('change', function(){ stopAll(); run(); });
+  startBtn.addEventListener('click', start);
 
-  /* ---------- init ---------- */
-  renderCursorView();
-  run();
+  for(var key in COND){
+    (function(k){
+      var b = $(COND[k].btn);
+      if(!b) return;
+      b.addEventListener('click', function(){
+        if(state.cond===k && state.phase==='idle') return;
+        state.cond = k;
+        reset();  // cancels timers, applies new condition visuals
+      });
+    })(key);
+  }
+
+  // init
+  applyCond();
+  reset();
 })();
 </script>
           <a class="sect__more" href="#docs">How a run works, in the docs →</a>
@@ -732,7 +569,7 @@
     </section>
 
     <!-- ===== DESIGN PARTNERS ===== -->
-    <section class="sect" id="apply">
+    <section class="sect sect--band" id="apply">
       <div class="sect__in">
         <div class="sect__label"><span class="sect__k">05 — Design partners</span><h2>Test one flow with us</h2></div>
         <div class="sect__body">
