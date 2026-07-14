@@ -32,10 +32,6 @@
     margin:0; background:var(--paper); color:var(--text);
     font-family:var(--font-sans); font-size:16px; line-height:1.6;
     -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; overflow-x:hidden;
-    background-image:
-      linear-gradient(var(--grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size:32px 32px; background-position:-1px -1px;
   }
   img{max-width:100%;display:block}
   a{color:inherit}
@@ -424,7 +420,6 @@
         </p>
         <div class="hero__cta">
           <a class="btn-cta" href="#apply">Apply for design partner access</a>
-          <a class="btn-ghost" href="#demo">Watch a run →</a>
         </div>
         <p class="hero__trust" data-slot="hero-trust">
           <span class="dot" style="background:var(--live)"></span>
@@ -545,7 +540,6 @@
           <p class="sim-caption mono" id="sim-caption" aria-live="polite">Ready to run.</p>
           <div class="sim-tracewrap">
             <canvas id="sim-trace" aria-hidden="true"></canvas>
-            <div class="sim-trace-label mono">session trace · progress → abandonment</div>
           </div>
           <div class="sim-outcome" id="sim-outcome"><span class="sim-x mono">✕</span><span class="mono" id="sim-outcome-text"></span></div>
           <p class="sim-note mono">illustrative run — not a benchmark</p>
@@ -620,7 +614,6 @@
         <span class="sim-run-glyph" aria-hidden="true">▸</span>
         <span id="sim-run-label">Run simulation</span>
       </button>
-      <span class="sim-controls-note mono">deterministic replay · same abandonment point every run</span>
     </div>
   </div>
 
