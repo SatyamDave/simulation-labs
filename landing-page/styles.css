@@ -29,7 +29,7 @@ hr,.rule{border:0;border-top:1px solid var(--rule);margin:0}
 
 /* ---------- masthead / nav ---------- */
 .masthead{border-bottom:1px solid var(--rule)}
-.masthead__in{max-width:1080px;margin:0 auto;padding:18px 24px;display:flex;
+.masthead__in{max-width:1200px;margin:0 auto;padding:18px 24px;display:flex;
   align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
 .brand{font-family:var(--ui);font-weight:600;font-size:1rem;letter-spacing:-.01em;
   color:var(--text);text-decoration:none;display:inline-flex;align-items:center;gap:9px}
@@ -95,7 +95,7 @@ h3{font-size:1.2rem;margin:1.8em 0 .4em}
 .refs li::before{counter-increment:ref;content:"["counter(ref)"]";position:absolute;left:0;color:var(--muted)}
 
 /* ---------- docs (sidebar + main) ---------- */
-.docs{max-width:1080px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1fr;gap:32px}
+.docs{max-width:1200px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1fr;gap:32px}
 @media(min-width:900px){.docs{grid-template-columns:230px 1fr;gap:48px;align-items:start}}
 .docs__side{font-family:var(--ui);font-size:.9rem}
 @media(min-width:900px){.docs__side{position:sticky;top:24px}}
@@ -115,8 +115,8 @@ pre code{background:none;padding:0;border-radius:0}
 table.doc{border-collapse:collapse;width:100%;font-size:.92rem;margin:1.2em 0;font-family:var(--ui)}
 table.doc th,table.doc td{border:1px solid var(--rule);padding:8px 10px;text-align:left;vertical-align:top}
 table.doc th{background:var(--code-bg);font-weight:600}
-.docs__main pre{max-width:100%}
-.docs__main table.doc{display:block;width:max-content;max-width:100%;overflow-x:auto}
+pre{max-width:100%}
+table.doc{display:block;width:max-content;max-width:100%;overflow-x:auto}
 
 /* ---------- apply / cta ---------- */
 .btn{display:inline-flex;align-items:center;font-family:var(--ui);font-weight:500;font-size:.95rem;
@@ -131,9 +131,53 @@ table.doc th{background:var(--code-bg);font-weight:600}
 
 /* ---------- footer ---------- */
 .foot{border-top:1px solid var(--rule);margin-top:64px}
-.foot__in{max-width:1080px;margin:0 auto;padding:28px 24px;font-family:var(--ui);font-size:.85rem;
+.foot__in{max-width:1200px;margin:0 auto;padding:28px 24px;font-family:var(--ui);font-size:.85rem;
   color:var(--muted);display:flex;flex-wrap:wrap;gap:10px 26px;align-items:baseline;justify-content:space-between}
 .foot a{color:var(--muted);text-decoration:none}
 .foot a:hover{color:var(--text)}
+
+/* ---------- wide editorial layout (progressive enhancement) ---------- */
+html{scroll-behavior:smooth}
+h2[id],h3[id],[id].note{scroll-margin-top:88px}
+.editorial{max-width:1200px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1fr;gap:40px}
+@media(min-width:960px){.editorial{grid-template-columns:220px minmax(0,1fr);gap:72px;align-items:start}}
+.editorial__body{min-width:0}
+.editorial__body>.wrap,.editorial__body>.note{max-width:760px;margin:0;padding:0}
+.toc-rail{min-width:0}
+@media(min-width:960px){.toc-rail{position:sticky;top:96px}}
+@media(max-width:959px){.toc-rail{display:none}}
+.toc__label{font-family:var(--ui);font-size:.72rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--muted);margin:0 0 .7em}
+.toc ul{list-style:none;margin:0;padding:0;border-left:1px solid var(--rule)}
+.toc a{display:block;font-family:var(--ui);font-size:.85rem;line-height:1.35;color:var(--muted);
+  text-decoration:none;padding:.34em 0 .34em 14px;margin-left:-1px;border-left:2px solid transparent;
+  transition:color .12s ease,border-color .12s ease}
+.toc a:hover{color:var(--text)}
+.toc a.active{color:var(--accent);border-left-color:var(--accent)}
+
+/* ---------- publication grid (home / research use the full width) ---------- */
+.wrap.wide{max-width:1120px}
+.wrap.wide .home-sub,.wrap.wide .lead,.wrap.wide>p{max-width:70ch}
+.pub-grid{display:grid;grid-template-columns:1fr;gap:26px 48px;margin-top:1rem}
+@media(min-width:760px){.pub-grid{grid-template-columns:1fr 1fr}}
+.pub-grid .pub{margin:0}
+
+/* ---------- docs scrollspy ---------- */
+.docs__side a{transition:color .12s ease}
+.docs__side a.active{color:var(--accent);font-weight:600}
+
+/* ---------- copy-code button ---------- */
+pre{position:relative}
+.copy-btn{position:absolute;top:8px;right:8px;font-family:var(--ui);font-size:.72rem;color:var(--muted);
+  background:var(--bg);border:1px solid var(--rule);border-radius:5px;padding:3px 9px;cursor:pointer;
+  opacity:0;transition:opacity .12s ease,color .12s ease,border-color .12s ease}
+pre:hover .copy-btn,.copy-btn:focus-visible{opacity:1}
+.copy-btn:hover{color:var(--text)}
+.copy-btn.copied{color:var(--accent);border-color:var(--accent);opacity:1}
+
+/* ---------- interactive polish ---------- */
+.nav a{transition:color .12s ease}
+.pub__title a{transition:color .12s ease}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition-duration:.001ms!important}}
 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
