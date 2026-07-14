@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Simulation Labs — See where real users give up</title>
-<meta name="description" content="Simulation Labs runs a swarm of computer-use agents through any flow — new or live — and shows the exact pixel where each user gives up. We simulate what users do, not what they say." />
+<meta name="description" content="Simulation Labs is a research lab building behavioral synthetic users for the agent era. We run swarms of pre-trained computer-use agents through your real flows and record the exact pixel where users give up." />
 <meta property="og:title" content="Simulation Labs — See where real users give up" />
 <meta property="og:description" content="Synthetic users that do, not say. Watch real behavior break a flow before your users do — for growth, product, and QA teams." />
 <meta property="og:type" content="website" />
@@ -99,6 +99,13 @@
   @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
   }
+  /* ---- approach ---- */
+  .appr-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:34px}
+  @media(min-width:760px){.appr-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  .appr-card{padding:24px;display:flex;flex-direction:column}
+  .appr-k{font-size:11px;letter-spacing:.14em;color:var(--live);margin-bottom:14px}
+  .appr-title{font-family:var(--font-sans);font-weight:600;letter-spacing:-.01em;font-size:1.08rem;color:var(--text);margin:0 0 9px}
+  .appr-desc{color:var(--muted);font-size:.95rem;line-height:1.6;margin:0}
 </style>
 <style>
   /* ---------- PROBLEM ---------- */
@@ -407,28 +414,22 @@
   <main id="top">
     <!-- ============ HERO ============ -->
     <section class="hero section--plain">
-      <div class="wrap hero__grid">
-        <div class="hero__col">
-          <p class="eyebrow">behavioral simulation</p>
-          <h1 data-slot="hero-headline">See where real users give up</h1>
-          <p class="hero__sub" data-slot="hero-sub">
-            Simulation Labs runs a swarm of computer-use agents through any flow that
-            matters — a new onboarding, a live checkout, an upgrade — and shows the exact
-            pixel where each one gives up. We simulate what users <em>do</em>, not what
-            they <em>say</em>.
-          </p>
-          <div class="hero__cta">
-            <a class="btn-cta" href="#apply">Apply for design partner access</a>
-          </div>
-          <p class="hero__trust" data-slot="hero-trust">
-            <span class="dot" style="background:var(--live)"></span>
-            Built at the H Company Computer Use Hackathon
-          </p>
+      <div class="wrap">
+        <p class="eyebrow">simulation research lab</p>
+        <h1 data-slot="hero-headline">See where real users give up</h1>
+        <p class="hero__sub" data-slot="hero-sub">
+          Simulation Labs is a research lab building behavioral synthetic users for the
+          agent era. We model how real users behave, then run swarms of computer-use
+          agents through your flow to find the exact pixel where each one gives up — what
+          users <em>do</em>, not what they <em>say</em>.
+        </p>
+        <div class="hero__cta">
+          <a class="btn-cta" href="#apply">Apply for design partner access</a>
         </div>
-        <div class="hero__media">
-          <img src="assets/hero-funnel.jpg" width="1600" height="1066" loading="eager"
-            alt="A swarm of synthetic-user orbs streams into a glass funnel — many scatter and fall away, a few blue ones pass through." />
-        </div>
+        <p class="hero__trust" data-slot="hero-trust">
+          <span class="dot" style="background:var(--live)"></span>
+          Built on pre-trained frontier computer-use models · MIT-licensed · SF, 2026
+        </p>
       </div>
     </section>
 
@@ -1271,13 +1272,33 @@
     </ol>
   </div>
 </section>
-    <section class="section imgband">
+    <section class="section" id="approach">
       <div class="wrap">
-        <figure class="imgband__fig">
-          <img class="imgband__img" src="assets/observation-deck.jpg" width="1600" height="1066" loading="lazy"
-            alt="A calm control room with a wall of soft screens, each showing a session trace or heat bloom from a simulation run." />
-          <figcaption class="imgband__cap">Every run — recorded, scored, and tracked release over release.</figcaption>
-        </figure>
+        <p class="eyebrow">our approach</p>
+        <h2 class="h-sec">A research lab for behavioral simulation.</h2>
+        <p class="lead">We don't ask a model to pretend to be a user. We model real behavior
+          mechanically — and measure it.</p>
+        <div class="appr-grid">
+          <article class="card appr-card">
+            <span class="appr-k mono">01</span>
+            <h3 class="appr-title">Mechanical fidelity, not roleplay</h3>
+            <p class="appr-desc">We degrade what each agent sees and how it acts — blur, coordinate
+              noise, time and attention budgets — so behavior is measured, not prompted.</p>
+          </article>
+          <article class="card appr-card">
+            <span class="appr-k mono">02</span>
+            <h3 class="appr-title">Behavioral user models</h3>
+            <p class="appr-desc">We build ICP user models tuned to your real segments, so a run
+              reflects how your users actually behave — not a generic bot.</p>
+          </article>
+          <article class="card appr-card">
+            <span class="appr-k mono">03</span>
+            <h3 class="appr-title">Built on pre-trained frontier models</h3>
+            <p class="appr-desc">Every agent runs on a pre-trained frontier computer-use model,
+              wrapped in our perturbation, scoring, and evaluation layer — a frozen-contract
+              architecture, benchmarked and MIT-licensed.</p>
+          </article>
+        </div>
       </div>
     </section>
 
