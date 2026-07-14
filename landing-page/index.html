@@ -89,6 +89,14 @@
   @media(prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
   }
+  /* ---- imagery ---- */
+  .hero__grid{display:grid;grid-template-columns:1fr;gap:36px;align-items:center}
+  @media(min-width:900px){.hero__grid{grid-template-columns:1.02fr .98fr;gap:52px}}
+  .hero__media img{width:100%;height:auto;display:block;border-radius:18px}
+  .imgband{padding-top:8px}
+  .imgband__fig{margin:0}
+  .imgband__img{width:100%;height:auto;display:block;border-radius:18px;border:1px solid var(--line)}
+  .imgband__cap{margin-top:14px;font-family:var(--font-mono);font-size:12px;color:var(--muted);text-align:center}
 </style>
 <style>
   /* ---------- PROBLEM ---------- */
@@ -397,22 +405,28 @@
   <main id="top">
     <!-- ============ HERO ============ -->
     <section class="hero section--plain">
-      <div class="wrap">
-        <p class="eyebrow">behavioral simulation</p>
-        <h1 data-slot="hero-headline">See where real users give up</h1>
-        <p class="hero__sub" data-slot="hero-sub">
-          Simulation Labs runs a swarm of computer-use agents through any flow that
-          matters — a new onboarding, a live checkout, an upgrade — and shows the exact
-          pixel where each one gives up. We simulate what users <em>do</em>, not what
-          they <em>say</em>.
-        </p>
-        <div class="hero__cta">
-          <a class="btn-cta" href="#apply">Apply for design partner access</a>
+      <div class="wrap hero__grid">
+        <div class="hero__col">
+          <p class="eyebrow">behavioral simulation</p>
+          <h1 data-slot="hero-headline">See where real users give up</h1>
+          <p class="hero__sub" data-slot="hero-sub">
+            Simulation Labs runs a swarm of computer-use agents through any flow that
+            matters — a new onboarding, a live checkout, an upgrade — and shows the exact
+            pixel where each one gives up. We simulate what users <em>do</em>, not what
+            they <em>say</em>.
+          </p>
+          <div class="hero__cta">
+            <a class="btn-cta" href="#apply">Apply for design partner access</a>
+          </div>
+          <p class="hero__trust" data-slot="hero-trust">
+            <span class="dot" style="background:var(--live)"></span>
+            Built at the H Company Computer Use Hackathon
+          </p>
         </div>
-        <p class="hero__trust" data-slot="hero-trust">
-          <span class="dot" style="background:var(--live)"></span>
-          Built at the H Company Computer Use Hackathon
-        </p>
+        <div class="hero__media">
+          <img src="assets/hero-funnel.jpg" width="1600" height="1066" loading="eager"
+            alt="A swarm of synthetic-user orbs streams into a glass funnel — many scatter and fall away, a few blue ones pass through." />
+        </div>
       </div>
     </section>
 
@@ -1254,6 +1268,16 @@
     </ol>
   </div>
 </section>
+    <section class="section imgband">
+      <div class="wrap">
+        <figure class="imgband__fig">
+          <img class="imgband__img" src="assets/observation-deck.jpg" width="1600" height="1066" loading="lazy"
+            alt="A calm control room with a wall of soft screens, each showing a session trace or heat bloom from a simulation run." />
+          <figcaption class="imgband__cap">Every run — recorded, scored, and tracked release over release.</figcaption>
+        </figure>
+      </div>
+    </section>
+
     <section id="what" class="section">
   <div class="wrap">
     <p class="eyebrow">what you get</p>
