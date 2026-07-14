@@ -550,6 +550,16 @@
           <div class="sim-outcome" id="sim-outcome"><span class="sim-x mono">✕</span><span class="mono" id="sim-outcome-text"></span></div>
           <p class="sim-note mono">illustrative run — not a benchmark</p>
         </aside>
+
+        <div class="sim-interview" id="sim-interview" hidden>
+          <div class="sim-int-head">
+            <span class="sim-int-title mono">interview the model</span>
+            <span class="sim-int-sub mono">grounded in its action trace</span>
+          </div>
+          <div class="sim-int-log" id="sim-int-log" aria-live="polite"></div>
+          <div class="sim-int-qs" id="sim-int-qs"></div>
+          <p class="sim-int-note mono">In the product, each answer is spoken back in the user's cloned voice.</p>
+        </div>
       </div>
 
       <!-- GATE VIEW (wedge 3) -->
@@ -753,6 +763,29 @@
     .sim-outcome .sim-x{ color:var(--fail); font-size:12px; }
     .sim-note{ font-size:9.5px; color:var(--muted); letter-spacing:.03em; margin:0; }
 
+    /* ---------- synthetic user interview ---------- */
+    .sim-interview{ grid-column:1/-1; margin-top:2px; border-top:1px solid var(--line);
+      padding-top:16px; display:flex; flex-direction:column; gap:12px; }
+    .sim-int-head{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+    .sim-int-title{ font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--text); }
+    .sim-int-sub{ font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+    .sim-int-log{ display:flex; flex-direction:column; gap:12px; }
+    .sim-int-log:empty{ display:none; }
+    .sim-int-x{ display:flex; flex-direction:column; gap:5px; }
+    .sim-int-q{ align-self:flex-start; max-width:90%; background:var(--panel-2); border:1px solid var(--line);
+      border-radius:var(--radius-sm); padding:7px 11px; font-family:var(--font-mono); font-size:11.5px;
+      letter-spacing:.02em; color:var(--muted); }
+    .sim-int-a{ align-self:flex-start; max-width:94%; border-left:2px solid var(--live); padding:1px 0 1px 12px;
+      font-family:var(--font-sans); font-size:.95rem; line-height:1.5; color:var(--text); }
+    .sim-int-a::before{ content:"“"; } .sim-int-a::after{ content:"”"; }
+    .sim-int-qs{ display:flex; flex-wrap:wrap; gap:8px; }
+    .sim-int-btn{ cursor:pointer; font-family:var(--font-mono); font-size:11.5px; letter-spacing:.02em;
+      color:var(--text); background:var(--panel); border:1px solid var(--line); border-radius:999px;
+      padding:7px 13px; transition:border-color .15s ease, background .15s ease; }
+    .sim-int-btn:hover{ border-color:var(--live); background:rgba(18,69,102,.05); }
+    .sim-int-btn[disabled]{ opacity:.4; cursor:default; }
+    .sim-int-note{ font-size:9.5px; color:var(--muted); letter-spacing:.03em; margin:2px 0 0; }
+
     /* ---------- GATE view ---------- */
     .sim-gate-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
     .sim-gate-title{ font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--text); }
@@ -854,6 +887,9 @@
     var gateState = document.getElementById('sim-gate-state');
     var gateRows  = Array.prototype.slice.call(document.querySelectorAll('#sim-gate-rows .sim-row'));
     var banner    = document.getElementById('sim-banner');
+    var intWrap   = document.getElementById('sim-interview');
+    var intLog    = document.getElementById('sim-int-log');
+    var intQs     = document.getElementById('sim-int-qs');
 
     var dpr = Math.min(window.devicePixelRatio||1, 2);
 
@@ -875,7 +911,12 @@
           {x:50,y:92, cap:'Promo panel expands — “Pay” slips below the fold.', move:540, hold:640},
           {x:47,y:84, cap:'Scrolls, mis-taps near the fold line.',   move:280, hold:560}
         ],
-        death:{x:50,y:86}
+        death:{x:50,y:86},
+        interview:[
+          {q:'Why did you leave?', a:'I was ready to pay — but when I opened the promo code box, the Pay button dropped below the bottom of the screen. I scrolled, tapped the wrong thing twice, and figured it was broken.'},
+          {q:'What would have kept you?', a:'Keep the pay button in view. I didn’t even need the promo field — don’t hide the one button I came to press.'},
+          {q:'Was it a trust issue?', a:'No, the store looked fine. I just couldn’t find where to pay once the layout shifted under me.'}
+        ]
       },
       launch: {
         headline:'Validate a launch before a single user sees it.',
@@ -893,7 +934,12 @@
           {x:47,y:66, cap:'Clicks the connection string field — no example shown.', move:460, hold:900},
           {x:47,y:66, cap:'Unsure of the format. Hesitates…',        move:120, hold:1100}
         ],
-        death:{x:47,y:66}
+        death:{x:47,y:66},
+        interview:[
+          {q:'Why did you get stuck?', a:'It asked for a “connection string” with no example. I didn’t know what to paste or where to find it, so I stopped.'},
+          {q:'What would have helped?', a:'Show me one example line, or a “where do I find this?” link. That alone and I’d have kept going.'},
+          {q:'Would you come back?', a:'Maybe, if someone sent me the setup steps. On my own, I wasn’t going to guess the format.'}
+        ]
       },
       gate: {
         headline:'Make it a gate — block the regression before it ships.',
@@ -1007,8 +1053,27 @@
       stateEl.textContent = 'running'; stateEl.style.color='var(--live)';
       stateDot.style.background='var(--live)';
       caption.textContent = cfg.steps[0].cap;
+      if(intWrap){ intWrap.hidden = true; intLog.innerHTML = ''; intQs.innerHTML = ''; }
       fitTrace();
       drawTrace(0, false, cfg.climb);
+    }
+
+    function renderInterview(cfg){
+      if(!intWrap || !cfg.interview) return;
+      intLog.innerHTML = ''; intQs.innerHTML = '';
+      cfg.interview.forEach(function(item){
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'sim-int-btn'; b.textContent = item.q;
+        b.addEventListener('click', function(){
+          b.disabled = true;
+          var wrap = document.createElement('div'); wrap.className = 'sim-int-x';
+          var q = document.createElement('div'); q.className = 'sim-int-q'; q.textContent = 'you · ' + item.q;
+          var a = document.createElement('div'); a.className = 'sim-int-a'; a.textContent = item.a;
+          wrap.appendChild(q); wrap.appendChild(a); intLog.appendChild(wrap);
+        });
+        intQs.appendChild(b);
+      });
+      intWrap.hidden = false;
     }
 
     function endSession(cfg){
@@ -1026,6 +1091,7 @@
       stateDot.style.background='var(--fail)';
       outcomeTx.textContent = cfg.outcome;
       outcome.classList.add('is-show');
+      renderInterview(cfg);
     }
 
     function runSession(cfg){
