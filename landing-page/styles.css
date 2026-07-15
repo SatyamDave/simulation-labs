@@ -637,8 +637,12 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
 /* collaborative labeled cursors (Canva / Google-Docs multiplayer style) */
 .agentcursor,.run-cursor{--cc:var(--accent)}
 .ac-inner,.rc-inner{position:relative;display:block}
-.ac-ptr,.rc-ptr{display:block}
-.ac-ptr path,.rc-ptr path{fill:var(--cc);stroke:#fff;stroke-width:1.4}
+.ac-ptr,.rc-ptr{display:block;overflow:visible}
+.ac-ptr path,.rc-ptr path{stroke-linejoin:round;stroke-linecap:round;paint-order:stroke}
+/* white body + colored keyline: crisp on white pages AND on colored buttons */
+.rc-ptr path{fill:#fff;stroke:var(--cc);stroke-width:2.1}
+.ac-ptr path{fill:#fff;stroke:var(--accent);stroke-width:2}
+.agentcursor,.run-cursor{filter:drop-shadow(0 3px 7px rgba(9,23,23,.32))}
 .ac-tag,.rc-tag{position:absolute;left:15px;top:16px;background:var(--cc);color:#fff;
   font-family:var(--ui);font-size:.66rem;font-weight:600;letter-spacing:-.01em;line-height:1.35;
   padding:2px 7px;border-radius:3px;white-space:nowrap;box-shadow:0 3px 9px rgba(9,23,23,.26)}
