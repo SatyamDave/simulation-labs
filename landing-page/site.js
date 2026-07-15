@@ -218,6 +218,76 @@
     window.addEventListener("resize", rest);
   }
 
+  /* Human / Agent reading-mode toggle. Agent view = the same site encoded for
+     machine reading (terse, structured, high-density; the llms.txt convention). */
+  function viewToggle() {
+    var btns = Array.prototype.slice.call(document.querySelectorAll(".vt-btn"));
+    if (!btns.length) return;
+    function set(v) {
+      document.body.classList.toggle("view-agent", v === "agent");
+      btns.forEach(function (b) {
+        var on = b.getAttribute("data-view") === v;
+        b.classList.toggle("is-on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    }
+    btns.forEach(function (b) {
+      b.addEventListener("click", function () { set(b.getAttribute("data-view")); });
+    });
+  }
+
+  /* The agent guides you through the page: a side rail marks its reading position,
+     and "walk me through" auto-scrolls section to section. Lightweight. */
+  function guide() {
+    var secs = Array.prototype.slice.call(document.querySelectorAll("main > section[data-tour]"));
+    if (secs.length < 2) return;
+    var rail = document.createElement("nav");
+    rail.className = "guide";
+    rail.setAttribute("aria-label", "Page guide");
+    var dots = [];
+    secs.forEach(function (s, i) {
+      var a = document.createElement("a");
+      a.href = "#" + s.id;
+      a.className = "guide__dot";
+      a.innerHTML = '<span class="guide__label">' + (s.getAttribute("data-tour") || ("Section " + (i + 1))) + '</span><i></i>';
+      rail.appendChild(a);
+      dots.push(a);
+    });
+    document.body.appendChild(rail);
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (ents) {
+        ents.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          dots.forEach(function (d) { d.classList.toggle("is-on", d.getAttribute("href") === "#" + e.target.id); });
+        });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      secs.forEach(function (s) { io.observe(s); });
+    }
+    var tourBtn = document.getElementById("tourBtn"), touring = false, ti = 0, timer;
+    function stop() {
+      touring = false; clearTimeout(timer); rail.classList.remove("touring");
+      if (tourBtn) tourBtn.textContent = "Let the agent walk you through";
+    }
+    function step() {
+      if (!touring) return;
+      if (ti >= secs.length) { stop(); return; }
+      secs[ti].scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+      ti++;
+      timer = setTimeout(step, 2600);
+    }
+    if (tourBtn) {
+      tourBtn.addEventListener("click", function () {
+        if (touring) { stop(); return; }
+        touring = true; ti = 0; rail.classList.add("touring"); tourBtn.textContent = "Stop the tour";
+        step();
+      });
+    }
+    ["wheel", "touchmove"].forEach(function (ev) {
+      window.addEventListener(ev, function () { if (touring) stop(); }, { passive: true });
+    });
+  }
+
   buildEditorial();
   gridPubs();
   docsSpy();
@@ -226,4 +296,6 @@
   applyForm();
   reveals();
   heroCursor();
+  viewToggle();
+  guide();
 })();
