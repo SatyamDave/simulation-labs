@@ -288,7 +288,7 @@
       { sec: "receipts", focus: ".heat",        title: "The receipts",   line: "You get the exact pixel. Here, agents cluster and die on the Pay button." },
       { sec: "research", focus: ".chart",       title: "Measured limits",line: "A 14px tremor misses a 24px target 60.9% of the time. Real, reproducible numbers." },
       { sec: "triggers", focus: ".qa-grid",     title: "Three triggers", line: "Run it by hand, call it from your coding agent, or gate every deploy in CI." },
-      { sec: "apply",    focus: ".dp2__card",   title: "Ten seats",      line: "We take ten design partners a cohort. If you qualify, request a seat and we run the swarm on your flow." }
+      { sec: "apply",    focus: ".dp2__card",   title: "Ten seats",      line: "We take ten partners a cohort, first come. When the tenth seat is gone, we close. Request yours before it does." }
     ];
     var ov, spot, cur, tip, bar, nextBtn, i = 0, on = false, raf = 0, timers = [], curEl = null, READ = 3400;
 
