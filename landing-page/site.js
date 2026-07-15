@@ -290,9 +290,11 @@
       { sec: "triggers", focus: ".qa-grid",     title: "Three triggers", line: "Run it by hand, call it from your coding agent, or gate every deploy in CI." },
       { sec: "apply",    focus: "#ctaBtn",      title: "Your turn",      line: "That is the whole idea. Bring one flow and we will tell you who fails it." }
     ];
-    var ov, spot, cur, tip, bar, i = 0, on = false, raf = 0, timer = 0, AUTO = 5600, clickTimers = [];
+    var ov, spot, cur, tip, bar, nextBtn, i = 0, on = false, raf = 0, timers = [], curEl = null, READ = 3400;
 
     function mk(cls) { var d = document.createElement("div"); d.className = cls; return d; }
+    function at(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
+    function clearTimers() { timers.forEach(clearTimeout); timers = []; }
     function build() {
       ov = mk("tour-ov");
       spot = mk("tour-spot");
@@ -300,18 +302,14 @@
       cur.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22"><path d="M3.5 2 L3.5 16.8 L7.2 13.4 L9.9 19.9 L12.3 18.9 L9.7 12.6 L14.6 12.6 Z"/></svg><span>behavioral agent</span>';
       tip = mk("tour-tip");
       tip.innerHTML = '<div class="tt-bar"><i></i></div><div class="tt-head"><span class="tt-k"></span>' +
-        '<button class="tt-x" type="button" aria-label="Exit tour">esc</button></div>' +
+        '<button class="tt-x" type="button" aria-label="Exit tour">esc to exit</button></div>' +
         '<h4 class="tt-title"></h4><p class="tt-line"></p>' +
-        '<div class="tt-ctl"><button class="tt-back" type="button">Back</button>' +
-        '<button class="tt-next" type="button">Next</button></div>';
+        '<div class="tt-ctl"><span class="tt-hint">agent is driving</span>' +
+        '<button class="tt-next" type="button" tabindex="-1">Next</button></div>';
       [ov, spot, cur, tip].forEach(function (n) { document.body.appendChild(n); });
       bar = tip.querySelector(".tt-bar i");
-      tip.querySelector(".tt-next").addEventListener("click", next);
-      tip.querySelector(".tt-back").addEventListener("click", prev);
+      nextBtn = tip.querySelector(".tt-next");
       tip.querySelector(".tt-x").addEventListener("click", stop);
-      tip.addEventListener("mouseenter", function () { clearTimeout(timer); bar.style.transition = "none"; });
-      tip.addEventListener("mouseleave", startAuto);
-      ov.addEventListener("click", next);
     }
     function focusEl(step) { var s = document.getElementById(step.sec); return s ? (s.querySelector(step.focus) || s) : null; }
     function render() {
@@ -322,59 +320,69 @@
         var x = Math.max(6, r.left - pad), y = Math.max(6, r.top - pad),
             w = Math.min(window.innerWidth - 12, r.width + pad * 2), h = r.height + pad * 2;
         spot.style.cssText = "left:" + x + "px;top:" + y + "px;width:" + w + "px;height:" + h + "px";
-        cur.style.transform = "translate(" + (x + w - 6) + "px," + (y + h - 4) + "px)";
         var th = tip.offsetHeight || 170, room = window.innerHeight - (y + h) - 20;
         var top = room > th ? (y + h + 14) : Math.max(12, y - 14 - th);
         tip.style.left = Math.min(Math.max(12, x), window.innerWidth - Math.min(352, window.innerWidth - 12)) + "px";
         tip.style.top = top + "px";
+        // agent cursor: rests on the focused element, then travels to the Next button
+        var ce = (curEl === nextBtn) ? nextBtn : fe, cr = ce.getBoundingClientRect();
+        var cx = (ce === nextBtn) ? (cr.left + cr.width * 0.5) : (cr.right - 6);
+        var cy = (ce === nextBtn) ? (cr.top + cr.height * 0.5) : (cr.bottom - 4);
+        cur.style.transform = "translate(" + cx + "px," + cy + "px)";
       }
       raf = requestAnimationFrame(render);
     }
-    function clearClicks() { clickTimers.forEach(clearTimeout); clickTimers = []; }
-    function clickPulse() {
-      if (reduce) return;
-      function tap() {
-        cur.classList.add("is-click"); spot.classList.add("hit");
-        clickTimers.push(setTimeout(function () { cur.classList.remove("is-click"); spot.classList.remove("hit"); }, 190));
-      }
-      clickTimers.push(setTimeout(tap, 760));
-      clickTimers.push(setTimeout(tap, 1500));
-    }
-    function startAuto() {
-      clearTimeout(timer);
-      if (reduce) return;
-      bar.style.transition = "none"; bar.style.width = "0%";
-      void bar.offsetWidth;
-      bar.style.transition = "width " + AUTO + "ms linear"; bar.style.width = "100%";
-      timer = setTimeout(next, AUTO);
+    function tap(onNext, cb) {
+      cur.classList.add("is-click");
+      if (onNext) nextBtn.classList.add("flash"); else spot.classList.add("hit");
+      at(function () { cur.classList.remove("is-click"); nextBtn.classList.remove("flash"); spot.classList.remove("hit"); if (cb) cb(); }, 210);
     }
     function show() {
+      clearTimers();
       var step = STEPS[i], fe = focusEl(step);
       tip.querySelector(".tt-k").textContent = (i + 1) + " / " + STEPS.length;
       tip.querySelector(".tt-title").textContent = step.title;
       tip.querySelector(".tt-line").textContent = step.line;
-      tip.querySelector(".tt-back").disabled = (i === 0);
-      tip.querySelector(".tt-next").textContent = (i === STEPS.length - 1) ? "Finish" : "Next";
+      nextBtn.textContent = (i === STEPS.length - 1) ? "Finish" : "Next";
+      curEl = fe;
       if (fe) fe.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
-      clearClicks(); clickPulse();
-      startAuto();
+      if (reduce) { at(next, 2400); return; }
+      // 1) the agent clicks the highlighted element
+      at(function () { tap(false); }, 780);
+      at(function () { tap(false); }, 1280);
+      // progress bar counts down the read time
+      bar.style.transition = "none"; bar.style.width = "0%"; void bar.offsetWidth;
+      bar.style.transition = "width " + READ + "ms linear"; bar.style.width = "100%";
+      // 2) the agent moves its cursor to Next and clicks it -> advance
+      at(function () { curEl = nextBtn; }, READ);
+      at(function () { tap(true, next); }, READ + 640);
     }
     function next() { if (i < STEPS.length - 1) { i++; show(); } else { stop(); var a = document.getElementById("apply"); if (a) a.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); } }
-    function prev() { if (i > 0) { i--; show(); } }
-    function onKey(e) { if (e.key === "Escape") stop(); else if (e.key === "ArrowRight") next(); else if (e.key === "ArrowLeft") prev(); }
+    function onKey(e) { if (e.key === "Escape") stop(); }
+    function block(e) { e.preventDefault(); }
+    function blockKeys(e) {
+      if (e.key === "Escape") return;
+      if ([" ", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", "Spacebar"].indexOf(e.key) >= 0) e.preventDefault();
+    }
     function start() {
       if (on) { stop(); return; }
       if (!ov) build();
       on = true; i = 0;
       document.body.classList.add("tour-on");
       tourBtn.textContent = "End tour";
-      show(); render();
+      window.addEventListener("wheel", block, { passive: false });
+      window.addEventListener("touchmove", block, { passive: false });
+      window.addEventListener("keydown", blockKeys, false);
       document.addEventListener("keydown", onKey);
+      show(); render();
     }
     function stop() {
-      on = false; clearTimeout(timer); clearClicks(); if (raf) cancelAnimationFrame(raf); raf = 0;
+      on = false; clearTimers(); if (raf) cancelAnimationFrame(raf); raf = 0; curEl = null;
       document.body.classList.remove("tour-on");
       tourBtn.textContent = "Let the agent walk you through";
+      window.removeEventListener("wheel", block);
+      window.removeEventListener("touchmove", block);
+      window.removeEventListener("keydown", blockKeys);
       document.removeEventListener("keydown", onKey);
     }
     tourBtn.addEventListener("click", start);

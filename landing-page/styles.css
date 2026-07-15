@@ -939,12 +939,11 @@ body.tour-on .tour-ov,body.tour-on .tour-spot,body.tour-on .tour-cur,body.tour-o
 .tt-x:hover{color:var(--text);border-color:var(--border-2)}
 .tt-title{font-family:var(--display);font-weight:500;font-size:1.18rem;letter-spacing:-.01em;margin:9px 14px 0;color:var(--text)}
 .tt-line{font-family:var(--ui);font-size:.92rem;color:var(--muted);line-height:1.5;margin:7px 14px 0}
-.tt-ctl{display:flex;gap:8px;justify-content:flex-end;padding:15px 14px 0}
-.tt-back,.tt-next{font-family:var(--ui);font-size:.85rem;font-weight:500;padding:8px 16px;cursor:pointer;
-  border:1px solid var(--rule);background:var(--surface-2);color:var(--text)}
-.tt-next{background:var(--accent);border-color:var(--accent);color:#fff}
-.tt-next:hover{background:var(--accent-hover)}
-.tt-back[disabled]{opacity:.4;cursor:default}
+.tt-ctl{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:15px 14px 0}
+.tt-hint{font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim)}
+.tt-next{font-family:var(--ui);font-size:.85rem;font-weight:500;padding:8px 16px;cursor:default;
+  border:1px solid var(--accent);background:var(--accent);color:#fff;transition:box-shadow .12s ease,background .12s ease}
+.tt-next.flash{background:var(--accent-hover);box-shadow:0 0 0 4px var(--accent-tint)}
 body.tour-on .agentnarr{opacity:0}
 body.tour-on .guide{opacity:.2;pointer-events:none}
 @media(max-width:640px){.tour-cur{display:none}.tour-tip{width:calc(100vw - 24px)}}
