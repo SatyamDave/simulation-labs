@@ -290,7 +290,7 @@
       { sec: "triggers", focus: ".qa-grid",     title: "Three triggers", line: "Run it by hand, call it from your coding agent, or gate every deploy in CI." },
       { sec: "apply",    focus: "#ctaBtn",      title: "Your turn",      line: "That is the whole idea. Bring one flow and we will tell you who fails it." }
     ];
-    var ov, spot, cur, tip, bar, i = 0, on = false, raf = 0, timer = 0, AUTO = 5600;
+    var ov, spot, cur, tip, bar, i = 0, on = false, raf = 0, timer = 0, AUTO = 5600, clickTimers = [];
 
     function mk(cls) { var d = document.createElement("div"); d.className = cls; return d; }
     function build() {
@@ -330,6 +330,16 @@
       }
       raf = requestAnimationFrame(render);
     }
+    function clearClicks() { clickTimers.forEach(clearTimeout); clickTimers = []; }
+    function clickPulse() {
+      if (reduce) return;
+      function tap() {
+        cur.classList.add("is-click"); spot.classList.add("hit");
+        clickTimers.push(setTimeout(function () { cur.classList.remove("is-click"); spot.classList.remove("hit"); }, 190));
+      }
+      clickTimers.push(setTimeout(tap, 760));
+      clickTimers.push(setTimeout(tap, 1500));
+    }
     function startAuto() {
       clearTimeout(timer);
       if (reduce) return;
@@ -346,6 +356,7 @@
       tip.querySelector(".tt-back").disabled = (i === 0);
       tip.querySelector(".tt-next").textContent = (i === STEPS.length - 1) ? "Finish" : "Next";
       if (fe) fe.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+      clearClicks(); clickPulse();
       startAuto();
     }
     function next() { if (i < STEPS.length - 1) { i++; show(); } else { stop(); var a = document.getElementById("apply"); if (a) a.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); } }
@@ -361,7 +372,7 @@
       document.addEventListener("keydown", onKey);
     }
     function stop() {
-      on = false; clearTimeout(timer); if (raf) cancelAnimationFrame(raf); raf = 0;
+      on = false; clearTimeout(timer); clearClicks(); if (raf) cancelAnimationFrame(raf); raf = 0;
       document.body.classList.remove("tour-on");
       tourBtn.textContent = "Let the agent walk you through";
       document.removeEventListener("keydown", onKey);

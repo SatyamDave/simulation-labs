@@ -913,12 +913,18 @@ a,.btn,.run-p,.cta-wedges span,.hv-tile,.dp-item,.pub{transition-timing-function
 .docs__main :not(pre) > code{overflow-wrap:anywhere;word-break:break-word}
 
 /* ================= agent-led guided tour (coachmark) ================= */
+.tour-ov,.tour-spot,.tour-cur,.tour-tip{display:none}
+body.tour-on .tour-ov,body.tour-on .tour-spot,body.tour-on .tour-cur,body.tour-on .tour-tip{display:block}
 .tour-ov{position:fixed;inset:0;z-index:70;background:transparent;cursor:pointer}
 .tour-spot{position:fixed;z-index:71;border:1.5px solid var(--accent);pointer-events:none;
+  transition:border-color .16s ease,box-shadow .16s ease;
   box-shadow:0 0 0 9999px rgba(6,8,11,.82),0 0 26px 2px rgba(76,141,255,.4),inset 0 0 0 1px rgba(76,141,255,.3)}
+.tour-spot.hit{border-color:#fff;
+  box-shadow:0 0 0 9999px rgba(6,8,11,.82),0 0 38px 7px rgba(76,141,255,.72),inset 0 0 0 1px rgba(255,255,255,.55)}
 .tour-cur{position:fixed;top:0;left:0;z-index:73;pointer-events:none;will-change:transform;
   filter:drop-shadow(0 3px 7px rgba(0,0,0,.55))}
-.tour-cur svg{display:block}
+.tour-cur svg{display:block;transform-origin:6px 4px;transition:transform .12s cubic-bezier(.3,.7,.3,1)}
+.tour-cur.is-click svg{transform:scale(.68)}
 .tour-cur svg path{fill:#fff;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;paint-order:stroke}
 .tour-cur span{position:absolute;left:16px;top:15px;background:var(--accent);color:#fff;font-family:var(--ui);
   font-size:.64rem;font-weight:600;padding:2px 7px;border-radius:3px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.4)}
