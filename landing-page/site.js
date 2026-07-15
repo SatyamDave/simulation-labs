@@ -272,28 +272,101 @@
       }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
       secs.forEach(function (s) { io.observe(s); });
     }
-    var tourBtn = document.getElementById("tourBtn"), touring = false, ti = 0, timer;
+  }
+
+  /* Agent-led guided tour: spotlight each section, point the agent cursor at the key
+     element, narrate it in a tooltip. Progress + Back/Next/Esc, pause-on-hover auto-
+     advance. rAF runs only while the tour is open (keeps the spotlight glued on scroll). */
+  function agentTour() {
+    var tourBtn = document.getElementById("tourBtn");
+    if (!tourBtn) return;
+    var STEPS = [
+      { sec: "hero",     focus: ".saydo",       title: "What we do",     line: "We simulate what users do, not what they say. A swarm of browser agents runs your real flow." },
+      { sec: "why",      focus: ".big__num",    title: "The problem",    line: "Prompted personas match real users only 11.86% of the time. A stated preference is not a click." },
+      { sec: "product",  focus: ".v-do",        title: "Say vs. do",     line: "Same persona. It says the checkout was clean. It actually missed Pay twice and abandoned." },
+      { sec: "icp",      focus: ".icp__lead h2",title: "Your ICP",       line: "Every browser agent is driven by a behavioral model custom-fit to your real segments." },
+      { sec: "receipts", focus: ".heat",        title: "The receipts",   line: "You get the exact pixel. Here, agents cluster and die on the Pay button." },
+      { sec: "research", focus: ".chart",       title: "Measured limits",line: "A 14px tremor misses a 24px target 60.9% of the time. Real, reproducible numbers." },
+      { sec: "triggers", focus: ".qa-grid",     title: "Three triggers", line: "Run it by hand, call it from your coding agent, or gate every deploy in CI." },
+      { sec: "apply",    focus: "#ctaBtn",      title: "Your turn",      line: "That is the whole idea. Bring one flow and we will tell you who fails it." }
+    ];
+    var ov, spot, cur, tip, bar, i = 0, on = false, raf = 0, timer = 0, AUTO = 5600;
+
+    function mk(cls) { var d = document.createElement("div"); d.className = cls; return d; }
+    function build() {
+      ov = mk("tour-ov");
+      spot = mk("tour-spot");
+      cur = mk("tour-cur");
+      cur.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22"><path d="M3.5 2 L3.5 16.8 L7.2 13.4 L9.9 19.9 L12.3 18.9 L9.7 12.6 L14.6 12.6 Z"/></svg><span>behavioral agent</span>';
+      tip = mk("tour-tip");
+      tip.innerHTML = '<div class="tt-bar"><i></i></div><div class="tt-head"><span class="tt-k"></span>' +
+        '<button class="tt-x" type="button" aria-label="Exit tour">esc</button></div>' +
+        '<h4 class="tt-title"></h4><p class="tt-line"></p>' +
+        '<div class="tt-ctl"><button class="tt-back" type="button">Back</button>' +
+        '<button class="tt-next" type="button">Next</button></div>';
+      [ov, spot, cur, tip].forEach(function (n) { document.body.appendChild(n); });
+      bar = tip.querySelector(".tt-bar i");
+      tip.querySelector(".tt-next").addEventListener("click", next);
+      tip.querySelector(".tt-back").addEventListener("click", prev);
+      tip.querySelector(".tt-x").addEventListener("click", stop);
+      tip.addEventListener("mouseenter", function () { clearTimeout(timer); bar.style.transition = "none"; });
+      tip.addEventListener("mouseleave", startAuto);
+      ov.addEventListener("click", next);
+    }
+    function focusEl(step) { var s = document.getElementById(step.sec); return s ? (s.querySelector(step.focus) || s) : null; }
+    function render() {
+      if (!on) return;
+      var fe = focusEl(STEPS[i]);
+      if (fe) {
+        var r = fe.getBoundingClientRect(), pad = 8;
+        var x = Math.max(6, r.left - pad), y = Math.max(6, r.top - pad),
+            w = Math.min(window.innerWidth - 12, r.width + pad * 2), h = r.height + pad * 2;
+        spot.style.cssText = "left:" + x + "px;top:" + y + "px;width:" + w + "px;height:" + h + "px";
+        cur.style.transform = "translate(" + (x + w - 6) + "px," + (y + h - 4) + "px)";
+        var th = tip.offsetHeight || 170, room = window.innerHeight - (y + h) - 20;
+        var top = room > th ? (y + h + 14) : Math.max(12, y - 14 - th);
+        tip.style.left = Math.min(Math.max(12, x), window.innerWidth - Math.min(352, window.innerWidth - 12)) + "px";
+        tip.style.top = top + "px";
+      }
+      raf = requestAnimationFrame(render);
+    }
+    function startAuto() {
+      clearTimeout(timer);
+      if (reduce) return;
+      bar.style.transition = "none"; bar.style.width = "0%";
+      void bar.offsetWidth;
+      bar.style.transition = "width " + AUTO + "ms linear"; bar.style.width = "100%";
+      timer = setTimeout(next, AUTO);
+    }
+    function show() {
+      var step = STEPS[i], fe = focusEl(step);
+      tip.querySelector(".tt-k").textContent = (i + 1) + " / " + STEPS.length;
+      tip.querySelector(".tt-title").textContent = step.title;
+      tip.querySelector(".tt-line").textContent = step.line;
+      tip.querySelector(".tt-back").disabled = (i === 0);
+      tip.querySelector(".tt-next").textContent = (i === STEPS.length - 1) ? "Finish" : "Next";
+      if (fe) fe.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+      startAuto();
+    }
+    function next() { if (i < STEPS.length - 1) { i++; show(); } else { stop(); var a = document.getElementById("apply"); if (a) a.scrollIntoView({ behavior: reduce ? "auto" : "smooth" }); } }
+    function prev() { if (i > 0) { i--; show(); } }
+    function onKey(e) { if (e.key === "Escape") stop(); else if (e.key === "ArrowRight") next(); else if (e.key === "ArrowLeft") prev(); }
+    function start() {
+      if (on) { stop(); return; }
+      if (!ov) build();
+      on = true; i = 0;
+      document.body.classList.add("tour-on");
+      tourBtn.textContent = "End tour";
+      show(); render();
+      document.addEventListener("keydown", onKey);
+    }
     function stop() {
-      touring = false; clearTimeout(timer); rail.classList.remove("touring");
-      if (tourBtn) tourBtn.textContent = "Let the agent walk you through";
+      on = false; clearTimeout(timer); if (raf) cancelAnimationFrame(raf); raf = 0;
+      document.body.classList.remove("tour-on");
+      tourBtn.textContent = "Let the agent walk you through";
+      document.removeEventListener("keydown", onKey);
     }
-    function step() {
-      if (!touring) return;
-      if (ti >= secs.length) { stop(); return; }
-      secs[ti].scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-      ti++;
-      timer = setTimeout(step, 2600);
-    }
-    if (tourBtn) {
-      tourBtn.addEventListener("click", function () {
-        if (touring) { stop(); return; }
-        touring = true; ti = 0; rail.classList.add("touring"); tourBtn.textContent = "Stop the tour";
-        step();
-      });
-    }
-    ["wheel", "touchmove"].forEach(function (ev) {
-      window.addEventListener(ev, function () { if (touring) stop(); }, { passive: true });
-    });
+    tourBtn.addEventListener("click", start);
   }
 
   buildEditorial();
@@ -306,4 +379,5 @@
   heroCursor();
   viewToggle();
   guide();
+  agentTour();
 })();

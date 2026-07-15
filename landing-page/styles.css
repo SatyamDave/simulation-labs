@@ -911,3 +911,35 @@ a,.btn,.run-p,.cta-wedges span,.hv-tile,.dp-item,.pub{transition-timing-function
 .docs__main .m{font-family:var(--mono);font-size:.92em;color:var(--accent-300)}
 .docs__main .refs{margin-top:1em}
 .docs__main :not(pre) > code{overflow-wrap:anywhere;word-break:break-word}
+
+/* ================= agent-led guided tour (coachmark) ================= */
+.tour-ov{position:fixed;inset:0;z-index:70;background:transparent;cursor:pointer}
+.tour-spot{position:fixed;z-index:71;border:1.5px solid var(--accent);pointer-events:none;
+  box-shadow:0 0 0 9999px rgba(6,8,11,.82),0 0 26px 2px rgba(76,141,255,.4),inset 0 0 0 1px rgba(76,141,255,.3)}
+.tour-cur{position:fixed;top:0;left:0;z-index:73;pointer-events:none;will-change:transform;
+  filter:drop-shadow(0 3px 7px rgba(0,0,0,.55))}
+.tour-cur svg{display:block}
+.tour-cur svg path{fill:#fff;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;paint-order:stroke}
+.tour-cur span{position:absolute;left:16px;top:15px;background:var(--accent);color:#fff;font-family:var(--ui);
+  font-size:.64rem;font-weight:600;padding:2px 7px;border-radius:3px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.tour-tip{position:fixed;z-index:74;width:340px;max-width:calc(100vw - 24px);
+  background:var(--surface);border:1px solid var(--border-2);box-shadow:0 24px 50px -18px rgba(0,0,0,.7);padding:0 0 14px}
+.tt-bar{height:3px;background:var(--rule);overflow:hidden}
+.tt-bar i{display:block;height:100%;width:0;background:var(--accent)}
+.tt-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 0;gap:10px}
+.tt-k{font-family:var(--mono);font-size:.66rem;color:var(--accent);letter-spacing:.07em}
+.tt-x{font-family:var(--mono);font-size:.6rem;color:var(--dim);cursor:pointer;border:1px solid var(--rule);
+  background:transparent;padding:3px 7px;text-transform:uppercase;letter-spacing:.05em}
+.tt-x:hover{color:var(--text);border-color:var(--border-2)}
+.tt-title{font-family:var(--display);font-weight:500;font-size:1.18rem;letter-spacing:-.01em;margin:9px 14px 0;color:var(--text)}
+.tt-line{font-family:var(--ui);font-size:.92rem;color:var(--muted);line-height:1.5;margin:7px 14px 0}
+.tt-ctl{display:flex;gap:8px;justify-content:flex-end;padding:15px 14px 0}
+.tt-back,.tt-next{font-family:var(--ui);font-size:.85rem;font-weight:500;padding:8px 16px;cursor:pointer;
+  border:1px solid var(--rule);background:var(--surface-2);color:var(--text)}
+.tt-next{background:var(--accent);border-color:var(--accent);color:#fff}
+.tt-next:hover{background:var(--accent-hover)}
+.tt-back[disabled]{opacity:.4;cursor:default}
+body.tour-on .agentnarr{opacity:0}
+body.tour-on .guide{opacity:.2;pointer-events:none}
+@media(max-width:640px){.tour-cur{display:none}.tour-tip{width:calc(100vw - 24px)}}
+@media(prefers-reduced-motion:reduce){.tt-bar i{transition:none!important}}
