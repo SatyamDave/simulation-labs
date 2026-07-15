@@ -513,13 +513,19 @@
       <div class="sect__in">
         <div class="sect__label"><span class="sect__k">01 — Vision</span><h2>Synthetic users that do, not say</h2></div>
         <div class="sect__body">
-          <div class="prose">
-            <p>Synthetic-user research has quietly become a way to interview a model instead of a person. You describe a persona, ask what it thinks of your checkout, and it answers — fluently, agreeably, and at a comfortable distance from anything it would actually have done. The answers are shallow and people-pleasing, a pattern the Nielsen Norman Group has written about plainly. When prompted LLM personas were measured against the real people they were meant to stand in for, the match was around 11.86% (arXiv 2503.20749). A survey is not a user; a stated preference is not a click.</p>
-            <h2>Mechanical fidelity, not psychological fidelity</h2>
-            <p>We are not reconstructing a human personality inside a language model. What we can reproduce faithfully are the constraints on the channel between a user and the screen: how sharply they see it, how precisely their clicks land, how little time and patience they bring. So we take a pre-trained computer-use model — a system that reads a screenshot and emits an action — and mechanically degrade its perception and action rather than prompt it to act impaired. We blur the frame, add Gaussian noise to the click coordinates, cap the number of steps, shrink the viewport, strip colour cues.</p>
-            <p>It is a deliberately narrow claim. We do not say these agents feel what a person feels or reason as they reason. We say the perceptual and motor limits we impose are real, measured, and reproducible even though the personality is synthetic — a smaller promise than the field usually makes, and one we can keep.</p>
-            <h2>What we're building toward</h2>
-            <p>We want the behavioral check to become a normal part of shipping — something you run before release the way you run a test suite, to see who fails your site before your users do. Not a forecast of conversion, and not a compliance verdict, but a rank-order signal: which page is worse, which fix helped, where abandonment clusters.</p>
+          <p class="vision-lead">Synthetic-user research has quietly become a way to interview a model instead of a person. You describe a persona, ask what it thinks of your checkout, and it answers — fluently, agreeably, and at a comfortable distance from anything it would actually have done. The answers are shallow and people-pleasing, a pattern the Nielsen Norman Group has written about plainly. When prompted LLM personas were measured against the real people they were meant to stand in for, the match was around <span class="mono">11.86%</span> (arXiv 2503.20749). A survey is not a user; a stated preference is not a click.</p>
+          <div class="thesis-grid">
+            <div class="thesis">
+              <span class="thesis-n">01 / method</span>
+              <h3>Mechanical fidelity, not psychological fidelity</h3>
+              <p>We are not reconstructing a human personality inside a language model. What we can reproduce faithfully are the constraints on the channel between a user and the screen: how sharply they see it, how precisely their clicks land, how little time and patience they bring. So we take a pre-trained computer-use model — a system that reads a screenshot and emits an action — and mechanically degrade its perception and action rather than prompt it to act impaired. We blur the frame, add Gaussian noise to the click coordinates, cap the number of steps, shrink the viewport, strip colour cues.</p>
+              <p>It is a deliberately narrow claim. We do not say these agents feel what a person feels or reason as they reason. We say the perceptual and motor limits we impose are real, measured, and reproducible even though the personality is synthetic — a smaller promise than the field usually makes, and one we can keep.</p>
+            </div>
+            <div class="thesis">
+              <span class="thesis-n">02 / goal</span>
+              <h3>What we're building toward</h3>
+              <p>We want the behavioral check to become a normal part of shipping — something you run before release the way you run a test suite, to see who fails your site before your users do. Not a forecast of conversion, and not a compliance verdict, but a rank-order signal: which page is worse, which fix helped, where abandonment clusters.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -607,6 +613,12 @@
             <div class="dp-item"><h3>Direct access</h3><p>You work with us directly and help shape what we build next.</p></div>
             <div class="dp-item"><h3>Rank-order, honest</h3><p>Signals on where risk is and whether a fix helped — never conversion forecasts or a compliance verdict.</p></div>
           </div>
+          <div class="apply-console">
+          <div class="apply-console__bar">
+            <span class="apply-console__dot" aria-hidden="true"></span>
+            <svg class="apply-trace" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M0 12 H82 l5 0 l4 -8 l5 15 l4 -7 H176 l6 -4 l5 4 H300"/></svg>
+            <span class="apply-console__tag">apply · design partner</span>
+          </div>
           <form class="apply-form" id="applyForm" novalidate>
             <div class="row">
               <label class="field"><span>Name</span><input type="text" name="name" autocomplete="name" /></label>
@@ -619,6 +631,7 @@
             <button class="btn btn-lg" type="submit">Apply for design-partner access</button>
             <p class="apply-status" id="applyStatus" role="status" aria-live="polite" hidden></p>
           </form>
+          </div>
         </div>
       </div>
     </section>
