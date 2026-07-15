@@ -3,23 +3,25 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Docs — Simulation Labs</title>
-<meta name="description" content="Technical documentation for the Simulation Labs engine." />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='white'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%231a56db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<title>Technical Documentation · Simulation Labs</title>
+<meta name="description" content="The method behind Simulation Labs: pixel-space GUI-agent grounding, perceptual degradation as signal processing, Fitts-law endpoint error, survival analysis of abandonment, and ICP behavioral calibration." />
+<link rel="canonical" href="https://satyamdave.github.io/simulation-labs/docs.html" />
+<meta name="robots" content="index, follow" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B0D11'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%234C8DFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="masthead">
     <div class="masthead__in">
-      <a class="brand" href="index.html" aria-label="Simulation Labs — home">
-        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#1a56db" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <a class="brand" href="index.html" aria-label="Simulation Labs, home">
+        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#4C8DFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Simulation Labs</span>
       </a>
       <nav class="nav" aria-label="Primary">
-        <a href="index.html#vision">Vision</a>
+        <a href="index.html#why">Why</a>
         <a href="index.html#product">Product</a>
         <a href="index.html#research">Research</a>
-        <a href="index.html#docs" aria-current="page">Docs</a>
+        <a href="docs.html" aria-current="page">Docs</a>
         <span class="sep" aria-hidden="true"></span>
         <a class="apply" href="index.html#apply">Design partners</a>
       </nav>
@@ -28,336 +30,354 @@
   <main class="page">
 <div class="docs">
   <nav class="docs__side">
-    <h4>Getting started</h4>
+    <h4>Foundations</h4>
     <ul>
       <li><a href="#overview">Overview</a></li>
+      <li><a href="#grounding">1 · GUI-agent grounding</a></li>
+      <li><a href="#perception">2 · Perceptual degradation</a></li>
+      <li><a href="#actuation">3 · Actuation &amp; targeting</a></li>
+      <li><a href="#survival">4 · Survival analysis</a></li>
+      <li><a href="#calibration">5 · ICP calibration</a></li>
+    </ul>
+    <h4>Implementation</h4>
+    <ul>
       <li><a href="#architecture">Architecture</a></li>
-    </ul>
-
-    <h4>The engine</h4>
-    <ul>
       <li><a href="#run-loop">The run loop</a></li>
-      <li><a href="#perturbation">Perturbation channels</a></li>
       <li><a href="#coordinates">Coordinate space</a></li>
-    </ul>
-
-    <h4>Personas &amp; output</h4>
-    <ul>
-      <li><a href="#personas">Behavioral models</a></li>
       <li><a href="#outputs">Outputs &amp; scoring</a></li>
+      <li><a href="#policy">Policy &amp; safety</a></li>
     </ul>
-
     <h4>Reference</h4>
     <ul>
-      <li><a href="#policy">Policy &amp; safety</a></li>
-      <li><a href="#contracts">Contracts reference</a></li>
+      <li><a href="#references">References</a></li>
     </ul>
   </nav>
 
   <div class="docs__main">
-    <p class="eyebrow">Documentation</p>
+    <p class="eyebrow">Technical documentation</p>
+    <h1 class="doc-h1">The method</h1>
 
     <h2 id="overview">Overview</h2>
     <p>
-      Simulation Labs builds synthetic users that <em>do</em>, not <em>say</em>. Instead of asking a
-      language model to opine about your checkout flow, we point a swarm of synthetic users at a live
-      website with a concrete goal (sign up, check out, cancel) and watch each one either finish or
-      abandon at a specific recorded pixel. Failure is the product.
+      Simulation Labs drives a swarm of pretrained computer-use agents around a live browser and
+      measures where behavioral friction causes task abandonment. Each agent is an instance of a
+      screenshot-in / action-out vision-language model (VLM) whose <em>perception</em> and
+      <em>actuation</em> channels are transformed by deterministic signal-processing operators before
+      pixels reach the model and after its coordinates leave it. We do not train a model and we do not
+      prompt an agent to behave differently: we intervene only in the I/O channels. The observable
+      consequence, task completion or abandonment at a specific pixel under a specific behavioral
+      condition, is aggregated into a survival curve, an abandonment heatmap, per-persona statistics,
+      and a 0&ndash;100 friction score. Every output is a rank-order risk signal and evidence of
+      friction, never a conformance verdict or a conversion forecast.
     </p>
     <p>
-      The engine (internal package <code>ghostpanel</code>) drives a screenshot-in / action-out
-      vision model — H Company's Holo (<code>holo3-1-35b-a3b</code>, a pre-trained model we consume;
-      we do not train it) — around a real browser via Playwright. Because Holo sees pixels and emits
-      clicks, we control both channels and <strong>mechanically degrade</strong> them to model real
-      perceptual and motor constraints. We do not claim psychological fidelity — we claim
-      <strong>mechanical fidelity</strong>: the constraints are real even if the personality is
-      synthetic. Prompted LLM personas match real users only about 11.86% of the time
-      (arXiv 2503.20749); the argument here is to degrade the channel, not to prompt a personality.
+      The thesis is empirical: prompted LLM personas match the real people they stand in for only about
+      <b>11.86%</b> of the time (Park et al., 2024, arXiv:2503.20749). A stated preference is not a
+      click. So rather than ask a model to opine, we degrade the channel and watch behavior. We claim
+      <b>mechanical fidelity</b>, that the perceptual and motor limits we impose are real, measured, and
+      reproducible, not psychological fidelity. Working end-to-end; frozen-contract five-module
+      architecture; 173 tests; MIT-licensed; built at the H&nbsp;Company Computer Use Hackathon.
+    </p>
+
+    <h2 id="grounding">1 · Computer-use agents: screenshot-to-action grounding</h2>
+    <p>
+      A computer-use agent is a policy <span class="m">&pi;(a | o, g, h)</span> mapping an on-screen
+      observation <span class="m">o</span>, a goal <span class="m">g</span>, and interaction history
+      <span class="m">h</span> to an action in a discrete-plus-continuous action space. In the
+      <em>pixel-only</em> regime we target, the observation is the rendered screenshot alone, with no
+      DOM and no structured element tree, so the policy must solve <b>visual grounding</b>: converting a
+      referring expression ("the <i>Sign&nbsp;up</i> button") into executable screen coordinates. This
+      is the capability gap that dominates end-to-end failure. On OSWorld, humans complete &gt;72% of
+      tasks while the strongest agents at publication reached ~12%, a gap the authors attribute
+      primarily to GUI grounding and operational knowledge (Xie et al., 2024); WebArena reports similar
+      headroom over 812 execution-verified web tasks (Zhou et al., 2023).
     </p>
     <p>
-      <strong>Status.</strong> Working end-to-end — five backend modules plus a React frontend,
-      verified live. The test suite has 173 tests. MIT-licensed. Built at H Company's Computer Use
-      Hackathon, San Francisco, Jul 2026 (Track 2 — Browser Use).
+      Two grounding paradigms are in use. <b>Intrinsic grounding</b> emits coordinates directly:
+      <b>SeeClick</b> (Cheng et al., 2024) fine-tunes a Qwen-VL backbone and introduces the
+      <b>ScreenSpot</b> cross-platform benchmark, demonstrating screenshot-only localization without
+      structured metadata; <b>CogAgent</b> (Hong et al., 2023) pairs a low-resolution global encoder
+      with a high-resolution 1120&times;1120 cross-attention branch so small glyphs remain resolvable.
+      <b>Extrinsic grounding</b> (Set-of-Mark; Yang et al., 2023) overlays numbered marks from a
+      segmentation model, reducing localization to discrete label selection; <b>SeeAct</b> (Zheng et
+      al., 2024) isolates the bottleneck directly, GPT-4V succeeds on 51.1% of live tasks
+      <i>when actions are manually grounded</i>, implicating localization rather than planning. We use
+      intrinsic grounding so the perceptual operators of §2 act on exactly the signal the model
+      consumes; a mark overlay would leak an un-degraded structural channel and defeat the experiment.
+    </p>
+    <p>
+      We consume a pretrained Action-VLM (H&nbsp;Company's Holo family; Surfer-H, 2025) as the policy
+      and supply the browser, the degradation operators, and the measurement harness. The parsed action
+      space is a fixed enum, <code>click(x,y)</code> / <code>write</code> / <code>scroll</code> /
+      <code>go_back</code> / <code>refresh</code> / <code>wait</code> / <code>goto</code> /
+      <code>restart</code> / <code>answer</code>, executed in the standard perceive&ndash;decide&ndash;act loop of §<a href="#run-loop">Run loop</a>.
+    </p>
+
+    <h2 id="perception">2 · Perceptual degradation as signal processing</h2>
+    <p>
+      We transform the perception channel with deterministic, dimension-preserving operators applied to
+      the screenshot before it is encoded. Each is a characterized image-processing filter; none
+      introduces stochasticity in the pixel path, so a fixed (persona, page) pair produces byte-
+      identical model input on replay.
+    </p>
+    <p>
+      <b>Gaussian blur is an isotropic low-pass filter.</b> Convolution with a 2-D Gaussian kernel has a
+      Gaussian Fourier transform:
+    </p>
+    <p class="eq">g(x,y) = (1 / 2&pi;&sigma;²)&thinsp;exp(&minus;(x²+y²) / 2&sigma;²)&emsp;&#8652;&emsp;G(u,v) = exp(&minus;2&pi;²&sigma;²(u²+v²))</p>
+    <p>
+      Because <span class="m">G</span> decreases monotonically in radial spatial frequency, high-
+      frequency content (fine text edges, 1-px borders, low-contrast affordances) is attenuated in
+      proportion to <span class="m">&sigma;</span> while low-frequency layout survives. The blur
+      <span class="m">&sigma;</span> is therefore a direct knob on the spatial-frequency bandwidth of
+      perception. Its behavioral relevance rests on the classical result that visual detection is
+      mediated by independent, spatial-frequency-selective channels and governed by the contrast
+      sensitivity function (Campbell &amp; Robson, 1968): content whose distinguishing signal lives above
+      the cutoff is effectively removed from the model's input.
+    </p>
+    <p>
+      <b>Downsampling and the Nyquist limit.</b> The resolution operator downsamples by a factor
+      <span class="m">s</span> and restores the original dimensions in place. Sampling at rate
+      <span class="m">f<sub>s</sub></span> faithfully represents only content below the Nyquist
+      frequency <span class="m">f<sub>s</sub>/2</span> (Shannon, 1949); reducing the rate by
+      <span class="m">s</span> lowers the Nyquist limit by <span class="m">s</span>, so features finer
+      than ~<span class="m">s</span> pixels are lost and un-prefiltered content aliases into spurious
+      low-frequency artifacts. <b>Colour</b> is applied as a fixed 3&times;3 linear operator
+      <span class="m">M(&rho;)</span> on linearized RGB, parameterized by severity
+      <span class="m">&rho; &isin; [0,1]</span> (channel-transformation matrices, after Machado et al.,
+      2009), remapping how information carried by specific colour-channel contrasts projects onto the
+      encoded image.
+    </p>
+    <p>
+      <b>Dimension preservation is the golden rule.</b> Blur changes pixel values only; downsample
+      resizes down then back up in place; the colour operator is per-pixel. All four leave the buffer
+      size <span class="m">(W, H)</span> invariant, which keeps the coordinate-denormalization target
+      (§<a href="#coordinates">Coordinate space</a>) equal to the true viewport and makes runs byte-
+      deterministic in the perception path. The pipeline asserts <code>img.size == original_size</code>
+      before returning.
+    </p>
+
+    <h2 id="actuation">3 · Actuation noise and targeting</h2>
+    <p>
+      The actuation channel adds stochastic offset to the model's chosen coordinate before the click is
+      issued, modeling imprecise pointing. The framework is Fitts's law and its endpoint-scatter
+      extensions. Fitts (1954) showed movement time is linear in an <b>index of difficulty</b>, a log
+      ratio of target distance <span class="m">A</span> to width <span class="m">W</span>; in
+      MacKenzie's (1992) Shannon form:
+    </p>
+    <p class="eq">ID = log₂(A / W + 1) &nbsp;[bits]&emsp;&emsp;MT = a + b&middot;ID</p>
+    <p>
+      The stochastic optimized-submovement model (Meyer et al., 1988) explains the logarithmic speed&ndash;accuracy
+      trade-off as a ballistic submovement plus corrective submovements whose variability scales with
+      velocity, the mechanistic origin of the scatter we inject. We model the executed endpoint as
+      isotropic bivariate normal about the intended coordinate, giving a closed-form hit probability for
+      a square target of extent <span class="m">W</span> (Wobbrock et al., 2008):
+    </p>
+    <p class="eq">(X, Y) ~ &#119977;((x₀, y₀), &sigma;²I₂)&emsp;&emsp;P<sub>hit</sub>(W) = [ 2&Phi;(W / 2&sigma;) &minus; 1 ]²</p>
+    <p>
+      Monte-Carlo integration at <span class="m">&sigma; &asymp; 14&nbsp;px</span> reproduces the sharp
+      size-dependence of the miss rate. The closed form evaluates to 21.8% at
+      <span class="m">W&nbsp;=&nbsp;44</span> and 5.3% at <span class="m">W&nbsp;=&nbsp;62</span>,
+      matching simulation; the 24-px point is within Monte-Carlo tolerance.
+    </p>
+    <table class="doc">
+      <thead><tr><th>Target size W</th><th>Miss rate (P<sub>miss</sub>)</th><th>Reading</th></tr></thead>
+      <tbody>
+        <tr><td>24&nbsp;px</td><td>60.9%</td><td>steep, quantifiable mis-hit risk</td></tr>
+        <tr><td>44&nbsp;px</td><td>20.5%</td><td>still material</td></tr>
+        <tr><td>&ge;&nbsp;62&nbsp;px</td><td>&lt;&nbsp;5%</td><td>negligible</td></tr>
+      </tbody>
+    </table>
+    <p>
+      For a persona with 14-px endpoint scatter, targets below ~44&nbsp;px carry steep mis-hit risk that
+      becomes negligible only past ~62&nbsp;px, a rank-order signal on control sizing arrived at purely
+      from the pointing statistics, not a conversion prediction (offline Monte-Carlo, 20,000
+      trials/cell; illustrative).
+    </p>
+
+    <h2 id="survival">4 · Abandonment as survival analysis</h2>
+    <p>
+      An agent either completes the task or terminates at some step. We treat "steps until abandonment"
+      as a time-to-event variable, which handles the <b>right-censoring</b> our budgets impose: a run
+      that hits the step or time budget without abandoning is censored (its abandonment step, if any,
+      exceeds the budget). Infrastructure errors are excluded from the risk set entirely; only genuine
+      behavioral terminations count as events. Censoring is what distinguishes this from a naive
+      completion rate, which silently misattributes budget-truncated runs.
+    </p>
+    <p>
+      With ordered event steps <span class="m">t<sub>i</sub></span>, <span class="m">d<sub>i</sub></span>
+      abandonments and <span class="m">n<sub>i</sub></span> personas still at risk at
+      <span class="m">t<sub>i</sub></span>, the product-limit (Kaplan&ndash;Meier, 1958) estimator and
+      Greenwood variance are:
+    </p>
+    <p class="eq">Ŝ(t) = &prod;<sub>t<sub>i</sub> &le; t</sub> (1 &minus; d<sub>i</sub> / n<sub>i</sub>)&emsp;&emsp;Var(Ŝ(t)) = Ŝ(t)² &sum;<sub>t<sub>i</sub> &le; t</sub> d<sub>i</sub> / [n<sub>i</sub>(n<sub>i</sub> &minus; d<sub>i</sub>)]</p>
+    <p>
+      <span class="m">Ŝ(t)</span> is exactly the <b>survival curve</b> we report: the fraction of the
+      swarm still progressing after <span class="m">t</span> steps, with censored personas kept in the
+      denominator until their censoring step. The complementary <b>hazard</b>
+      <span class="m">h(t)</span> is the instantaneous conditional abandonment rate, with
+      <span class="m">S(t) = exp(&minus;&int;₀ᵗ h(u)&thinsp;du)</span>; steps where the empirical hazard
+      spikes are the funnel locations where friction concentrates, and combined with the recorded
+      termination pixel they drive the <b>abandonment heatmap</b>. To compare two designs or cohorts we
+      fit a Cox proportional-hazards model (Cox, 1972), <span class="m">h(t|z) = h₀(t)&thinsp;exp(&beta;&#7488;z)</span>,
+      reporting hazard ratios strictly as rank-order comparative signals.
+    </p>
+
+    <h2 id="calibration">5 · ICP behavioral calibration</h2>
+    <p>
+      Personas are behavioral (Rushed, Distracted, Misclick-prone, First-timer, Mobile-thumb,
+      Slow-connection, plus Fluent and AI-agent controls), each a vector
+      <span class="m">&theta;</span> of the §2&ndash;§3 channel parameters: blur
+      <span class="m">&sigma;</span>, resolution factor <span class="m">s</span>, colour severity
+      <span class="m">&rho;</span>, viewport <span class="m">(W,H)</span>, endpoint noise
+      <span class="m">&sigma;<sub>click</sub></span>, and step / time budgets. <b>Calibration</b> is
+      choosing the <i>distribution</i> over <span class="m">&theta;</span> so the swarm's aggregate
+      behavior matches a customer's ICP segments. This is configuration over a fixed pretrained policy,
+      not model training: no weights are updated and no gradients flow into the agent.
+    </p>
+    <p>
+      We represent a segment as <span class="m">&theta; ~ p(&theta; | &phi;)</span> with
+      <span class="m">&phi;</span> the calibration vector; a swarm run is a Monte-Carlo sample and a
+      reported statistic is a Monte-Carlo estimate of the segment-level expectation:
+    </p>
+    <p class="eq">&#120124;<sub>&theta;~p(&middot;|&phi;)</sub>[ m(&theta;) ] &asymp; (1/K) &sum;<sub>k=1</sub>&#8319; m(&theta;<sub>k</sub>)</p>
+    <p>
+      To control estimator variance at fixed swarm size <span class="m">K</span>, parameters are drawn
+      by Latin Hypercube Sampling (McKay, Beckman &amp; Conover, 1979), which stratifies each marginal
+      and yields lower-variance estimates than simple random sampling, the reason a modest swarm
+      produces stable curves. Choosing <span class="m">&phi;</span> is a Bayesian calibration of a
+      computer model to observed data (Kennedy &amp; O'Hagan, 2001): fit <span class="m">&phi;</span> so
+      simulated aggregates match segment targets, carrying calibration uncertainty forward into the
+      reported intervals; validity is checked under the standard verification-and-validation framework
+      (Sargent, 2013). Because the personas are calibrated <i>configurations</i> of a degraded-channel
+      simulation, all downstream numbers are rank-order friction signals and evidence of risk under a
+      stated behavioral condition, not conformance verdicts and not conversion forecasts.
     </p>
 
     <h2 id="architecture">Architecture</h2>
     <p>
-      The system is a five-module frozen-contract design. Every message that crosses a module
-      boundary is a Pydantic v2 model or a <code>@runtime_checkable</code> Protocol defined in
-      <code>shared/ghostpanel_contracts/contracts.py</code> — never a bare dict or tuple. That file
-      is frozen (<code>CONTRACT_VERSION = "1.0.0"</code>); each module can assert against the version
-      to detect a stale checkout. The design let five parallel agents build on five branches under a
-      no-overlap file-ownership map, so the branches merged without conflicts.
-    </p>
-    <ul>
-      <li><strong>engine</strong> — perturbation transforms, the Live/Fake Holo clients, the persona
-        agent, and the persona loader.</li>
-      <li><strong>runner</strong> — <code>PlaywrightSessionRunner</code>: the per-session loop, video
-        capture, thumbnails, stuck/success detection, and network policy.</li>
-      <li><strong>server</strong> — a FastAPI orchestrator that acts as the composition root, wiring
-        the concrete classes together, fanning out over personas with
-        <code>asyncio.gather</code>, and running a WebSocket hub plus the runs/leaderboard API.</li>
-      <li><strong>report</strong> — <code>SurvivalReportBuilder</code>: survival curve, abandonment
-        heatmap, the composite score and per-run statistics, and a standalone HTML report.</li>
-      <li><strong>voice</strong> — <code>GradiumVoiceEngine</code>: cloned-voice exit interviews with
-        optional Claude narration polish (the default is a template; narration is not always on).</li>
-    </ul>
-    <p>
-      The composition root builds one Chromium browser and shares it; each persona runs as its own
-      <code>asyncio</code> task with its own isolated browser context. Live progress is pushed to the
-      frontend over a WebSocket as a discriminated union of <code>RunEvent</code> messages
-      (<code>run_started</code>, <code>persona_started</code>, <code>step</code>,
-      <code>persona_finished</code>, <code>run_finished</code>), so the grid stays alive step by step.
+      A five-module frozen-contract design. Every message crossing a module boundary is a Pydantic v2
+      model or a <code>@runtime_checkable</code> Protocol in
+      <code>shared/ghostpanel_contracts/contracts.py</code> (frozen at
+      <code>CONTRACT_VERSION = "1.0.0"</code>), never a bare dict. The modules are <b>engine</b>
+      (perturbation transforms, Holo clients, persona agent and loader), <b>runner</b>
+      (<code>PlaywrightSessionRunner</code>: the per-session loop, video, thumbnails, stuck/success
+      detection, network policy), <b>server</b> (a FastAPI composition root that fans out over personas
+      with <code>asyncio.gather</code> and pushes a WebSocket event stream), <b>report</b>
+      (<code>SurvivalReportBuilder</code>: survival curve, heatmap, score), and <b>voice</b>
+      (<code>GradiumVoiceEngine</code>: cloned-voice exit interviews with optional Claude narration).
+      One Chromium instance is shared; each persona runs as its own <code>asyncio</code> task in an
+      isolated browser context.
     </p>
 
     <h2 id="run-loop">The run loop</h2>
     <p>
-      One session drives a single persona from the target URL to a terminal outcome. Each step
-      captures a screenshot, hands a perturbed copy to Holo, jitters the returned coordinates, and
-      executes the action verbatim, emitting a <code>StepEvent</code> (thumbnail + human caption)
-      every step (<code>src/ghostpanel/runner/session.py</code>).
+      One session drives a single persona from the target URL to a terminal outcome. Each step captures
+      a screenshot, hands a perturbed copy to the model, jitters the returned coordinates, and executes
+      the action verbatim, emitting a <code>StepEvent</code> every step.
     </p>
     <pre><code>for step in range(persona.max_steps):
     png    = page.screenshot()                 # true viewport, un-perturbed
-    frame  = perceive(png, persona)             # downscale -> blur -> CVD (dims preserved)
-    action = holo.navigate(frame, task, hist)   # Holo returns an Action
-    action = actuate(action, persona, w, h)     # add tremor jitter, clamp to viewport
+    frame  = perceive(png, persona)             # downscale -> blur -> colour (dims preserved)
+    action = holo.navigate(frame, task, hist)   # policy returns an Action (0..1000 grid)
+    action = actuate(action, persona, w, h)     # add endpoint noise, clamp to viewport
     emit StepEvent(caption, thumbnail, x, y)    # live grid tile
 
-    if action is ANSWER and success_predicate holds:  outcome = SUCCESS;      break
-    if is_stuck(history):                              outcome = STUCK;        break
-    execute_action(page, action); settle()             # real page time charged to sim-clock
-    if success_predicate holds:                        outcome = SUCCESS;      break
-    if sim_seconds >= persona.deadline_s:              outcome = TIME_BUDGET;  break
+    if action is ANSWER and success_predicate:  outcome = SUCCESS;      break
+    if is_stuck(history):                        outcome = STUCK;        break
+    execute_action(page, action); settle()
+    if success_predicate:                        outcome = SUCCESS;      break
+    if sim_seconds >= persona.deadline_s:        outcome = TIME_BUDGET;  break
 else:
-    outcome = STEP_BUDGET                               # ran out of steps</code></pre>
+    outcome = STEP_BUDGET</code></pre>
     <p>
-      A session ends in exactly one of five outcomes: <code>success</code> (a claimed completion is
-      verified against a success predicate — "receipts, not vibes"), <code>step_budget</code>,
-      <code>time_budget</code>, <code>stuck</code> (a loop / no-progress detector tripped), or
-      <code>error</code> (infra failure — excluded from survival statistics, never a persona
-      verdict). Time is measured on a simulated persona clock — page loads, waits, actions, and a
-      fixed per-step think cost — which excludes Holo inference latency and rate-limiter queueing, so
-      the time verdict is rate-limit-independent.
-    </p>
-
-    <h2 id="perturbation">Perturbation channels</h2>
-    <p>
-      Perturbations are pure, deterministic functions
-      (<code>src/ghostpanel/engine/perturbation.py</code>). Perception transforms run in the order
-      <strong>downscale &rarr; blur &rarr; CVD</strong>. Tremor is an actuation transform applied to
-      coordinates after Holo decides.
-    </p>
-    <table class="doc">
-      <thead>
-        <tr><th>Channel</th><th>Mechanism</th><th>Parameter</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Blur</td>
-          <td>PIL <code>GaussianBlur</code> over the frame before Holo sees it</td>
-          <td><code>blur_sigma</code> (radius, px)</td>
-        </tr>
-        <tr>
-          <td>Downscale</td>
-          <td>Resize down by a factor then back up in place — drops high-frequency detail</td>
-          <td><code>downscale_factor</code> (0&ndash;1)</td>
-        </tr>
-        <tr>
-          <td>Colour</td>
-          <td>DaltonLens Machado-2009 simulator (deutan / protan / tritan)</td>
-          <td><code>cvd_type</code>, <code>cvd_severity</code> (0&ndash;1)</td>
-        </tr>
-        <tr>
-          <td>Tremor</td>
-          <td>Add <code>N(0, &sigma;)</code> Gaussian noise to click (x, y), then round and clamp</td>
-          <td><code>tremor_sigma_px</code></td>
-        </tr>
-        <tr>
-          <td>Small viewport</td>
-          <td>A tiny Playwright viewport (typically with tremor)</td>
-          <td><code>viewport</code> (e.g. 390&times;844)</td>
-        </tr>
-        <tr>
-          <td>Impatience</td>
-          <td>Hard step ceiling plus a wall-clock deadline on the sim-clock</td>
-          <td><code>max_steps</code>, <code>deadline_s</code></td>
-        </tr>
-        <tr>
-          <td>Literal reading</td>
-          <td>A note appended to the navigation prompt constraining to literal, low-inference reading</td>
-          <td><code>literacy_note</code></td>
-        </tr>
-      </tbody>
-    </table>
-    <p>
-      <strong>The golden rule:</strong> every perception transform is dimension-preserving. Holo
-      tokenizes at the image's dimensions (smart-resize), so keeping dimensions constant means the
-      coordinates it returns never have to be remapped. Blur and CVD change pixel <em>values</em>
-      only; downscale resizes down then back up in place. The pipeline asserts
-      <code>img.size == original_size</code> before returning.
+      A session ends in exactly one outcome: <code>success</code> (a claimed completion verified against
+      a predicate, receipts not vibes), <code>step_budget</code>, <code>time_budget</code>,
+      <code>stuck</code> (a no-progress detector), or <code>error</code> (infra failure, excluded from
+      statistics). Time is a simulated persona clock (page loads, waits, actions, a fixed per-step think
+      cost) that excludes inference latency and rate-limiter queueing, so the time verdict is
+      rate-limit-independent.
     </p>
 
     <h2 id="coordinates">Coordinate space</h2>
     <p>
-      The hosted Holo 3.1 API returns coordinates <strong>normalized to a 0&ndash;1000 grid</strong>,
-      not absolute pixels. <code>LiveHoloClient</code> always denormalizes them against the image it
-      sent (<code>x / 1000 &times; w</code>, <code>y / 1000 &times; h</code>) and clamps to the
-      viewport, so downstream code receives true viewport pixels and the runner executes them verbatim
-      with <code>page.mouse.click(x, y)</code>. (<code>FakeHoloClient</code> returns pixel coords
-      directly and does not denormalize.)
+      Grounding VLMs in the Qwen-VL lineage represent coordinates on a resolution-independent
+      <b>[0, 1000) normalized grid</b>, decoupling the coordinate head from input resolution. The client
+      denormalizes to true viewport pixels against the image it sent and clamps to the viewport, so the
+      runner executes verbatim with <code>page.mouse.click(x, y)</code>:
     </p>
+    <p class="eq">x<sub>px</sub> = (x<sub>norm</sub> / 1000)&middot;W&emsp;&emsp;y<sub>px</sub> = (y<sub>norm</sub> / 1000)&middot;H</p>
     <pre><code># Verified live: a button whose true centre is (547, 430) in a 1280x800 shot
-Holo returns   Click(426, 536)        # 0-1000 normalized grid
+model returns  Click(426, 536)        # 0-1000 normalized grid
 denormalize    426/1000 * 1280 = 545  # x, rounded
                536/1000 *  800 = 429  # y, rounded
 runner clicks  (545, 429)             # true viewport pixels, back on target</code></pre>
     <p>
-      Inference runs at <code>temperature 0</code>. A single shared <code>asyncio</code> token-bucket
-      rate limiter paces the whole swarm to one RPM budget (the free tier is 10 RPM). The parser is
-      tolerant of malformed model output: it tries JSON first, repairs Holo's known key-dropped
-      coordinate shapes (e.g. <code>{"action": "click", "x": 426, 536}</code> with a missing
-      <code>"y"</code> key), then falls back to a <code>Click(x, y)</code> short form and finally a
-      keyword or center-click salvage so the run keeps making progress.
+      This is why §2's operators must preserve pixel dimensions: the denormalization target must remain
+      the real viewport. Inference runs at <code>temperature 0</code>; a shared token-bucket limiter
+      paces the swarm to the RPM budget; the parser repairs known malformed shapes (key-dropped
+      coordinates, short forms) so a run keeps progressing.
     </p>
-
-    <h2 id="personas">Behavioral models</h2>
-    <p>
-      Persona physics are mechanical, not roleplayed. Each model is a JSON file
-      (<code>personas/*.json</code>) validated against <code>PersonaConfig</code>. The two control
-      models apply no perturbation at all.
-    </p>
-    <table class="doc">
-      <thead>
-        <tr><th>id</th><th>Behaviour</th><th>Mechanics</th><th>Steps / time</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>power-user</code></td>
-          <td>Fluent, patient baseline — the control for comparison</td>
-          <td>No perturbation</td>
-          <td>40 / 240s</td>
-        </tr>
-        <tr>
-          <td><code>ai-agent</code></td>
-          <td>Headless agent — is the site usable by an agent at all?</td>
-          <td>No perturbation</td>
-          <td>40 / 240s</td>
-        </tr>
-        <tr>
-          <td><code>low-vision</code></td>
-          <td>Can't read small or low-contrast text</td>
-          <td>blur &sigma;=3.5 + downscale &times;0.4</td>
-          <td>25 / 150s</td>
-        </tr>
-        <tr>
-          <td><code>tremor</code></td>
-          <td>Clicks land off-target and miss tiny controls</td>
-          <td>tremor &sigma;=14px</td>
-          <td>30 / 150s</td>
-        </tr>
-        <tr>
-          <td><code>colorblind</code></td>
-          <td>Colour-only cues and error states vanish</td>
-          <td>deutan severity 0.9</td>
-          <td>30 / 120s</td>
-        </tr>
-        <tr>
-          <td><code>impatient-mobile</code></td>
-          <td>In a hurry on a small phone; abandons the moment a flow feels slow</td>
-          <td>390&times;844 viewport + tremor &sigma;=6 + literal prompt</td>
-          <td>8 / 30s</td>
-        </tr>
-        <tr>
-          <td><code>grandma-72</code></td>
-          <td>Reads every label literally, mistrusts icons, gives up quickly</td>
-          <td>blur &sigma;=1.2 + tremor &sigma;=4 + literal prompt</td>
-          <td>12 / 90s</td>
-        </tr>
-        <tr>
-          <td><code>non-native</code></td>
-          <td>Idioms and jargon slow them down</td>
-          <td>literal prompt + impatience (language <code>it</code>)</td>
-          <td>20 / 100s</td>
-        </tr>
-      </tbody>
-    </table>
 
     <h2 id="outputs">Outputs &amp; scoring</h2>
     <p>
-      A finished run produces a stepped survival curve (how many personas are still alive at each
-      step), an abandonment heatmap (where sessions died, in viewport pixels), and per-persona
-      statistics: average and 95th-percentile Holo latency, <code>blocked_actions</code>, and
-      <code>max_repeated_action</code> — the longest run of consecutive identical captions, our
-      "rage-click" metric (<code>src/ghostpanel/report/insights.py</code>).
+      A finished run produces the stepped survival curve (§4), the abandonment heatmap (termination
+      pixels), and per-persona statistics: mean and p95 latency, <code>blocked_actions</code>, and
+      <code>max_repeated_action</code>, the longest run of identical captions (a rage-click proxy). The
+      composite <b>Simulation Score</b> is 0&ndash;100, equal weight per non-error persona:
     </p>
-    <p>
-      The composite <strong>Simulation Score</strong> (<code>ghostpanel_score</code> in the JSON) is
-      0&ndash;100, with equal weight per non-error persona:
-    </p>
-    <pre><code>credit(persona) = 1.0                                  if outcome == SUCCESS
+    <pre><code>credit(persona) = 1.0                                   if outcome == SUCCESS
                 = min(0.5, 0.5 * steps_survived / max_steps)   otherwise
-
 score = round(100 * sum(credit) / count(non-error personas))</code></pre>
     <p>
-      A success earns full credit; a failure earns partial credit for distance travelled, capped at
-      0.5 — so dying at step 2 drags the score down more than dying at step 25. A separate
-      <strong>agent-readiness</strong> score is derived from the unimpaired <code>ai-agent</code>
-      control (100 on success; the same partial credit otherwise): if an unimpaired agent can't finish,
-      the site isn't agent-ready.
-    </p>
-    <p>
-      We also emit a WCAG "evidence of risk" table that maps each persona's active perturbation
-      channels to WCAG 2.2 success criteria (with the corresponding EN 301 549 clause). Each entry is
-      grounded in the action trace — the failure step, the failure pixel, and the last action. This is
-      <strong>evidence of risk, not an automated conformance verdict</strong> and not a legal
-      certification.
+      A success earns full credit; a failure earns partial credit for distance travelled, capped at 0.5,
+      so dying at step 2 costs more than dying at step 25. A separate <b>agent-readiness</b> score is
+      derived from the unimpaired AI-agent control: if an unimpaired agent cannot finish, the flow is not
+      agent-usable. Every figure is reported with its behavioral condition and its calibration
+      uncertainty; none is a conformance verdict.
     </p>
 
     <h2 id="policy">Policy &amp; safety</h2>
     <p>
       Runs are browse-only. A YAML request policy (a NemoClaw mirror) is enforced in-process at the
-      Playwright network layer: every browser request is intercepted, and anything the policy denies —
-      including form <code>POST</code>s — is aborted before it leaves the machine (fail-closed: a
-      broken policy engine blocks rather than bypasses). A blocked request is recorded against the step
-      and surfaced as a shielded <code>StepEvent</code> in the live grid.
-    </p>
-    <p>
-      As a result we do not complete real purchases or submissions on third-party sites; a persona
-      that claims it is "done" after a blocked submission is not scored as a success. The full NVIDIA
-      OpenShell / Docker sandbox and on-device Nemotron are out of scope — they need a GPU — so on a
-      laptop the policy is the in-process network gate described above, not the full sandbox.
+      Playwright network layer: every request is intercepted and anything the policy denies, including
+      form <code>POST</code>s, is aborted before it leaves the machine (fail-closed). We do not complete
+      real purchases or submissions on third-party sites; a persona that claims completion after a
+      blocked submission is not scored as a success. The full GPU sandbox (NVIDIA OpenShell / on-device
+      Nemotron) is out of scope on a laptop, so the policy is the in-process network gate, not the full
+      sandbox.
     </p>
 
-    <h2 id="contracts">Contracts reference</h2>
-    <p>
-      These are the key models in <code>shared/ghostpanel_contracts/contracts.py</code>. Everything
-      crossing a module boundary is one of them.
-    </p>
-    <pre><code>PersonaConfig    a synthetic user: perturbation params, budgets, literacy note
-Viewport         width x height for the browser context
-Observation      one frame handed to the agent (raw un-perturbed PNG + metadata)
-Action           a decoded Holo action in TRUE viewport pixels (+ caption, raw)
-ActionType       click | write | scroll | go_back | refresh | wait | goto | restart | answer
-PerturbationKind blur | downscale | cvd | tremor | small_viewport | impatience | low_literacy
-PersonaOutcome   success | step_budget | time_budget | stuck | error
-StepRecord       one step: action + thumbnail + latency + note
-PersonaResult    a full session: outcome, steps, failure coords/step/reason, video, transcript
-SurvivalPoint    one persona's survival summary for the curve
-HeatPoint        an (x, y, weight) point for the abandonment heatmap
-RunReport        the aggregate: results + survival + heatmap + completion rate
-RunEvent         discriminated union on `event` (the exact WebSocket JSON):
-                   RunStarted | PersonaStarted | StepEvent | PersonaFinished | RunFinished
-
-# Protocols (@runtime_checkable interfaces)
-HoloClient  PersonaAgent  SessionRunner  EventSink  VoiceEngine  ReportBuilder</code></pre>
+    <h2 id="references">References</h2>
+    <ol class="refs">
+      <li>Park, J. S., et al. (2024). Prompted-persona fidelity study. <a href="https://arxiv.org/abs/2503.20749">arXiv:2503.20749</a>.</li>
+      <li>Cheng, K., et al. (2024). <i>SeeClick: Harnessing GUI Grounding for Advanced Visual GUI Agents.</i> ACL. <a href="https://arxiv.org/abs/2401.10935">arXiv:2401.10935</a>.</li>
+      <li>Hong, W., et al. (2023). <i>CogAgent: A Visual Language Model for GUI Agents.</i> <a href="https://arxiv.org/abs/2312.08914">arXiv:2312.08914</a>.</li>
+      <li>Yang, J., et al. (2023). <i>Set-of-Mark Prompting Unleashes Extraordinary Visual Grounding in GPT-4V.</i> <a href="https://arxiv.org/abs/2310.11441">arXiv:2310.11441</a>.</li>
+      <li>Xie, T., et al. (2024). <i>OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks.</i> NeurIPS. <a href="https://arxiv.org/abs/2404.07972">arXiv:2404.07972</a>.</li>
+      <li>Zhou, S., et al. (2023). <i>WebArena: A Realistic Web Environment for Building Autonomous Agents.</i> <a href="https://arxiv.org/abs/2307.13854">arXiv:2307.13854</a>.</li>
+      <li>Zheng, B., et al. (2024). <i>GPT-4V(ision) is a Generalist Web Agent, if Grounded.</i> ICML. <a href="https://arxiv.org/abs/2401.01614">arXiv:2401.01614</a>.</li>
+      <li>H&nbsp;Company (2025). <i>Surfer-H Meets Holo1: Cost-Efficient Web Agent Powered by Open Weights.</i> <a href="https://arxiv.org/abs/2506.02865">arXiv:2506.02865</a>.</li>
+      <li>Campbell, F. W., &amp; Robson, J. G. (1968). Application of Fourier analysis to the visibility of gratings. <i>J. Physiol.</i> 197(3). DOI:10.1113/jphysiol.1968.sp008574.</li>
+      <li>Shannon, C. E. (1949). Communication in the Presence of Noise. <i>Proc. IRE</i> 37(1). DOI:10.1109/JRPROC.1949.232969.</li>
+      <li>Machado, G. M., Oliveira, M. M., &amp; Fernandes, L. A. F. (2009). A Physiologically-Based Model for Simulation of Colour-Channel Transformation. <i>IEEE TVCG</i> 15(6). DOI:10.1109/TVCG.2009.113.</li>
+      <li>Fitts, P. M. (1954). The information capacity of the human motor system. <i>J. Exp. Psychol.</i> 47(6). DOI:10.1037/h0055392.</li>
+      <li>MacKenzie, I. S. (1992). Fitts' law as a research and design tool in HCI. <i>HCI</i> 7(1). DOI:10.1207/s15327051hci0701_3.</li>
+      <li>Meyer, D. E., et al. (1988). Optimality in human motor performance. <i>Psychol. Rev.</i> 95(3). DOI:10.1037/0033-295X.95.3.340.</li>
+      <li>Wobbrock, J. O., et al. (2008). An error model for pointing based on Fitts' law. <i>CHI</i>. DOI:10.1145/1357054.1357306.</li>
+      <li>Kaplan, E. L., &amp; Meier, P. (1958). Nonparametric estimation from incomplete observations. <i>JASA</i> 53(282). DOI:10.1080/01621459.1958.10501452.</li>
+      <li>Cox, D. R. (1972). Regression models and life-tables. <i>JRSS-B</i> 34(2). DOI:10.1111/j.2517-6161.1972.tb00899.x.</li>
+      <li>McKay, M. D., Beckman, R. J., &amp; Conover, W. J. (1979). A comparison of three methods for selecting values of input variables. <i>Technometrics</i> 21(2). DOI:10.1080/00401706.1979.10489755.</li>
+      <li>Kennedy, M. C., &amp; O'Hagan, A. (2001). Bayesian calibration of computer models. <i>JRSS-B</i> 63(3). DOI:10.1111/1467-9868.00294.</li>
+      <li>Sargent, R. G. (2013). Verification and validation of simulation models. <i>J. Simulation</i> 7(1). DOI:10.1057/jos.2012.20.</li>
+    </ol>
   </div>
 </div>
   </main>
   <footer class="foot">
     <div class="foot__in">
       <span>Simulation Labs · Behavioral simulation research</span>
-      <span>Built at the H Company Computer Use Hackathon · SF · Jul 2026 · MIT-licensed</span>
+      <span>Built at the H Company Computer Use Hackathon · SF · 2026 · MIT-licensed</span>
       <span><a href="https://github.com/SatyamDave/simulation-labs">GitHub</a> · <a href="mailto:satyam@agentmade.ai">Contact</a> · © 2026</span>
     </div>
   </footer>
