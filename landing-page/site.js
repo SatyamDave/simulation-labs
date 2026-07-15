@@ -254,13 +254,10 @@
 
     function selectPill(k) { pills.forEach(function (p, j) { p.classList.toggle("on", j === k); }); }
     function swapLabel(text) {
-      label.classList.add("is-out");
-      setTimeout(function () {
-        label.textContent = text;
-        label.classList.remove("is-out");
-        label.classList.add("is-in");
-        setTimeout(function () { label.classList.remove("is-in"); }, 300);
-      }, 150);
+      label.textContent = text;          // change AT the tap (no lag)
+      label.classList.remove("is-in");
+      void label.offsetWidth;            // restart the wipe animation
+      label.classList.add("is-in");
     }
     function press(pill) {
       pill.classList.add("is-press");
@@ -269,6 +266,13 @@
       r.className = "pill-ripple";
       pill.appendChild(r);
       setTimeout(function () { if (r.parentNode) r.parentNode.removeChild(r); }, 560);
+    }
+    /* the tap gesture — fire the "impact" (chip + CTA change) exactly on press-down */
+    function clickGesture(onImpact) {
+      if (!cursor) { onImpact(); return; }
+      cursor.classList.add("is-click");
+      setTimeout(onImpact, 80);
+      setTimeout(function () { cursor.classList.remove("is-click"); }, 170);
     }
     function pillPoint(pill) {
       var dr = drive.getBoundingClientRect(), b = pill.getBoundingClientRect();
@@ -294,13 +298,17 @@
     }
     function cycle() {
       if (paused) { timer = setTimeout(cycle, 400); return; }
-      var pill = pills[i];
+      var k = i, pill = pills[k];
       moveTo(pillPoint(pill), function () {
-        press(pill);
-        selectPill(i);
-        swapLabel(pill.getAttribute("data-cta"));
-        i = (i + 1) % pills.length;
-        timer = setTimeout(cycle, 1650);
+        setTimeout(function () {
+          clickGesture(function () {   // impact fires chip + CTA together
+            press(pill);
+            selectPill(k);
+            swapLabel(pill.getAttribute("data-cta"));
+          });
+        }, 110);
+        i = (k + 1) % pills.length;
+        timer = setTimeout(cycle, 1750);
       });
     }
 

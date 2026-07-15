@@ -242,7 +242,7 @@
                 outcome=$("run-outcome"),oTxt=$("run-o-txt");
             var decoy=stage.querySelector(".run-decoy");
             var cursorTag=$("run-cursor-tag");
-            var CC={shaky:"#0F8A93",rushed:"#B7791F",skims:"#6D5EF6",first:"#C43E74"};
+            var CC={shaky:"#2E7CF6",rushed:"#B7791F",skims:"#6D5EF6",first:"#C43E74"};
             var CN={shaky:"Shaky hands",rushed:"Rushed",skims:"Skims the page",first:"First-timer"};
             var chips=Array.prototype.slice.call(root.querySelectorAll(".run-p"));
             var timers=[],raf=0,t0=0,cur="shaky",taps=0,misses=0;
@@ -432,7 +432,7 @@
             <div class="statcard"><div class="statcard__n n-ok">8/8</div><div class="statcard__l">dimension-preserving &middot; byte-deterministic</div></div>
           </div>
           
-          <p class="prose" style="color:#33363d;margin-bottom:1.6em">Honest technical notes on how the system works and what we've measured. Work in progress, not peer-reviewed; every number is tagged with how it was produced.</p>
+          <p class="prose" style="color:var(--muted);margin-bottom:1.6em">Honest technical notes on how the system works and what we've measured. Work in progress, not peer-reviewed; every number is tagged with how it was produced.</p>
           <div class="pub-grid">
             <article class="pub">
               <p class="pub__meta">Jul 2026 · Technical note</p>
@@ -476,7 +476,7 @@
       <div class="sect__in">
         <div class="sect__label"><span class="sect__k">05 — Design partners</span><h2>Test one flow with us</h2></div>
         <div class="sect__body">
-          <p class="prose" style="color:#33363d">We're taking on a small number of design partners. Bring one flow you care about — a checkout, a signup, a new onboarding — and we'll run the swarm against it and hand you the failure report, direct. Early, hands-on, and free while we're in this phase.</p>
+          <p class="prose" style="color:var(--muted)">We're taking on a small number of design partners. Bring one flow you care about — a checkout, a signup, a new onboarding — and we'll run the swarm against it and hand you the failure report, direct. Early, hands-on, and free while we're in this phase.</p>
           <div class="dp-grid">
             <div class="dp-item"><h3>Your flow, your ICP</h3><p>We build ICP models tuned to your real user segments and run them against your actual flow.</p></div>
             <div class="dp-item"><h3>A real failure report</h3><p>Survival curve, abandonment heatmap, the exact pixels, and per-model reasons — not a survey.</p></div>
