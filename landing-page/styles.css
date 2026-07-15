@@ -610,3 +610,60 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
 .cta-wedges span{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;
   color:var(--dim);border:1px solid var(--rule);padding:4px 9px;transition:background .3s ease,color .3s ease,border-color .3s ease}
 .cta-wedges span.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* ================================================================
+   AGENT-COLLABORATION LAYER — no petrol · Canva/Docs cursors ·
+   "an agent is driving this page" · smoother motion.
+   ================================================================ */
+
+/* de-petrol: hero dashboard goes LIGHT (matches the paper page) */
+.heroviz{--d-bg:#FFFFFF;--d-panel:#F6F5EF;--d-line:rgba(9,23,23,.12);--d-text:#091717;--d-mut:#5B6867;
+  --d-live:#20808D;--d-ok:#1A8F4C;--d-fail:#C0392B;
+  border-color:rgba(9,23,23,.14);
+  box-shadow:0 24px 54px -28px rgba(9,23,23,.28),0 6px 16px -8px rgba(9,23,23,.10)}
+.hv-chrome .hv-dot:nth-child(1){background:#E0655C}
+.hv-chrome .hv-dot:nth-child(2){background:#E7B23F}
+.hv-chrome .hv-dot:nth-child(3){background:#4FB477}
+.hv-live i{box-shadow:0 0 0 3px var(--accent-tint)}
+.hv-finding{color:var(--d-text);background:var(--fail-tint);border-color:rgba(192,57,43,.28)}
+.hv-finding b{color:var(--d-fail)}
+.hv-area{fill:rgba(32,128,141,.12)}
+
+/* de-petrol: MCP terminal → warm charcoal (not teal) */
+.qa-term{background:#1C1A17;border-color:#1C1A17;color:#EDEAE3}
+.qa-term .p{color:#5FC6CF}
+.qa-term .mut{color:#9A948A}
+
+/* collaborative labeled cursors (Canva / Google-Docs multiplayer style) */
+.agentcursor,.run-cursor{--cc:var(--accent)}
+.ac-inner,.rc-inner{position:relative;display:block}
+.ac-ptr,.rc-ptr{display:block}
+.ac-ptr path,.rc-ptr path{fill:var(--cc);stroke:#fff;stroke-width:1.4}
+.ac-tag,.rc-tag{position:absolute;left:15px;top:16px;background:var(--cc);color:#fff;
+  font-family:var(--ui);font-size:.66rem;font-weight:600;letter-spacing:-.01em;line-height:1.35;
+  padding:2px 7px;border-radius:3px;white-space:nowrap;box-shadow:0 3px 9px rgba(9,23,23,.26)}
+@media(prefers-reduced-motion:no-preference){
+  .ac-inner,.rc-inner{animation:cc-bob 3.4s ease-in-out infinite}
+  @keyframes cc-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+}
+/* smoother glide for the moving cursors (JS may override duration) */
+.agentcursor{transition:transform .95s cubic-bezier(.33,.66,.24,1)}
+.run-cursor{transition:transform .8s cubic-bezier(.33,.66,.24,1)}
+
+/* agent "selects" the CTA when it clicks (collaborator selection ring) */
+.ctacore{position:relative}
+.ctacore::after{content:"";position:absolute;inset:-4px;border:2px solid var(--accent);
+  pointer-events:none;opacity:0;transition:opacity .18s ease}
+.ctacore.show::after{opacity:.85}
+.ctabtn.is-agentclick{transform:scale(.975)}
+
+/* "a browser agent is driving this" hint under the CTA */
+.agent-hint{display:flex;align-items:center;gap:8px;margin:14px 0 0;font-family:var(--mono);
+  font-size:.72rem;color:var(--dim);letter-spacing:.01em;max-width:44ch;line-height:1.4}
+.agent-hint__dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:0 0 auto;
+  box-shadow:0 0 0 3px var(--accent-tint)}
+@media(prefers-reduced-motion:no-preference){.agent-hint__dot{animation:sl-pulse 1.7s ease-in-out infinite}}
+
+/* smoother global transitions */
+html{scroll-behavior:smooth}
+a,.btn,.run-p,.cta-wedges span,.hv-tile,.dp-item,.pub{transition-timing-function:cubic-bezier(.33,.66,.24,1)}

@@ -42,11 +42,12 @@
           <div class="hero-cta">
             <span class="ctacore">
               <a class="btn btn-lg btn-accent ctabtn" id="ctaBtn" href="#apply" aria-label="Apply for design-partner access"><span class="ctabtn__label" id="ctaLabel">Cut your checkout drop-off</span></a>
-              <span class="agentcursor" id="agentCursor" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19"><path d="M4 2 L4 20 L9 15 L12.5 22 L15 21 L11.5 14 L18 14 Z" fill="#091717" stroke="#fff" stroke-width="1.3"/></svg></span>
+              <span class="agentcursor" id="agentCursor" aria-hidden="true"><span class="ac-inner"><svg class="ac-ptr" viewBox="0 0 24 24" width="20" height="20"><path d="M4 2 L4 20 L9 15 L12.5 22 L15 21 L11.5 14 L18 14 Z"/></svg><span class="ac-tag">Simulation&nbsp;agent</span></span></span>
             </span>
             <a class="btn btn-lg btn-secondary" href="#product">See it run</a>
           </div>
           <p class="cta-wedges" id="ctaWedges" aria-hidden="true"><span class="on">Growth</span><span>Launch</span><span>CI/CD</span><span>On-demand</span></p>
+          <p class="agent-hint" aria-hidden="true"><span class="agent-hint__dot"></span>A browser agent is choosing this CTA — the same way it drives your real flow.</p>
           <p class="hero-note">
             <span class="pill"><span class="pill-dot" aria-hidden="true"></span>Now</span>
             One swarm, four ways to win. Taking on a small number of design partners.
@@ -142,7 +143,7 @@
                       <button class="run-target" id="run-target" type="button" tabindex="-1">Pay&nbsp;$48</button>
                     </div>
                   </div>
-                  <span class="run-cursor" id="run-cursor" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 2 L4 20 L9 15 L12.5 22 L15 21 L11.5 14 L18 14 Z" fill="#091717" stroke="#fff" stroke-width="1.3"/></svg></span>
+                  <span class="run-cursor" id="run-cursor" aria-hidden="true"><span class="rc-inner"><svg class="rc-ptr" viewBox="0 0 24 24" width="22" height="22"><path d="M4 2 L4 20 L9 15 L12.5 22 L15 21 L11.5 14 L18 14 Z"/></svg><span class="rc-tag" id="run-cursor-tag">Shaky hands</span></span></span>
                 </div>
                 <div class="run-cap" id="run-cap" role="status" aria-live="polite">Reading the page&hellip;</div>
               </div>
@@ -160,7 +161,7 @@
 
           <style>
           .run{--ok:#1A8F4C;--bad:#C0392B;font-family:var(--ui);color:var(--text);
-            border:1px solid var(--rule);background:var(--surface);padding:18px}
+            border:1px solid var(--rule);background:var(--surface);padding:18px;overflow:hidden}
           .run *,.run *::before,.run *::after{box-sizing:border-box}
           .run button{font-family:inherit}
           .run-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
@@ -177,7 +178,8 @@
           .run-body{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
           .run-stagewrap{flex:1 1 320px;min-width:0}
           .run-side{flex:1 1 190px;min-width:0}
-          .run-stage{position:relative;border:1px solid var(--rule);overflow:hidden;background:var(--surface)}
+          .run-stage{position:relative;border:1px solid var(--rule);overflow:visible;background:var(--surface)}
+          .run-page{overflow:hidden}
           .run-chrome{display:flex;align-items:center;gap:6px;padding:9px 13px;background:var(--surface-2);
             border-bottom:1px solid var(--rule)}
           .run-chrome .d{width:9px;height:9px;border-radius:50%}
@@ -234,6 +236,9 @@
                 cap=$("run-cap"),tapsEl=$("run-taps"),missEl=$("run-miss"),tEl=$("run-t"),
                 outcome=$("run-outcome"),oTxt=$("run-o-txt");
             var decoy=stage.querySelector(".run-decoy");
+            var cursorTag=$("run-cursor-tag");
+            var CC={shaky:"#20808D",rushed:"#B7791F",skims:"#6D5EF6",first:"#C43E74"};
+            var CN={shaky:"Shaky hands",rushed:"Rushed",skims:"Skims the page",first:"First-timer"};
             var chips=Array.prototype.slice.call(root.querySelectorAll(".run-p"));
             var timers=[],raf=0,t0=0,cur="shaky",taps=0,misses=0;
 
@@ -294,6 +299,8 @@
               outcome.className="run-outcome";oTxt.textContent="running…";
               page.classList.remove("blur");
               root.className="run p-"+p;
+              cursor.style.setProperty("--cc",CC[p]||"#20808D");
+              if(cursorTag)cursorTag.textContent=CN[p]||"Agent";
               chips.forEach(function(b){b.classList.toggle("is-on",b.getAttribute("data-p")===p);});
               cursor.style.transition="none";cursor.style.transform="translate(30px,26px)";
               t0=performance.now();
