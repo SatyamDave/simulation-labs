@@ -351,3 +351,125 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
 .apply-console .apply-form{max-width:none;padding:20px 18px 22px}
 .apply-console .apply-form .field span{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;
   text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.42rem}
+
+/* ================================================================
+   SERIES-A PASS: sticky nav · two-column hero + product dashboard ·
+   powered-by strip. Warm-light page, dark "monitor" product shot.
+   ================================================================ */
+
+/* --- sticky, blurred nav with a solid accent CTA --- */
+.masthead{position:sticky;top:0;z-index:60;border-bottom:1px solid var(--rule);
+  background:color-mix(in srgb,var(--bg) 80%,transparent);
+  -webkit-backdrop-filter:saturate(1.6) blur(12px);backdrop-filter:saturate(1.6) blur(12px)}
+.masthead__in{padding-top:14px;padding-bottom:14px}
+.nav .apply{background:var(--accent);border:1px solid var(--accent);color:#fff;border-radius:8px;
+  padding:8px 15px;font-weight:500;box-shadow:var(--shadow-sm)}
+.nav .apply:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff}
+.nav .apply::after{display:none}
+
+/* --- hero: two columns --- */
+.hero-sp{background:
+  radial-gradient(90% 70% at 82% -10%, var(--accent-tint), transparent 60%),
+  radial-gradient(70% 60% at 0% 0%, #FDF7EF, transparent 55%)}
+.hero-grid{max-width:1200px;margin:0 auto;padding:64px 24px 40px;
+  display:grid;grid-template-columns:1fr;gap:44px;align-items:center}
+@media(min-width:1000px){.hero-grid{grid-template-columns:1.02fr 1.1fr;gap:56px;padding:88px 24px 64px}}
+.hero-copy{min-width:0}
+.eyebrow-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);
+  margin-right:8px;vertical-align:middle}
+.hero-sp .eyebrow{display:inline-flex;align-items:center;margin-bottom:20px;
+  background:var(--surface);border:1px solid var(--rule);border-radius:999px;padding:6px 13px;
+  box-shadow:var(--shadow-sm);text-transform:none;letter-spacing:.02em;color:#4a4640;font-weight:500}
+.hero-sp h1{font-size:clamp(2.5rem,5.2vw,3.9rem);line-height:1.02;letter-spacing:-.035em;max-width:15ch}
+.hero-sp__sub{max-width:52ch;margin-top:1.2rem}
+.hero-cta{margin-top:32px}
+.pill{display:inline-flex;align-items:center;gap:7px}
+.pill-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+@media(prefers-reduced-motion:no-preference){.pill-dot{animation:sl-pulse 1.6s ease-in-out infinite}
+  @keyframes sl-pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 var(--accent-ring)}50%{opacity:.5;box-shadow:0 0 0 5px transparent}}}
+
+/* --- hero product dashboard (dark monitor) --- */
+.hero-viz-wrap{min-width:0;position:relative}
+.heroviz{
+  --d-bg:#17191E; --d-panel:#1E2127; --d-line:#2C3038; --d-text:#E9EAEC; --d-mut:#8B9099;
+  --d-live:#E8894E; --d-ok:#5FB07E; --d-fail:#E0655C;
+  font-family:var(--ui);color:var(--d-text);background:var(--d-bg);
+  border:1px solid var(--d-line);border-radius:16px;overflow:hidden;
+  box-shadow:0 30px 60px -22px rgba(24,20,16,.42),0 12px 24px -14px rgba(24,20,16,.28);
+  transform:perspective(1600px) rotateY(-1.2deg);transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.hero-viz-wrap:hover .heroviz{transform:perspective(1600px) rotateY(0deg) translateY(-3px)}
+@media(prefers-reduced-motion:reduce){.heroviz{transform:none}.hero-viz-wrap:hover .heroviz{transform:none}}
+.hv-chrome{display:flex;align-items:center;gap:7px;padding:11px 15px;background:var(--d-panel);
+  border-bottom:1px solid var(--d-line)}
+.hv-dot{width:10px;height:10px;border-radius:50%;background:#3A3F48}
+.hv-url{margin-left:10px;font-family:var(--mono);font-size:.74rem;color:var(--d-mut)}
+.hv-live{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);
+  font-size:.66rem;letter-spacing:.09em;text-transform:uppercase;color:var(--d-live)}
+.hv-live i{width:6px;height:6px;border-radius:50%;background:var(--d-live);box-shadow:0 0 0 3px rgba(232,137,78,.22)}
+@media(prefers-reduced-motion:no-preference){.hv-live i{animation:sl-pulse 1.5s ease-in-out infinite}}
+.hv-body{padding:16px 16px 18px}
+.hv-head{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between;margin-bottom:13px}
+.hv-h-title{font-size:.92rem;font-weight:600;letter-spacing:-.01em}
+.hv-h-meta{font-family:var(--mono);font-size:.72rem;color:var(--d-mut)}
+.hv-h-meta b{font-weight:500}
+.hv-ok{color:var(--d-ok)} .hv-fail{color:var(--d-fail)}
+.hv-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:15px}
+.hv-tile{background:var(--d-panel);border:1px solid var(--d-line);border-radius:9px;padding:9px 9px 8px;
+  display:flex;flex-direction:column;gap:6px;min-width:0}
+.hv-t-top{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hv-s{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--d-mut)}
+.hv-tile.is-ok{border-color:rgba(95,176,126,.4)} .hv-tile.is-ok .hv-s{background:var(--d-ok)}
+.hv-tile.is-fail{border-color:rgba(224,101,92,.4)} .hv-tile.is-fail .hv-s{background:var(--d-fail)}
+.hv-tile.is-run .hv-s{background:var(--d-live)}
+@media(prefers-reduced-motion:no-preference){.hv-tile.is-run .hv-s{animation:sl-pulse 1.4s ease-in-out infinite}}
+.hv-t-metric{font-family:var(--mono);font-size:.64rem;color:var(--d-mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hv-chart{background:var(--d-panel);border:1px solid var(--d-line);border-radius:10px;padding:11px 12px 9px;margin-bottom:12px}
+.hv-chart-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--d-mut)}
+.hv-svg{width:100%;height:64px;display:block}
+.hv-grid{stroke:var(--d-line);stroke-width:1}
+.hv-area{fill:rgba(232,137,78,.10)}
+.hv-line{fill:none;stroke:var(--d-live);stroke-width:2;stroke-linejoin:round}
+@media(prefers-reduced-motion:no-preference){
+  .hv-line{stroke-dasharray:900;stroke-dashoffset:900;animation:sl-trace 1.7s ease-out .25s forwards}}
+.hv-death{fill:var(--d-fail)}
+.hv-livedot{fill:var(--d-live)}
+@media(prefers-reduced-motion:no-preference){.hv-livedot{animation:sl-pulse 1.5s ease-in-out infinite}}
+.hv-axis{display:flex;justify-content:space-between;margin-top:5px;font-family:var(--mono);font-size:.6rem;color:var(--d-mut)}
+.hv-finding{display:flex;align-items:flex-start;gap:9px;font-size:.78rem;line-height:1.45;
+  color:#C9CCD2;background:rgba(224,101,92,.08);border:1px solid rgba(224,101,92,.24);
+  border-radius:9px;padding:9px 11px}
+.hv-finding b{color:var(--d-fail);font-weight:600}
+.hv-f-dot{width:7px;height:7px;border-radius:50%;background:var(--d-fail);flex:0 0 auto;margin-top:5px}
+.hv-cap{display:block;text-align:right;margin-top:10px;font-family:var(--mono);font-size:.64rem;color:var(--muted)}
+
+/* --- powered-by strip --- */
+.trust{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);background:var(--surface-2)}
+.trust__in{max-width:1200px;margin:0 auto;padding:20px 24px;display:flex;flex-wrap:wrap;
+  align-items:center;gap:12px 26px}
+.trust__label{font-family:var(--mono);font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.trust__logos{display:flex;flex-wrap:wrap;gap:10px 26px;list-style:none;margin:0;padding:0}
+.trust__logos li{font-family:var(--display);font-weight:600;font-size:1.02rem;letter-spacing:-.01em;
+  color:#57534c;white-space:nowrap}
+.trust__note{margin-left:auto;font-family:var(--mono);font-size:.66rem;color:var(--muted);letter-spacing:.02em}
+@media(max-width:720px){.trust__note{margin-left:0;flex-basis:100%}}
+
+/* hero load stagger now targets the copy column */
+@media(prefers-reduced-motion:no-preference){
+  .hero-copy>*{opacity:0;animation:sl-rise .64s cubic-bezier(.2,.7,.2,1) forwards}
+  .hero-copy>*:nth-child(1){animation-delay:.04s}
+  .hero-copy>*:nth-child(2){animation-delay:.10s}
+  .hero-copy>*:nth-child(3){animation-delay:.16s}
+  .hero-copy>*:nth-child(4){animation-delay:.24s}
+  .hero-copy>*:nth-child(5){animation-delay:.30s}
+  .hero-copy>*:nth-child(6){animation-delay:.36s}
+  .hero-viz-wrap{opacity:0;animation:sl-rise .8s cubic-bezier(.2,.7,.2,1) .28s forwards}
+}
+
+/* clean mobile header: brand + CTA only */
+@media(max-width:640px){
+  .nav{gap:0}
+  .nav a:not(.apply){display:none}
+  .nav .sep{display:none}
+}

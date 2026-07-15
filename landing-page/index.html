@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Simulation Labs — behavioral simulation research</title>
 <meta name="description" content="Simulation Labs is a research lab studying how real users behave — we run mechanically-degraded computer-use agents against your real flows, tuned to your ICP, to find exactly where users give up. We're taking on design partners." />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='white'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%231a56db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='white'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%23C2410C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body id="top">
   <header class="masthead">
     <div class="masthead__in">
       <a class="brand" href="#top" aria-label="Simulation Labs — home">
-        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#1a56db" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#C2410C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Simulation Labs</span>
       </a>
       <nav class="nav" aria-label="Primary">
@@ -28,25 +28,81 @@
 
   <main>
     <!-- ===== HERO ===== -->
-    <section class="hero-sp">
-      <div class="hero-sp__in">
-        <p class="eyebrow">simulation research lab</p>
-        <h1 class="hero-h1">See where it breaks.<span class="hero-rot" aria-hidden="true"><span id="rotword">Before you ship.</span><span class="hero-caret"></span></span></h1>
-        <p class="sr-only">See where it breaks — before you ship, launch, or lose the sale.</p>
-        <p class="hero-sp__sub">
-          We study how real users behave by running a swarm of computer-use agents through
-          your real flow — mechanically degraded and tuned to your ICP — and recording the
-          exact pixel where each one gives up. We simulate what users <em>do</em>, not what
-          they <em>say</em>.
-        </p>
-        <div class="hero-cta">
-          <a class="btn btn-lg" href="#apply">Apply for design-partner access</a>
-          <a class="textlink" href="#product">See it run →</a>
+    <section class="hero-sp" id="hero">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Behavioral simulation for real flows</p>
+          <h1 class="hero-h1">See where it breaks.<span class="hero-rot" aria-hidden="true"><span id="rotword">Before you ship.</span><span class="hero-caret"></span></span></h1>
+          <p class="sr-only">See where it breaks — before you ship, launch, or lose the sale.</p>
+          <p class="hero-sp__sub">
+            We run a swarm of computer-use agents through your real flow — mechanically
+            degraded and tuned to your ICP — and record the exact pixel where each one gives
+            up. We simulate what users <em>do</em>, not what they <em>say</em>.
+          </p>
+          <div class="hero-cta">
+            <a class="btn btn-lg btn-accent" href="#apply">Apply for design-partner access</a>
+            <a class="btn btn-lg btn-secondary" href="#product">See it run</a>
+          </div>
+          <p class="hero-note">
+            <span class="pill"><span class="pill-dot" aria-hidden="true"></span>Now</span>
+            Taking on a small number of design partners.
+          </p>
         </div>
-        <p class="hero-note">
-          <span class="pill">Now</span>
-          We're taking on a small number of design partners. Built at the H Company Computer Use Hackathon · SF · Jul 2026 · MIT-licensed.
-        </p>
+
+        <div class="hero-viz-wrap">
+          <div class="heroviz" role="img" aria-label="A simulation run dashboard: 12 agents ran a mobile checkout; 8 passed, 4 abandoned at the Pay button.">
+            <div class="hv-chrome">
+              <span class="hv-dot"></span><span class="hv-dot"></span><span class="hv-dot"></span>
+              <span class="hv-url">checkout.acme.com</span>
+              <span class="hv-live"><i></i>live</span>
+            </div>
+            <div class="hv-body">
+              <div class="hv-head">
+                <span class="hv-h-title">Swarm run — mobile checkout</span>
+                <span class="hv-h-meta">12 agents · <b class="hv-ok">8 passed</b> · <b class="hv-fail">4 abandoned</b></span>
+              </div>
+              <div class="hv-tiles">
+                <div class="hv-tile is-ok"><span class="hv-t-top"><i class="hv-s"></i>Rushed</span><span class="hv-t-metric">paid · 3.2s</span></div>
+                <div class="hv-tile is-fail"><span class="hv-t-top"><i class="hv-s"></i>Shaky hands</span><span class="hv-t-metric">gave up · Pay</span></div>
+                <div class="hv-tile is-fail"><span class="hv-t-top"><i class="hv-s"></i>Skims page</span><span class="hv-t-metric">gave up · Pay</span></div>
+                <div class="hv-tile is-run"><span class="hv-t-top"><i class="hv-s"></i>First-timer</span><span class="hv-t-metric">running · step 6</span></div>
+              </div>
+              <div class="hv-chart">
+                <div class="hv-chart-head"><span>Survival</span><span>agents alive vs. step</span></div>
+                <svg class="hv-svg" viewBox="0 0 420 116" preserveAspectRatio="none">
+                  <line class="hv-grid" x1="0" y1="20" x2="420" y2="20"/>
+                  <line class="hv-grid" x1="0" y1="62" x2="420" y2="62"/>
+                  <line class="hv-grid" x1="0" y1="104" x2="420" y2="104"/>
+                  <path class="hv-area" d="M0,18 L120,18 L120,44 L232,44 L232,70 L316,70 L420,70 L420,116 L0,116 Z"/>
+                  <path class="hv-line" d="M0,18 L120,18 L120,44 L232,44 L232,70 L316,70 L420,70"/>
+                  <circle class="hv-death" cx="120" cy="44" r="4"/>
+                  <circle class="hv-death" cx="232" cy="70" r="4"/>
+                  <circle class="hv-livedot" cx="316" cy="70" r="4"/>
+                </svg>
+                <div class="hv-axis"><span>100%</span><span>step budget →</span><span class="hv-ok">66%</span></div>
+              </div>
+              <div class="hv-finding">
+                <span class="hv-f-dot" aria-hidden="true"></span>
+                <span><b>Abandonment cluster —</b> “Pay $48” button · 4 of 12 agents missed or bounced here</span>
+              </div>
+            </div>
+          </div>
+          <span class="hv-cap">Representative run · illustrative</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== POWERED BY ===== -->
+    <section class="trust" aria-label="Powered by">
+      <div class="trust__in">
+        <span class="trust__label">Powered by</span>
+        <ul class="trust__logos">
+          <li>H&nbsp;Company Holo</li>
+          <li>Gradium</li>
+          <li>Anthropic Claude</li>
+          <li>NVIDIA NemoClaw</li>
+        </ul>
+        <span class="trust__note">Built at the H&nbsp;Company Computer Use Hackathon · SF · 2026 · MIT-licensed</span>
       </div>
     </section>
 
@@ -628,7 +684,7 @@
               <label class="field"><span>Work email</span><input type="email" name="email" autocomplete="email" required /></label>
               <label class="field"><span>What flow should we test?</span><input type="text" name="flow" placeholder="e.g. mobile checkout" /></label>
             </div>
-            <button class="btn btn-lg" type="submit">Apply for design-partner access</button>
+            <button class="btn btn-lg btn-accent" type="submit">Apply for design-partner access</button>
             <p class="apply-status" id="applyStatus" role="status" aria-live="polite" hidden></p>
           </form>
           </div>
