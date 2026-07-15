@@ -39,15 +39,20 @@
             degraded and tuned to your ICP — and record the exact pixel where each one gives
             up. We simulate what users <em>do</em>, not what they <em>say</em>.
           </p>
-          <div class="hero-cta">
-            <span class="ctacore">
+          <div class="hero-drive">
+            <div class="cta-wedges" id="ctaWedges" aria-hidden="true">
+              <span class="on" data-cta="Cut your checkout drop-off">Growth</span>
+              <span data-cta="De-risk your next launch">Launch</span>
+              <span data-cta="Gate every deploy">CI/CD</span>
+              <span data-cta="Verify from your terminal">On-demand</span>
+            </div>
+            <div class="hero-cta">
               <a class="btn btn-lg btn-accent ctabtn" id="ctaBtn" href="#apply" aria-label="Apply for design-partner access"><span class="ctabtn__label" id="ctaLabel">Cut your checkout drop-off</span></a>
-              <span class="agentcursor" id="agentCursor" aria-hidden="true"><span class="ac-inner"><svg class="ac-ptr" viewBox="0 0 24 24" width="20" height="20"><path d="M3.5 2 L3.5 16.8 L7.2 13.4 L9.9 19.9 L12.3 18.9 L9.7 12.6 L14.6 12.6 Z"/></svg><span class="ac-tag">Simulation&nbsp;agent</span></span></span>
-            </span>
-            <a class="btn btn-lg btn-secondary" href="#product">See it run</a>
+              <a class="btn btn-lg btn-secondary" href="#product">See it run</a>
+            </div>
+            <span class="agentcursor" id="agentCursor" aria-hidden="true"><span class="ac-inner"><svg class="ac-ptr" viewBox="0 0 24 24" width="20" height="20"><path d="M3.5 2 L3.5 16.8 L7.2 13.4 L9.9 19.9 L12.3 18.9 L9.7 12.6 L14.6 12.6 Z"/></svg><span class="ac-tag">Simulation&nbsp;agent</span></span></span>
+            <p class="agent-hint" aria-hidden="true"><span class="agent-hint__dot"></span>A browser agent is choosing the use-case — watch it pick.</p>
           </div>
-          <p class="cta-wedges" id="ctaWedges" aria-hidden="true"><span class="on">Growth</span><span>Launch</span><span>CI/CD</span><span>On-demand</span></p>
-          <p class="agent-hint" aria-hidden="true"><span class="agent-hint__dot"></span>A browser agent is choosing this CTA — the same way it drives your real flow.</p>
           <p class="hero-note">
             <span class="pill"><span class="pill-dot" aria-hidden="true"></span>Now</span>
             One swarm, four ways to win. Taking on a small number of design partners.
@@ -237,7 +242,7 @@
                 outcome=$("run-outcome"),oTxt=$("run-o-txt");
             var decoy=stage.querySelector(".run-decoy");
             var cursorTag=$("run-cursor-tag");
-            var CC={shaky:"#20808D",rushed:"#B7791F",skims:"#6D5EF6",first:"#C43E74"};
+            var CC={shaky:"#0F8A93",rushed:"#B7791F",skims:"#6D5EF6",first:"#C43E74"};
             var CN={shaky:"Shaky hands",rushed:"Rushed",skims:"Skims the page",first:"First-timer"};
             var chips=Array.prototype.slice.call(root.querySelectorAll(".run-p"));
             var timers=[],raf=0,t0=0,cur="shaky",taps=0,misses=0;

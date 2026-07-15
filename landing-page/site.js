@@ -233,67 +233,89 @@
     schedule(1600);
   }
 
-  /* Hero CTA: a synthetic agent's cursor drifts to the button, "clicks", and
-     retypes the label — cycling the four wedges. Pauses on hover so users can act. */
+  /* Hero CTA: the agent's cursor travels between the wedge chips, clicks one, and
+     the CTA crossfades to that wedge's copy. Distance-based easing keeps it smooth.
+     Pauses on hover/focus so a real visitor can take over. */
   function heroCta() {
-    var btn = document.getElementById("ctaBtn"),
+    var drive = document.querySelector(".hero-drive"),
         label = document.getElementById("ctaLabel"),
         cursor = document.getElementById("agentCursor"),
-        wedges = document.getElementById("ctaWedges");
-    if (!btn || !label) return;
-    var WEDGES = [
-      { tag: "Growth",    cta: "Cut your checkout drop-off" },
-      { tag: "Launch",    cta: "De-risk your next launch" },
-      { tag: "CI/CD",     cta: "Gate every deploy" },
-      { tag: "On-demand", cta: "Verify from your terminal" }
-    ];
-    var pills = wedges ? Array.prototype.slice.call(wedges.querySelectorAll("span")) : [];
+        wrap = document.getElementById("ctaWedges");
+    if (!drive || !label || !wrap) return;
+    var pills = Array.prototype.slice.call(wrap.querySelectorAll("span"));
+    if (!pills.length) return;
     if (reduce) {
       label.textContent = "Apply for design-partner access";
       if (cursor) cursor.style.display = "none";
+      selectPill(0);
       return;
     }
-    var i = 0, timer = null, paused = false;
-    function setPills(k) { pills.forEach(function (p, j) { p.classList.toggle("on", j === k); }); }
-    function typeTo(text, done) {
-      var cur = label.textContent, del = cur.length;
-      (function erase() {
-        if (del > 0) { label.textContent = cur.slice(0, --del); timer = setTimeout(erase, 20); }
-        else { var t = 0; (function type() {
-          if (t <= text.length) { label.textContent = text.slice(0, t++); timer = setTimeout(type, 42); }
-          else if (done) done();
-        })(); }
-      })();
+    var i = 0, timer = null, paused = false, pos = { x: 24, y: -6 }, placed = false;
+
+    function selectPill(k) { pills.forEach(function (p, j) { p.classList.toggle("on", j === k); }); }
+    function swapLabel(text) {
+      label.classList.add("is-out");
+      setTimeout(function () {
+        label.textContent = text;
+        label.classList.remove("is-out");
+        label.classList.add("is-in");
+        setTimeout(function () { label.classList.remove("is-in"); }, 300);
+      }, 150);
     }
-    var core = btn.parentElement;
-    function moveCursor(cb) {
+    function press(pill) {
+      pill.classList.add("is-press");
+      setTimeout(function () { pill.classList.remove("is-press"); }, 220);
+      var r = document.createElement("span");
+      r.className = "pill-ripple";
+      pill.appendChild(r);
+      setTimeout(function () { if (r.parentNode) r.parentNode.removeChild(r); }, 560);
+    }
+    function pillPoint(pill) {
+      var dr = drive.getBoundingClientRect(), b = pill.getBoundingClientRect();
+      return { x: b.left - dr.left + b.width / 2 - 3, y: b.top - dr.top + b.height / 2 - 2 };
+    }
+    function moveTo(pt, cb) {
       if (!cursor) { cb(); return; }
-      var cr = core.getBoundingClientRect(),
-          b = btn.getBoundingClientRect(),
-          x = b.left - cr.left + 28 + Math.random() * 70,
-          y = b.top - cr.top + b.height / 2 - 3;
-      cursor.style.transition = "transform 1s cubic-bezier(.33,.66,.24,1)";
-      cursor.style.transform = "translate(" + x + "px," + y + "px)";
-      setTimeout(cb, 1040);
+      var dist = Math.sqrt(Math.pow(pt.x - pos.x, 2) + Math.pow(pt.y - pos.y, 2)),
+          dur = Math.min(1.05, Math.max(0.5, dist / 560));
+      cursor.style.transition = "transform " + dur + "s cubic-bezier(.5,.02,.16,1)";
+      cursor.style.transform = "translate(" + pt.x + "px," + pt.y + "px)";
+      pos = pt;
+      setTimeout(cb, dur * 1000 + 70);
+    }
+    function place() {
+      if (placed) return;
+      placed = true;
+      var pt = pillPoint(pills[0]);
+      pos = pt;
+      if (cursor) { cursor.style.transition = "none"; cursor.style.transform = "translate(" + pt.x + "px," + pt.y + "px)"; }
+      i = 1;
+      timer = setTimeout(cycle, 1400);
     }
     function cycle() {
-      if (paused) { timer = setTimeout(cycle, 500); return; }
-      moveCursor(function () {
-        btn.classList.add("is-agentclick");
-        core.classList.add("show");
-        setTimeout(function () { btn.classList.remove("is-agentclick"); }, 220);
-        setTimeout(function () { core.classList.remove("show"); }, 680);
-        i = (i + 1) % WEDGES.length;
-        setPills(i);
-        typeTo(WEDGES[i].cta, function () { timer = setTimeout(cycle, 2400); });
+      if (paused) { timer = setTimeout(cycle, 400); return; }
+      var pill = pills[i];
+      moveTo(pillPoint(pill), function () {
+        press(pill);
+        selectPill(i);
+        swapLabel(pill.getAttribute("data-cta"));
+        i = (i + 1) % pills.length;
+        timer = setTimeout(cycle, 1650);
       });
     }
-    setPills(0);
-    label.textContent = WEDGES[0].cta;
-    btn.addEventListener("mouseenter", function () { paused = true; });
-    btn.addEventListener("mouseleave", function () { paused = false; });
-    btn.addEventListener("focusin", function () { paused = true; });
-    timer = setTimeout(cycle, 1900);
+
+    selectPill(0);
+    label.textContent = pills[0].getAttribute("data-cta");
+    ["mouseenter", "focusin"].forEach(function (e) { drive.addEventListener(e, function () { paused = true; }); });
+    ["mouseleave", "focusout"].forEach(function (e) { drive.addEventListener(e, function () { paused = false; }); });
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (ents) {
+        ents.forEach(function (e) { if (e.isIntersecting) { place(); io.disconnect(); } });
+      }, { threshold: 0.4 });
+      io.observe(drive);
+    } else {
+      setTimeout(place, 800);
+    }
   }
 
   buildEditorial();

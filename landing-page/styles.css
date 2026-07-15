@@ -9,11 +9,12 @@
   --rule:rgba(9,23,23,.12); --border-2:#CFD6D4; --code-bg:#F3F3EE;
   --bg-alt:#EFF5F4; --blue-tint:#E4F0F1; --card-blue:#D3E7E8;
   /* --- scalable teal accent scale (peacock) --- */
-  --accent-50:#EAF4F4; --accent-100:#D3E7E8; --accent-200:#B0D4D8; --accent-300:#8FC0C6;
-  --accent-400:#4E9DA7; --accent:#20808D; --accent-600:#1B6E7A; --accent-700:#155863;
-  --accent-hover:#1B6E7A; --accent-active:#155863; --accent-800:#13343B;
-  --accent-tint:#E4F0F1; --accent-ring:rgba(32,128,141,.32);
-  --cyan:#1FB8CD; --petrol:#13343B;
+  --accent-50:#E6F3F4; --accent-100:#C9E8EA; --accent-200:#9AD6DA; --accent-300:#5FBEC6;
+  --accent-400:#259EA9; --accent:#0F8A93; --accent-600:#0B717A; --accent-700:#0A5A62;
+  --accent-hover:#0B717A; --accent-active:#0A5A62; --accent-800:#0E4249;
+  --accent-tint:#E2F0F0; --accent-ring:rgba(15,138,147,.32);
+  --accent-grad:linear-gradient(180deg,#15A3AE 0%,#0F8A93 52%,#0C7B84 100%);
+  --cyan:#22C0D2; --petrol:#0E4249;
   /* --- semantic states (warm-tuned) --- */
   --ok:#1A8F4C; --ok-tint:#E4F2E9; --fail:#C0392B; --fail-tint:#F7E8E5; --warn:#B7791F;
   --shadow-sm:0 0 0 1px rgba(9,23,23,.05); --shadow-md:0 14px 34px -18px rgba(9,23,23,.20);
@@ -517,7 +518,7 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
 /* --- hero: white ground + halftone dither dot field (densest bottom-centre) --- */
 .hero-sp{background:var(--bg);position:relative;overflow:hidden}
 .hero-sp::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
-  background-image:radial-gradient(circle,rgba(32,128,141,.18) 1px,transparent 1.5px);
+  background-image:radial-gradient(circle,rgba(15,138,147,.18) 1px,transparent 1.5px);
   background-size:19px 19px;
   -webkit-mask-image:radial-gradient(115% 80% at 50% 118%,#000,transparent 60%);
   mask-image:radial-gradient(115% 80% at 50% 118%,#000,transparent 60%)}
@@ -618,7 +619,7 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
 
 /* de-petrol: hero dashboard goes LIGHT (matches the paper page) */
 .heroviz{--d-bg:#FFFFFF;--d-panel:#F6F5EF;--d-line:rgba(9,23,23,.12);--d-text:#091717;--d-mut:#5B6867;
-  --d-live:#20808D;--d-ok:#1A8F4C;--d-fail:#C0392B;
+  --d-live:#0F8A93;--d-ok:#1A8F4C;--d-fail:#C0392B;
   border-color:rgba(9,23,23,.14);
   box-shadow:0 24px 54px -28px rgba(9,23,23,.28),0 6px 16px -8px rgba(9,23,23,.10)}
 .hv-chrome .hv-dot:nth-child(1){background:#E0655C}
@@ -627,7 +628,7 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
 .hv-live i{box-shadow:0 0 0 3px var(--accent-tint)}
 .hv-finding{color:var(--d-text);background:var(--fail-tint);border-color:rgba(192,57,43,.28)}
 .hv-finding b{color:var(--d-fail)}
-.hv-area{fill:rgba(32,128,141,.12)}
+.hv-area{fill:rgba(15,138,147,.12)}
 
 /* de-petrol: MCP terminal → warm charcoal (not teal) */
 .qa-term{background:#1C1A17;border-color:#1C1A17;color:#EDEAE3}
@@ -671,3 +672,26 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
 /* smoother global transitions */
 html{scroll-behavior:smooth}
 a,.btn,.run-p,.cta-wedges span,.hv-tile,.dp-item,.pub{transition-timing-function:cubic-bezier(.33,.66,.24,1)}
+
+/* --- CTA drive v2: cursor travels the chips → CTA crossfades (smooth) --- */
+.hero-drive{position:relative;margin-top:30px}
+.hero-drive .hero-cta{margin-top:0}
+.hero-drive .cta-wedges{margin:0 0 15px}
+.cta-wedges span{position:relative;overflow:hidden;padding:6px 12px;font-size:.72rem;
+  transition:background .35s cubic-bezier(.4,.66,.24,1),color .35s,border-color .35s,transform .16s ease}
+.cta-wedges span.is-press{transform:scale(.93)}
+.pill-ripple{position:absolute;inset:0;border:2px solid var(--accent);pointer-events:none;
+  animation:pill-rip .55s ease-out forwards}
+@keyframes pill-rip{0%{opacity:.75;transform:scale(1)}100%{opacity:0;transform:scale(1.25)}}
+/* CTA label crossfade (replaces the janky typewriter) */
+.ctabtn__label{display:inline-block;transition:opacity .16s ease,transform .16s ease}
+.ctabtn__label::after{display:none}
+.ctabtn__label.is-out{opacity:0;transform:translateY(-5px)}
+.ctabtn__label.is-in{animation:label-in .3s cubic-bezier(.2,.7,.2,1)}
+@keyframes label-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* premium gradient CTA (depth) */
+.btn-accent{background:var(--accent-grad);border-color:var(--accent-active)}
+.btn-accent:hover{background:var(--accent-hover)}
+.btn-accent:focus-visible{box-shadow:0 0 0 3px var(--accent-ring)}
+/* cursor is a desktop delight; on mobile the chips + CTA still auto-cycle */
+@media(max-width:640px){.agentcursor{display:none}}
