@@ -255,11 +255,19 @@
       dots.push(a);
     });
     document.body.appendChild(rail);
+    var narr = document.createElement("div");
+    narr.className = "agentnarr";
+    narr.setAttribute("aria-hidden", "true");
+    narr.innerHTML = '<span class="agentnarr__dot"></span><span class="agentnarr__lbl">behavioral agent</span><span class="agentnarr__txt"></span>';
+    document.body.appendChild(narr);
+    var narrTxt = narr.querySelector(".agentnarr__txt");
     if ("IntersectionObserver" in window) {
       var io = new IntersectionObserver(function (ents) {
         ents.forEach(function (e) {
           if (!e.isIntersecting) return;
           dots.forEach(function (d) { d.classList.toggle("is-on", d.getAttribute("href") === "#" + e.target.id); });
+          var note = e.target.getAttribute("data-tour");
+          if (note) { narrTxt.textContent = "reading: " + note; narr.classList.add("show"); }
         });
       }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
       secs.forEach(function (s) { io.observe(s); });

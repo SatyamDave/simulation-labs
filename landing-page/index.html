@@ -51,7 +51,7 @@
     <section class="hero2" id="hero" data-tour="Start">
       <div class="hero2__in">
         <h1 class="saydo">They simulate what users <span class="hollow">say</span>.<br />We simulate what they <span class="solid">do</span>.</h1>
-        <p class="hero2__sub">A swarm of computer-use agents, each calibrated to a segment of your ICP, runs your real flow and logs the exact pixel where every one gives up.</p>
+        <p class="hero2__sub">A swarm of browser agents, each driven by a behavioral model custom-fit to your ICP, runs your real flow and logs the exact pixel where every one gives up.</p>
         <div class="hero2__cta">
           <span class="ctawrap">
             <a class="btn btn-lg btn-accent" id="ctaBtn" href="#apply">Apply for design-partner access</a>
@@ -115,9 +115,9 @@
     <section class="icp" id="icp" data-tour="Calibrated to your ICP">
       <div class="icp__in reveal">
         <div class="icp__lead">
-          <span class="sect__k">ICP-calibrated models</span>
-          <h2>Not a generic bot. A swarm tuned to <span class="solid">your</span> users.</h2>
-          <p class="icp__cap">Every persona is calibrated to a real segment of your ICP: how fast they move, how precisely they tap, how much patience they carry, what device they hold. Your funnel, your users, your failure modes. Not someone else's.</p>
+          <span class="sect__k">Custom models, per ICP</span>
+          <h2>A behavioral model custom-fit to <span class="solid">your</span> ICP, driving every browser agent.</h2>
+          <p class="icp__cap">We fit a model of how your real segments actually behave: how fast they move, how precisely they tap, how much patience they carry, what device they hold. That model drives the swarm of browser agents against your flow. Your funnel, your users, your failure modes. Not a generic bot.</p>
         </div>
         <ul class="icp__grid" aria-label="Example calibrated personas (illustrative)">
           <li><span class="icp-n">Rushed</span><span class="icp-p">step budget 6 · wall-clock 4.5s</span></li>
@@ -125,7 +125,7 @@
           <li><span class="icp-n">First-timer</span><span class="icp-p">re-reads · slow parse · times out</span></li>
           <li><span class="icp-n">Mobile thumb</span><span class="icp-p">viewport 390px · fat-finger offset</span></li>
         </ul>
-        <p class="icp__fine">Illustrative persona parameters. We calibrate the distribution to your segments; we do not train a new model, we tune a pre-trained one.</p>
+        <p class="icp__fine">Illustrative persona parameters. The behavioral model is fit and calibrated to your segments; the browser agent it drives is a pre-trained computer-use model we tune, not one trained from scratch.</p>
       </div>
     </section>
 
@@ -164,6 +164,34 @@
               <text class="vital__t" x="300" y="112" text-anchor="end">7 survived</text>
             </svg>
             <p class="rcard__note">illustrative &middot; each red gap is an abandonment step</p>
+          </figure>
+          <figure class="rcard">
+            <figcaption class="rcard__cap">agent cursor paths &middot; one run</figcaption>
+            <svg class="paths" viewBox="0 0 360 210" role="img" aria-label="Cursor paths from a swarm of agents converging on the Pay button, most ending in a miss.">
+              <rect class="paths__pay" x="250" y="150" width="74" height="30"/>
+              <text class="paths__pt" x="287" y="169" text-anchor="middle">Pay $48</text>
+              <path class="pth" d="M28,20 C110,60 190,112 256,158"/>
+              <path class="pth" d="M118,14 C150,80 224,132 300,176"/>
+              <path class="pth" d="M232,16 C252,68 250,120 264,150"/>
+              <path class="pth" d="M182,18 C202,90 262,140 322,172"/>
+              <path class="pth pth--ok" d="M60,24 C150,72 232,150 286,166"/>
+              <text class="pmk miss" x="256" y="162">&#10005;</text>
+              <text class="pmk miss" x="300" y="180">&#10005;</text>
+              <text class="pmk miss" x="264" y="154">&#10005;</text>
+              <text class="pmk miss" x="322" y="176">&#10005;</text>
+              <text class="pmk ok" x="286" y="170">&#10003;</text>
+            </svg>
+            <p class="rcard__note">illustrative &middot; one line is one agent's cursor; most miss</p>
+          </figure>
+          <figure class="rcard">
+            <figcaption class="rcard__cap">survival by persona &middot; small multiples</figcaption>
+            <div class="smx" aria-label="Per-persona survival: three personas flatline at different steps, one reaches Pay.">
+              <div class="smx__row"><span class="smx__n">Skims</span><svg class="smx__v" viewBox="0 0 120 22" preserveAspectRatio="none"><path class="smx__t" d="M0,7 L12,7 L15,3 L18,11 L21,7 L30,7 L30,16 L120,16"/><circle class="smx__x" cx="30" cy="16" r="2.6"/></svg><span class="smx__s">step 2</span></div>
+              <div class="smx__row"><span class="smx__n">Rushed</span><svg class="smx__v" viewBox="0 0 120 22" preserveAspectRatio="none"><path class="smx__t" d="M0,7 L16,7 L19,3 L22,11 L25,7 L48,7 L48,16 L120,16"/><circle class="smx__x" cx="48" cy="16" r="2.6"/></svg><span class="smx__s">step 3</span></div>
+              <div class="smx__row"><span class="smx__n">Misclick</span><svg class="smx__v" viewBox="0 0 120 22" preserveAspectRatio="none"><path class="smx__t" d="M0,7 L20,7 L23,3 L26,11 L29,7 L78,7 L78,16 L120,16"/><circle class="smx__x" cx="78" cy="16" r="2.6"/></svg><span class="smx__s">step 6</span></div>
+              <div class="smx__row"><span class="smx__n">Fluent</span><svg class="smx__v" viewBox="0 0 120 22" preserveAspectRatio="none"><path class="smx__t smx__t--ok" d="M0,7 L26,7 L29,3 L32,11 L35,7 L120,7"/><circle class="smx__ok" cx="118" cy="7" r="2.6"/></svg><span class="smx__s smx__s--ok">paid</span></div>
+            </div>
+            <p class="rcard__note">illustrative &middot; each trace flatlines where that persona gave up</p>
           </figure>
         </div>
         <p class="r-foot">Plus per-persona stats, video receipts, and cloned-voice exit interviews, all grounded in the real action trace.</p>
