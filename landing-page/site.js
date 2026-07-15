@@ -233,6 +233,66 @@
     schedule(1600);
   }
 
+  /* Hero CTA: a synthetic agent's cursor drifts to the button, "clicks", and
+     retypes the label — cycling the four wedges. Pauses on hover so users can act. */
+  function heroCta() {
+    var btn = document.getElementById("ctaBtn"),
+        label = document.getElementById("ctaLabel"),
+        cursor = document.getElementById("agentCursor"),
+        wedges = document.getElementById("ctaWedges");
+    if (!btn || !label) return;
+    var WEDGES = [
+      { tag: "Growth",    cta: "Cut your checkout drop-off" },
+      { tag: "Launch",    cta: "De-risk your next launch" },
+      { tag: "CI/CD",     cta: "Gate every deploy" },
+      { tag: "On-demand", cta: "Verify from your terminal" }
+    ];
+    var pills = wedges ? Array.prototype.slice.call(wedges.querySelectorAll("span")) : [];
+    if (reduce) {
+      label.textContent = "Apply for design-partner access";
+      if (cursor) cursor.style.display = "none";
+      return;
+    }
+    var i = 0, timer = null, paused = false;
+    function setPills(k) { pills.forEach(function (p, j) { p.classList.toggle("on", j === k); }); }
+    function typeTo(text, done) {
+      var cur = label.textContent, del = cur.length;
+      (function erase() {
+        if (del > 0) { label.textContent = cur.slice(0, --del); timer = setTimeout(erase, 20); }
+        else { var t = 0; (function type() {
+          if (t <= text.length) { label.textContent = text.slice(0, t++); timer = setTimeout(type, 42); }
+          else if (done) done();
+        })(); }
+      })();
+    }
+    function moveCursor(cb) {
+      if (!cursor) { cb(); return; }
+      var core = btn.parentElement.getBoundingClientRect(),
+          b = btn.getBoundingClientRect(),
+          x = b.left - core.left + 34 + Math.random() * 90,
+          y = b.top - core.top + b.height / 2 - 2;
+      cursor.style.transition = "transform .85s cubic-bezier(.4,.5,.2,1)";
+      cursor.style.transform = "translate(" + x + "px," + y + "px)";
+      setTimeout(cb, 900);
+    }
+    function cycle() {
+      if (paused) { timer = setTimeout(cycle, 500); return; }
+      moveCursor(function () {
+        btn.classList.add("is-agentclick");
+        setTimeout(function () { btn.classList.remove("is-agentclick"); }, 200);
+        i = (i + 1) % WEDGES.length;
+        setPills(i);
+        typeTo(WEDGES[i].cta, function () { timer = setTimeout(cycle, 2200); });
+      });
+    }
+    setPills(0);
+    label.textContent = WEDGES[0].cta;
+    btn.addEventListener("mouseenter", function () { paused = true; });
+    btn.addEventListener("mouseleave", function () { paused = false; });
+    btn.addEventListener("focusin", function () { paused = true; });
+    timer = setTimeout(cycle, 1900);
+  }
+
   buildEditorial();
   gridPubs();
   docsSpy();
@@ -241,4 +301,5 @@
   applyForm();
   reveals();
   heroRotate();
+  heroCta();
 })();

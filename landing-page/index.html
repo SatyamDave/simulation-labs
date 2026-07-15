@@ -40,12 +40,16 @@
             up. We simulate what users <em>do</em>, not what they <em>say</em>.
           </p>
           <div class="hero-cta">
-            <a class="btn btn-lg btn-accent" href="#apply">Apply for design-partner access</a>
+            <span class="ctacore">
+              <a class="btn btn-lg btn-accent ctabtn" id="ctaBtn" href="#apply" aria-label="Apply for design-partner access"><span class="ctabtn__label" id="ctaLabel">Cut your checkout drop-off</span></a>
+              <span class="agentcursor" id="agentCursor" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19"><path d="M4 2 L4 20 L9 15 L12.5 22 L15 21 L11.5 14 L18 14 Z" fill="#091717" stroke="#fff" stroke-width="1.3"/></svg></span>
+            </span>
             <a class="btn btn-lg btn-secondary" href="#product">See it run</a>
           </div>
+          <p class="cta-wedges" id="ctaWedges" aria-hidden="true"><span class="on">Growth</span><span>Launch</span><span>CI/CD</span><span>On-demand</span></p>
           <p class="hero-note">
             <span class="pill"><span class="pill-dot" aria-hidden="true"></span>Now</span>
-            Taking on a small number of design partners.
+            One swarm, four ways to win. Taking on a small number of design partners.
           </p>
         </div>
 
@@ -109,456 +113,211 @@
     <!-- ===== PRODUCT (interactive) ===== -->
     <section class="sect sect--band" id="product">
       <div class="sect__in">
-        <div class="sect__label"><span class="sect__k">02 — Product</span><h2>Feel what your users feel</h2></div>
+        <div class="sect__label"><span class="sect__k">02 — Product</span><h2>Watch where users give up</h2></div>
         <div class="sect__body">
-          <div class="prose" style="max-width:64ch">
-            <p><strong>Your turn.</strong> Pick a behavioral model, then try to finish a simple checkout the way that user experiences it — with shaky taps, a blurred page, or a ticking clock. You&rsquo;ll feel exactly what your users are up against. Our agents do this at scale, on your live flow.</p>
+          <div class="prose" style="max-width:62ch">
+            <p><strong>Watch it happen.</strong> A synthetic user &mdash; perception and clicks mechanically degraded, tuned to your ICP &mdash; attempts a real checkout on its own. It reaches for the button, its aim drifts, it misses, and it gives up. Our swarm does this at scale on your live flow and records the exact pixel where each one breaks.</p>
           </div>
-          <div class="feel" id="feel-root">
-  <div class="feel-head">
-    <div class="feel-kicker">YOUR TURN &middot; HANDS-ON</div>
-    <h3 class="feel-title">Be the user. Try to pay.</h3>
-    <p class="feel-sub">Pick an ICP model, hit <b>Start</b>, then find and tap the small <b>Pay&nbsp;$48</b> button before you give up. You&rsquo;ll feel the exact friction our agents measure.</p>
-  </div>
-
-  <div class="feel-conds" role="group" aria-label="ICP model — tuned to your users">
-    <button class="feel-cond" id="feel-c-shaky"  type="button" aria-pressed="true">
-      <span class="feel-cond-name">Shaky hands</span>
-      <span class="feel-cond-tag">clicks land off-target</span>
-    </button>
-    <button class="feel-cond" id="feel-c-rushed" type="button" aria-pressed="false">
-      <span class="feel-cond-name">Rushed</span>
-      <span class="feel-cond-tag">in a hurry &middot; ~4s</span>
-    </button>
-    <button class="feel-cond" id="feel-c-skims"  type="button" aria-pressed="false">
-      <span class="feel-cond-name">Skims the page</span>
-      <span class="feel-cond-tag">can&rsquo;t read the labels</span>
-    </button>
-    <button class="feel-cond" id="feel-c-first"  type="button" aria-pressed="false">
-      <span class="feel-cond-name">First-timer</span>
-      <span class="feel-cond-tag">controls look alike</span>
-    </button>
-  </div>
-
-  <div class="feel-prompt-row">
-    <p class="feel-prompt" id="feel-prompt">&#128073; Your turn: find and tap <b>&ldquo;Pay&nbsp;$48&rdquo;</b>.</p>
-    <button class="feel-start" id="feel-start" type="button">Start</button>
-  </div>
-
-  <div class="feel-body">
-    <div class="feel-stagewrap">
-      <div class="feel-stage" id="feel-stage" aria-label="Mock checkout — click the correct control">
-        <div class="feel-mock" id="feel-mock">
-          <div class="feel-bar">
-            <span class="feel-dot"></span><span class="feel-dot"></span><span class="feel-dot"></span>
-            <span class="feel-url" id="feel-url">checkout.yourshop.com</span>
-          </div>
-          <div class="feel-page">
-            <div class="feel-mtitle" data-txt>Confirm &amp; pay</div>
-            <label class="feel-field">
-              <span class="feel-lbl" data-txt>Email</span>
-              <span class="feel-input" data-txt>you@example.com</span>
-            </label>
-            <label class="feel-field">
-              <span class="feel-lbl" data-txt>Card number</span>
-              <span class="feel-input" data-txt>&bull;&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;&bull;&nbsp;4242</span>
-            </label>
-            <div class="feel-summary">
-              <span data-txt>Order total</span><span class="feel-total" data-txt>$48.00</span>
+          <div class="run" id="run-root">
+            <div class="run-head">
+              <div class="run-personas" role="group" aria-label="Behavioral model">
+                <button class="run-p is-on" type="button" data-p="shaky">Shaky hands</button>
+                <button class="run-p" type="button" data-p="rushed">Rushed</button>
+                <button class="run-p" type="button" data-p="skims">Skims the page</button>
+                <button class="run-p" type="button" data-p="first">First-timer</button>
+              </div>
+              <span class="run-live"><i aria-hidden="true"></i>agent running</span>
             </div>
-            <div class="feel-actions">
-              <button class="feel-decoy"  id="feel-decoy"  type="button"><span data-txt>Keep shopping</span></button>
-              <button class="feel-target" id="feel-target" type="button"><span data-txt>Pay&nbsp;$48</span></button>
+            <div class="run-body">
+              <div class="run-stagewrap">
+                <div class="run-stage" id="run-stage">
+                  <div class="run-chrome"><span class="d"></span><span class="d"></span><span class="d"></span><span class="run-url">checkout.acme.com</span></div>
+                  <div class="run-page" id="run-page">
+                    <div class="run-title">Confirm &amp; pay</div>
+                    <div class="run-fld"><span class="run-lbl">Email</span><span class="run-inp">you@example.com</span></div>
+                    <div class="run-fld"><span class="run-lbl">Card number</span><span class="run-inp">&bull;&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;&bull;&nbsp;4242</span></div>
+                    <div class="run-sum"><span>Order total</span><b class="run-total">$48.00</b></div>
+                    <div class="run-acts">
+                      <button class="run-decoy" type="button" tabindex="-1">Keep shopping</button>
+                      <button class="run-target" id="run-target" type="button" tabindex="-1">Pay&nbsp;$48</button>
+                    </div>
+                  </div>
+                  <span class="run-cursor" id="run-cursor" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 2 L4 20 L9 15 L12.5 22 L15 21 L11.5 14 L18 14 Z" fill="#091717" stroke="#fff" stroke-width="1.3"/></svg></span>
+                </div>
+                <div class="run-cap" id="run-cap" role="status" aria-live="polite">Reading the page&hellip;</div>
+              </div>
+              <div class="run-side">
+                <div class="run-hud">
+                  <div class="run-stat"><span class="run-n" id="run-taps">0</span><span class="run-l">taps</span></div>
+                  <div class="run-stat"><span class="run-n run-bad" id="run-miss">0</span><span class="run-l">misses</span></div>
+                  <div class="run-stat"><span class="run-n" id="run-t">0.0s</span><span class="run-l">elapsed</span></div>
+                </div>
+                <div class="run-outcome" id="run-outcome"><span class="run-o-dot" aria-hidden="true"></span><span id="run-o-txt">running&hellip;</span></div>
+                <p class="run-note">Representative run &middot; illustrative. We claim mechanical fidelity &mdash; a rank-order signal, not a forecast.</p>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="feel-veil" id="feel-veil"><span>Press <b>Start</b> to begin</span></div>
-      </div>
-      <div class="feel-stagenote">illustrative &middot; drawn mock, not your real site</div>
-    </div>
 
-    <div class="feel-side">
-      <div class="feel-clock" id="feel-clock" hidden>
-        <div class="feel-clock-track"><div class="feel-clock-fill" id="feel-clock-fill"></div></div>
-        <span class="feel-clock-txt" id="feel-clock-txt">4.5s</span>
-      </div>
-      <div class="feel-hud">
-        <div class="feel-stat"><span class="feel-stat-n" id="feel-tries">0</span><span class="feel-stat-l">taps</span></div>
-        <div class="feel-stat"><span class="feel-stat-n feel-bad-n" id="feel-misses">0</span><span class="feel-stat-l">misses</span></div>
-        <div class="feel-stat"><span class="feel-stat-n" id="feel-time">0.0s</span><span class="feel-stat-l">elapsed</span></div>
-      </div>
-      <p class="feel-status" id="feel-status" role="status" aria-live="polite">Pick a model, then press Start.</p>
-    </div>
-  </div>
+          <style>
+          .run{--ok:#1A8F4C;--bad:#C0392B;font-family:var(--ui);color:var(--text);
+            border:1px solid var(--rule);background:var(--surface);padding:18px}
+          .run *,.run *::before,.run *::after{box-sizing:border-box}
+          .run button{font-family:inherit}
+          .run-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+          .run-personas{display:flex;flex-wrap:wrap;gap:6px}
+          .run-p{font-family:var(--mono);font-size:.72rem;color:var(--muted);cursor:pointer;
+            background:var(--surface-2);border:1px solid var(--rule);padding:7px 11px;transition:all .14s ease}
+          .run-p:hover{border-color:var(--accent);color:var(--text)}
+          .run-p.is-on{background:var(--accent);color:#fff;border-color:var(--accent)}
+          .run-p:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+          .run-live{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.7rem;
+            letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+          .run-live i{width:7px;height:7px;border-radius:50%;background:var(--accent);
+            box-shadow:0 0 0 3px var(--accent-tint)}
+          .run-body{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+          .run-stagewrap{flex:1 1 320px;min-width:0}
+          .run-side{flex:1 1 190px;min-width:0}
+          .run-stage{position:relative;border:1px solid var(--rule);overflow:hidden;background:var(--surface)}
+          .run-chrome{display:flex;align-items:center;gap:6px;padding:9px 13px;background:var(--surface-2);
+            border-bottom:1px solid var(--rule)}
+          .run-chrome .d{width:9px;height:9px;border-radius:50%}
+          .run-chrome .d:nth-child(1){background:#E0655C}.run-chrome .d:nth-child(2){background:#E7B23F}.run-chrome .d:nth-child(3){background:#4FB477}
+          .run-url{margin-left:9px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+          .run-page{padding:17px 17px 19px;transition:filter .3s ease}
+          .run-page.blur{filter:blur(3.2px)}
+          .run-title{font-family:var(--display);font-size:1.2rem;font-weight:600;letter-spacing:-.02em;margin-bottom:15px}
+          .run-fld{margin-bottom:11px}
+          .run-lbl{display:block;font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:4px}
+          .run-inp{display:block;border:1px solid var(--rule);padding:8px 10px;font-size:.85rem;color:var(--text);background:var(--surface)}
+          .run-sum{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0 15px;font-size:.85rem;color:var(--muted)}
+          .run-total{font-size:1rem;font-weight:700;color:var(--text)}
+          .run-acts{display:flex;align-items:center;gap:10px}
+          .run-decoy{flex:0 0 auto;border:1px solid var(--rule);padding:12px 18px;font-size:1rem;font-weight:600;
+            background:var(--surface-2);color:var(--text)}
+          .run-target{flex:0 0 auto;border:0;padding:7px 13px;font-size:.82rem;font-weight:700;
+            background:var(--accent);color:#fff;margin-left:auto}
+          .run.p-skims .run-target{background:var(--surface-2);color:var(--text);border:1px solid var(--rule);font-weight:600}
+          .run-cursor{position:absolute;top:0;left:0;z-index:8;pointer-events:none;will-change:transform;
+            transform:translate(30px,26px);filter:drop-shadow(0 2px 4px rgba(9,23,23,.34))}
+          .run-cursor.click{transform:scale(.82)}
+          .run-x{position:absolute;z-index:7;width:20px;height:20px;margin:-10px 0 0 -10px;pointer-events:none;
+            font-weight:700;font-size:19px;line-height:20px;text-align:center;color:var(--bad)}
+          .run-x::before{content:"\2715"}
+          .run-x.hit{color:var(--ok)}.run-x.hit::before{content:"\2713"}
+          .run-x.anim{animation:run-ripple .7s ease-out forwards}
+          @keyframes run-ripple{0%{transform:scale(.4);opacity:0}30%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:0}}
+          .run-page.shake{animation:run-shake .26s}
+          @keyframes run-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+          .run-cap{margin-top:9px;font-family:var(--mono);font-size:.76rem;color:var(--muted);min-height:2.2em;line-height:1.4}
+          .run-hud{display:flex;gap:9px;margin-bottom:13px}
+          .run-stat{flex:1 1 0;min-width:0;background:var(--surface-2);border:1px solid var(--rule);padding:9px 8px;text-align:center}
+          .run-n{display:block;font-family:var(--mono);font-size:1.25rem;font-weight:700;line-height:1.1}
+          .run-l{display:block;font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-top:2px}
+          .run-bad{color:var(--bad)}
+          .run-outcome{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:.82rem;
+            border:1px solid var(--rule);padding:10px 12px;margin-bottom:13px;color:var(--muted)}
+          .run-o-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:0 0 auto}
+          .run-outcome.is-fail{background:var(--fail-tint);border-color:rgba(192,57,43,.3);color:var(--bad)}
+          .run-outcome.is-fail .run-o-dot{background:var(--bad)}
+          .run-note{margin:0;font-family:var(--ui);font-size:.74rem;color:var(--dim);line-height:1.5}
+          @media(max-width:520px){.run{padding:14px}.run-decoy,.run-target{padding-left:12px;padding-right:12px}}
+          @media(prefers-reduced-motion:reduce){.run-cursor,.run-page{transition:none!important}.run-x.anim{animation:none}.run-page.shake{animation:none}}
+          </style>
 
-  <div class="feel-payoff" id="feel-payoff" hidden>
-    <p class="feel-payoff-lead" id="feel-payoff-lead"></p>
-    <p class="feel-payoff-body">Simulation&nbsp;Labs runs agents like this against <b>your real flow</b> &mdash; a live checkout, a new launch, or wired into CI/CD &mdash; with perception and clicks mechanically degraded, and records the exact pixel where each ICP gives up.</p>
-    <p class="feel-fine">Illustrative demo. We claim mechanical fidelity, not psychology &mdash; a rank-order signal (which flow is worse, which fix helped), not a forecast.</p>
-  </div>
-</div>
+          <script>
+          (function(){
+            "use strict";
+            var root=document.getElementById("run-root"); if(!root) return;
+            var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+            var $=function(id){return document.getElementById(id);};
+            var stage=$("run-stage"),page=$("run-page"),target=$("run-target"),cursor=$("run-cursor"),
+                cap=$("run-cap"),tapsEl=$("run-taps"),missEl=$("run-miss"),tEl=$("run-t"),
+                outcome=$("run-outcome"),oTxt=$("run-o-txt");
+            var decoy=stage.querySelector(".run-decoy");
+            var chips=Array.prototype.slice.call(root.querySelectorAll(".run-p"));
+            var timers=[],raf=0,t0=0,cur="shaky",taps=0,misses=0;
 
-<style>
-  .feel{
-    --feel-ok:#1f9d57; --feel-bad:#d64545;
-    --feel-surface:var(--surface,#ffffff);
-    --feel-bg:var(--code-bg,#f6f7f8);
-    --feel-text:var(--text,#16181d);
-    --feel-muted:var(--muted,#6b7280);
-    --feel-accent:var(--accent,#1a56db);
-    --feel-rule:var(--rule,#e5e7eb);
-    --feel-ui:var(--ui,'Inter',system-ui,-apple-system,sans-serif);
-    --feel-mono:var(--mono,ui-monospace,Menlo,Consolas,monospace);
-    box-sizing:border-box; min-width:0; width:100%; overflow:hidden;
-    font-family:var(--feel-ui); color:var(--feel-text);
-    background:var(--feel-surface);
-    border:1px solid var(--feel-rule); border-radius:14px;
-    padding:20px; line-height:1.5;
-  }
-  .feel *,.feel *::before,.feel *::after{box-sizing:border-box}
-  .feel button{font-family:inherit}
+            function clearAll(){timers.forEach(clearTimeout);timers=[];if(raf){cancelAnimationFrame(raf);raf=0;}
+              var xs=stage.querySelectorAll(".run-x");for(var i=0;i<xs.length;i++)xs[i].remove();}
+            function after(ms,fn){var id=setTimeout(fn,ms);timers.push(id);return id;}
+            function centre(el){var s=stage.getBoundingClientRect(),b=el.getBoundingClientRect();
+              return {x:b.left-s.left+b.width/2,y:b.top-s.top+b.height/2};}
+            function moveTo(x,y,ms){cursor.style.transition="transform "+ms+"s cubic-bezier(.5,.4,.2,1)";
+              cursor.style.transform="translate("+x+"px,"+y+"px)";}
+            function elapsed(){return ((performance.now()-t0)/1000).toFixed(1);}
+            function tick(){tEl.textContent=elapsed()+"s";raf=requestAnimationFrame(tick);}
+            function cap_(s){cap.textContent=s;}
+            function clickAt(x,y,hit){taps++;tapsEl.textContent=taps;
+              cursor.classList.add("click");after(170,function(){cursor.classList.remove("click");});
+              var m=document.createElement("span");m.className="run-x"+(hit?" hit":"")+(reduce?"":" anim");
+              m.style.left=x+"px";m.style.top=y+"px";stage.appendChild(m);after(reduce?600:800,function(){m.remove();});
+              if(!hit){misses++;missEl.textContent=misses;page.classList.add("shake");after(250,function(){page.classList.remove("shake");});}}
+            function abandon(txt){if(raf){cancelAnimationFrame(raf);raf=0;}
+              outcome.className="run-outcome is-fail";oTxt.textContent=txt;
+              cap_("Abandoned. This is where the flow breaks — the exact pixel gets logged.");
+              after(2900,function(){start(cur);});}
 
-  .feel-kicker{font-size:.7rem;font-weight:600;letter-spacing:.09em;color:var(--feel-accent)}
-  .feel-title{font-family:var(--display,var(--feel-ui));font-size:clamp(1.25rem,3.6vw,1.6rem);
-    font-weight:600;line-height:1.15;margin:.35em 0 .2em}
-  .feel-sub{font-size:.95rem;color:var(--feel-muted);margin:0;max-width:56ch}
-  .feel-sub b,.feel-prompt b{color:var(--feel-text);font-weight:600}
+            var SCRIPTS={
+              shaky:[
+                [300,"Reading the page…",null],
+                [1150,"Reaching for “Pay $48”…",function(){var c=centre(target);moveTo(c.x-4,c.y-2,.9);}],
+                [2350,"Tremor — tap landed 22px off-target.",function(){var c=centre(target);clickAt(c.x+22,c.y+15,false);}],
+                [3350,"Adjusting aim…",function(){var c=centre(target);moveTo(c.x+15,c.y-16,.6);}],
+                [4150,"Missed again — the aim keeps drifting.",function(){var c=centre(target);clickAt(c.x+17,c.y-13,false);}],
+                [5300,"",function(){abandon("abandoned · missed Pay ×2");}]
+              ],
+              rushed:[
+                [300,"In a hurry — skimming fast…",null],
+                [950,"Grabbing the biggest button…",function(){var c=centre(decoy);moveTo(c.x,c.y,.5);}],
+                [1750,"Wrong one — doubling back…",function(){var c=centre(target);moveTo(c.x,c.y,.5);}],
+                [2600,"Hesitating past the patience budget…",null],
+                [3600,"",function(){abandon("bounced · out of patience");}]
+              ],
+              skims:[
+                [300,"Can’t read the labels (blurred)…",function(){page.classList.add("blur");}],
+                [1250,"Reaching for the biggest button…",function(){var c=centre(decoy);moveTo(c.x,c.y,.9);}],
+                [2500,"Clicked “Keep shopping” by mistake.",function(){var c=centre(decoy);clickAt(c.x,c.y,false);}],
+                [3700,"",function(){abandon("abandoned · wrong control");}]
+              ],
+              first:[
+                [300,"First time here — the controls look alike…",null],
+                [1250,"Comparing the two buttons…",function(){var c=centre(decoy);moveTo(c.x,c.y,.7);}],
+                [2200,"",function(){var c=centre(target);moveTo(c.x,c.y,.7);}],
+                [3050,"Still unsure which one pays…",function(){var c=centre(decoy);moveTo(c.x,c.y,.7);}],
+                [4100,"",function(){abandon("abandoned · never committed");}]
+              ]
+            };
 
-  /* ---- condition selector ---- */
-  .feel-conds{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 4px}
-  .feel-cond{flex:1 1 130px;min-width:0;text-align:left;cursor:pointer;
-    background:var(--feel-bg);border:1px solid var(--feel-rule);border-radius:10px;
-    padding:9px 11px;display:flex;flex-direction:column;gap:2px;color:var(--feel-text);
-    transition:border-color .12s,background .12s,box-shadow .12s}
-  .feel-cond:hover{border-color:var(--feel-accent)}
-  .feel-cond:focus-visible{outline:2px solid var(--feel-accent);outline-offset:2px}
-  .feel-cond[aria-pressed="true"]{background:var(--feel-surface);border-color:var(--feel-accent);
-    box-shadow:inset 0 0 0 1px var(--feel-accent)}
-  .feel-cond-name{font-size:.9rem;font-weight:600}
-  .feel-cond-tag{font-size:.72rem;color:var(--feel-muted)}
+            function start(p){
+              clearAll();cur=p;taps=0;misses=0;
+              tapsEl.textContent="0";missEl.textContent="0";tEl.textContent="0.0s";
+              outcome.className="run-outcome";oTxt.textContent="running…";
+              page.classList.remove("blur");
+              root.className="run p-"+p;
+              chips.forEach(function(b){b.classList.toggle("is-on",b.getAttribute("data-p")===p);});
+              cursor.style.transition="none";cursor.style.transform="translate(30px,26px)";
+              t0=performance.now();
+              if(reduce){
+                var c=centre(target);
+                var m=document.createElement("span");m.className="run-x";m.style.left=(c.x+20)+"px";m.style.top=(c.y+14)+"px";stage.appendChild(m);
+                taps=2;misses=2;tapsEl.textContent="2";missEl.textContent="2";
+                outcome.className="run-outcome is-fail";oTxt.textContent="abandoned · missed Pay";
+                cap_("Abandoned at “Pay $48” (motion paused).");return;
+              }
+              raf=requestAnimationFrame(tick);
+              SCRIPTS[p].forEach(function(st){after(st[0],function(){if(st[1])cap_(st[1]);if(st[2])st[2]();});});
+            }
 
-  /* ---- prompt row ---- */
-  .feel-prompt-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;
-    margin:16px 0 12px;padding:11px 13px;border:1px dashed var(--feel-rule);border-radius:10px;
-    background:var(--feel-bg)}
-  .feel-prompt{margin:0;font-size:1rem;font-weight:500;flex:1 1 200px;min-width:0}
-  .feel-start{cursor:pointer;border:0;border-radius:9px;padding:10px 20px;
-    background:var(--feel-accent);color:#fff;font-size:.95rem;font-weight:600;white-space:nowrap}
-  .feel-start:focus-visible{outline:2px solid var(--feel-accent);outline-offset:3px}
-  .feel-start:hover{filter:brightness(1.06)}
-  .feel.is-idle .feel-start{animation:feel-pulse 1.7s ease-in-out infinite}
-  @keyframes feel-pulse{0%,100%{box-shadow:0 0 0 0 rgba(26,86,219,.45)}50%{box-shadow:0 0 0 7px rgba(26,86,219,0)}}
+            chips.forEach(function(b){b.addEventListener("click",function(){start(b.getAttribute("data-p"));});});
 
-  /* ---- layout ---- */
-  .feel-body{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
-  .feel-stagewrap{flex:1 1 300px;min-width:0}
-  .feel-side{flex:1 1 200px;min-width:0}
-
-  /* ---- mock ---- */
-  .feel-stage{position:relative;border:1px solid var(--feel-rule);border-radius:12px;
-    overflow:hidden;background:var(--feel-surface)}
-  .feel-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--feel-bg);
-    border-bottom:1px solid var(--feel-rule)}
-  .feel-dot{width:9px;height:9px;border-radius:50%;background:var(--feel-rule)}
-  .feel-url{margin-left:8px;font-family:var(--feel-mono);font-size:.72rem;color:var(--feel-muted)}
-  .feel-page{padding:16px 16px 18px}
-  .feel-mtitle{font-family:var(--display,var(--feel-ui));font-size:1.15rem;font-weight:600;margin-bottom:14px}
-  .feel-field{display:block;margin-bottom:11px}
-  .feel-lbl{display:block;font-size:.72rem;font-weight:600;color:var(--feel-muted);margin-bottom:3px}
-  .feel-input{display:block;border:1px solid var(--feel-rule);border-radius:7px;padding:8px 10px;
-    font-size:.86rem;color:var(--feel-text);background:var(--feel-surface)}
-  .feel-summary{display:flex;justify-content:space-between;align-items:baseline;
-    padding:10px 0 14px;font-size:.85rem;color:var(--feel-muted)}
-  .feel-total{font-size:1rem;font-weight:600;color:var(--feel-text)}
-  .feel-actions{display:flex;align-items:center;gap:10px}
-  .feel-decoy{flex:0 0 auto;cursor:pointer;border:1px solid var(--feel-rule);border-radius:9px;
-    padding:12px 18px;font-size:1rem;font-weight:600;background:var(--feel-bg);color:var(--feel-text)}
-  .feel-target{flex:0 0 auto;cursor:pointer;border:0;border-radius:7px;
-    padding:7px 13px;font-size:.82rem;font-weight:600;background:var(--feel-accent);color:#fff;
-    margin-left:auto}
-  .feel-decoy:focus-visible,.feel-target:focus-visible{outline:2px solid var(--feel-accent);outline-offset:2px}
-  .feel-target.is-hit{background:var(--feel-ok)}
-
-  /* condition visuals */
-  .feel.cond-skims .feel-page{filter:blur(3px)}
-  .feel.cond-skims .feel-target{background:var(--feel-bg);color:var(--feel-text);border:1px solid var(--feel-rule)}
-  .feel.cond-first .feel-target{background:var(--feel-bg);color:var(--feel-text);
-    border:1px solid var(--feel-rule);font-size:1rem;padding:12px 18px;font-weight:500}
-  .feel.cond-first .feel-decoy{font-weight:500}
-
-  /* start veil */
-  .feel-veil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    background:color-mix(in srgb,var(--feel-surface) 72%,transparent);backdrop-filter:blur(1px);
-    font-size:.9rem;color:var(--feel-muted);cursor:default}
-  .feel-veil span b{color:var(--feel-text)}
-  .feel.is-running .feel-veil,.feel.is-done .feel-veil{display:none}
-
-  /* marks (tremor landing) */
-  .feel-mark{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;pointer-events:none;
-    z-index:5;font-weight:700;font-size:20px;line-height:22px;text-align:center}
-  .feel-mark.is-miss{color:var(--feel-bad)}
-  .feel-mark.is-hit{color:var(--feel-ok)}
-  .feel-mark::before{content:"\2715"}
-  .feel-mark.is-hit::before{content:"\2713"}
-  .feel-mark.anim{animation:feel-ripple .8s ease-out forwards}
-  @keyframes feel-ripple{0%{transform:scale(.4);opacity:0}25%{transform:scale(1.25);opacity:1}100%{transform:scale(1);opacity:0}}
-  .feel.shake .feel-mock{animation:feel-shake .28s}
-  @keyframes feel-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
-
-  /* ---- side: clock / hud / status ---- */
-  .feel-clock{margin-bottom:12px}
-  .feel-clock-track{height:8px;border-radius:6px;background:var(--feel-bg);overflow:hidden;
-    border:1px solid var(--feel-rule)}
-  .feel-clock-fill{height:100%;width:100%;background:var(--feel-accent);transform-origin:left}
-  .feel-clock-txt{display:block;margin-top:4px;font-family:var(--feel-mono);font-size:.75rem;color:var(--feel-muted)}
-  .feel-hud{display:flex;gap:10px;margin-bottom:12px}
-  .feel-stat{flex:1 1 0;min-width:0;background:var(--feel-bg);border:1px solid var(--feel-rule);
-    border-radius:9px;padding:9px 8px;text-align:center}
-  .feel-stat-n{display:block;font-family:var(--feel-mono);font-size:1.25rem;font-weight:600;line-height:1.1}
-  .feel-stat-l{display:block;font-size:.68rem;color:var(--feel-muted);letter-spacing:.03em}
-  .feel-bad-n{color:var(--feel-bad)}
-  .feel-status{margin:0;font-size:.9rem;color:var(--feel-muted);min-height:2.4em}
-  .feel-status.ok{color:var(--feel-ok);font-weight:600}
-  .feel-status.bad{color:var(--feel-bad);font-weight:600}
-
-  .feel-stagenote{margin-top:7px;font-size:.72rem;color:var(--feel-muted);text-align:center}
-
-  /* ---- payoff ---- */
-  .feel-payoff{margin-top:16px;padding:14px 15px;border:1px solid var(--feel-rule);border-radius:11px;
-    background:var(--feel-bg)}
-  .feel-payoff-lead{margin:0 0 .5em;font-size:.98rem;font-weight:600}
-  .feel-payoff-body{margin:0 0 .5em;font-size:.9rem;color:var(--feel-text)}
-  .feel-payoff-body b{font-weight:600}
-  .feel-fine{margin:0;font-size:.78rem;color:var(--feel-muted)}
-
-  @media (max-width:520px){
-    .feel{padding:15px}
-    .feel-cond{flex:1 1 46%}
-    .feel-target,.feel-decoy{padding-left:12px;padding-right:12px}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .feel.is-idle .feel-start{animation:none}
-    .feel-mark.anim{animation:none}
-    .feel.shake .feel-mock{animation:none}
-  }
-</style>
-
-<script>
-(function(){
-  "use strict";
-  var root = document.getElementById('feel-root');
-  if(!root) return;
-  var $ = function(id){ return document.getElementById(id); };
-  var RM = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-
-  var stage   = $('feel-stage');
-  var mock    = $('feel-mock');
-  var target  = $('feel-target');
-  var startBtn= $('feel-start');
-  var promptEl= $('feel-prompt');
-  var statusEl= $('feel-status');
-  var triesEl = $('feel-tries');
-  var missesEl= $('feel-misses');
-  var timeEl  = $('feel-time');
-  var clockEl = $('feel-clock');
-  var clockFill=$('feel-clock-fill');
-  var clockTxt= $('feel-clock-txt');
-  var payoff  = $('feel-payoff');
-  var payoffLead=$('feel-payoff-lead');
-
-  var COND = {
-    shaky : {btn:'feel-c-shaky', label:'Shaky-hands', sigma:24, deadline:0,
-             who:'a user whose clicks keep landing off-target'},
-    rushed: {btn:'feel-c-rushed',label:'Rushed',      sigma:0,  deadline:4500,
-             who:'a user in a hurry who runs out of patience'},
-    skims : {btn:'feel-c-skims', label:'Skims-the-page',sigma:0,deadline:0,
-             who:"a user who skims and can't read the labels"},
-    first : {btn:'feel-c-first', label:'First-timer', sigma:0,  deadline:0,
-             who:'a first-time user facing look-alike controls'}
-  };
-
-  var state = { cond:'shaky', phase:'idle', tries:0, misses:0, start:0, remain:0, raf:0, payoffShown:false };
-
-  function randn(){ var u=1-Math.random(), v=1-Math.random();
-    return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
-
-  function setPhase(p){
-    state.phase = p;
-    root.classList.toggle('is-idle', p==='idle');
-    root.classList.toggle('is-running', p==='running');
-    root.classList.toggle('is-done', p==='win' || p==='lose');
-  }
-  function setStatus(msg, cls){
-    statusEl.textContent = msg;
-    statusEl.className = 'feel-status' + (cls ? ' '+cls : '');
-  }
-  function elapsedSec(){ return ((performance.now()-state.start)/1000).toFixed(1); }
-  function updateHud(){
-    triesEl.textContent = state.tries;
-    missesEl.textContent = state.misses;
-    if(state.phase==='running') timeEl.textContent = elapsedSec()+'s';
-  }
-
-  function applyCond(){
-    var cfg = COND[state.cond];
-    root.className = 'feel is-'+state.phase+' cond-'+state.cond;
-    for(var k in COND){
-      var b = $(COND[k].btn);
-      if(b) b.setAttribute('aria-pressed', k===state.cond ? 'true' : 'false');
-    }
-    clockEl.hidden = cfg.deadline<=0;
-  }
-
-  function stopLoop(){ if(state.raf){ cancelAnimationFrame(state.raf); state.raf=0; } }
-  function clearMarks(){
-    var m = stage.querySelectorAll('.feel-mark');
-    for(var i=0;i<m.length;i++) m[i].remove();
-  }
-
-  function loop(){
-    if(state.phase!=='running'){ return; }
-    timeEl.textContent = elapsedSec()+'s';
-    var cfg = COND[state.cond];
-    if(cfg.deadline>0){
-      var left = state.start + cfg.deadline - performance.now();
-      if(left<=0){ clockFill.style.transform='scaleX(0)'; clockTxt.textContent='0.0s'; return bounce(); }
-      state.remain = left;
-      clockFill.style.transform = 'scaleX('+(left/cfg.deadline)+')';
-      clockTxt.textContent = (left/1000).toFixed(1)+'s left';
-    }
-    state.raf = requestAnimationFrame(loop);
-  }
-
-  function start(){
-    stopLoop(); clearMarks();
-    state.tries=0; state.misses=0; state.start=performance.now(); state.remain=COND[state.cond].deadline;
-    target.classList.remove('is-hit');
-    setPhase('running'); applyCond(); updateHud();
-    clockFill.style.transform='scaleX(1)';
-    startBtn.textContent = 'Restart';
-    setStatus('Go — find and tap the Pay $48 button.');
-    state.raf = requestAnimationFrame(loop);
-  }
-
-  function reset(){
-    stopLoop(); clearMarks();
-    state.tries=0; state.misses=0;
-    target.classList.remove('is-hit');
-    timeEl.textContent='0.0s'; triesEl.textContent='0'; missesEl.textContent='0';
-    clockFill.style.transform='scaleX(1)'; clockTxt.textContent=(COND[state.cond].deadline/1000).toFixed(1)+'s';
-    setPhase('idle'); applyCond();
-    startBtn.textContent='Start';
-    setStatus('Pick a model, then press Start.');
-  }
-
-  function showMark(clientX, clientY, hit){
-    var r = stage.getBoundingClientRect();
-    var el = document.createElement('span');
-    el.className = 'feel-mark ' + (hit?'is-hit':'is-miss') + (RM?'':' anim');
-    el.style.left = (clientX - r.left) + 'px';
-    el.style.top  = (clientY - r.top) + 'px';
-    stage.appendChild(el);
-    setTimeout(function(){ el.remove(); }, RM?650:820);
-  }
-
-  function nudge(){
-    if(RM) return;
-    root.classList.add('shake');
-    setTimeout(function(){ root.classList.remove('shake'); }, 300);
-  }
-
-  function revealPayoff(){
-    var cfg = COND[state.cond];
-    payoffLead.textContent = 'That’s the friction a “'+cfg.label+'” user hits — '+cfg.who+'.';
-    payoff.hidden = false;
-    state.payoffShown = true;
-  }
-
-  function win(){
-    stopLoop();
-    target.classList.add('is-hit');
-    setPhase('win'); applyCond();
-    startBtn.textContent = 'Try again';
-    var t = elapsedSec();
-    var msg = 'You made it in '+t+'s';
-    if(state.tries>1) msg += ' — but it took '+state.tries+' taps ('+state.misses+' missed)';
-    else msg += ' — first tap, clean';
-    if(state.cond==='rushed' && state.remain>0 && state.remain<1300) msg += '. You nearly bounced';
-    setStatus(msg+'.', 'ok');
-    revealPayoff();
-  }
-
-  function bounce(){
-    stopLoop();
-    setPhase('lose'); applyCond();
-    startBtn.textContent = 'Try again';
-    setStatus('You bounced — out of patience after '+state.tries+' taps, just like a real user would.', 'bad');
-    revealPayoff();
-  }
-
-  function attempt(clientX, clientY, viaKeyboard){
-    if(state.phase!=='running') return;
-    var cfg = COND[state.cond];
-    state.tries++;
-
-    if(viaKeyboard){
-      // accessibility path: keyboard activation, no tremor
-      var hitK = document.activeElement === target;
-      updateHud();
-      if(hitK) return win();
-      state.misses++; updateHud();
-      setStatus('Wrong control. Tab to the Pay $48 button and press Enter.', 'bad');
-      if(!state.payoffShown) revealPayoff();
-      return;
-    }
-
-    var lx = clientX, ly = clientY;
-    if(cfg.sigma>0){ lx = clientX + randn()*cfg.sigma; ly = clientY + randn()*cfg.sigma; }
-    var el = document.elementFromPoint(lx, ly);
-    var hit = !!(el && (el===target || target.contains(el)));
-
-    if(cfg.sigma>0) showMark(lx, ly, hit);
-    updateHud();
-
-    if(hit) return win();
-
-    // miss
-    state.misses++; updateHud();
-    nudge();
-    if(cfg.sigma>0) setStatus('Missed — your tap landed off-target ('+state.misses+' so far). Try again.', 'bad');
-    else setStatus('That wasn’t it ('+state.misses+' missed). Look again and tap Pay $48.', 'bad');
-    if(!state.payoffShown) revealPayoff();
-  }
-
-  // ---- events ----
-  stage.addEventListener('click', function(e){
-    if(state.phase!=='running') return;
-    if(e.detail === 0){  // keyboard-activated button (Enter/Space)
-      attempt(0,0,true);
-    } else {
-      attempt(e.clientX, e.clientY, false);
-    }
-  });
-
-  startBtn.addEventListener('click', start);
-
-  for(var key in COND){
-    (function(k){
-      var b = $(COND[k].btn);
-      if(!b) return;
-      b.addEventListener('click', function(){
-        if(state.cond===k && state.phase==='idle') return;
-        state.cond = k;
-        reset();  // cancels timers, applies new condition visuals
-      });
-    })(key);
-  }
-
-  // init
-  applyCond();
-  reset();
-})();
-</script>
+            if("IntersectionObserver" in window){
+              var started=false;
+              var io=new IntersectionObserver(function(en){en.forEach(function(e){
+                if(e.isIntersecting&&!started){started=true;start("shaky");}});},{threshold:.25});
+              io.observe(root);
+            } else { start("shaky"); }
+          })();
+          </script>
           <a class="sect__more" href="#docs">How a run works, in the docs →</a>
         </div>
       </div>
