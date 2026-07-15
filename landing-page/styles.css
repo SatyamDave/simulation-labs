@@ -774,8 +774,9 @@ a,.btn,.run-p,.cta-wedges span,.hv-tile,.dp-item,.pub{transition-timing-function
 .v-dead b{color:var(--fail)}
 .v-who{font-family:var(--ui);font-size:.84rem;color:var(--dim);margin:0}
 .v-do .v-who em{color:var(--accent);font-style:normal;font-weight:600}
+.v-note{font-family:var(--mono);font-size:.7rem;color:var(--dim);text-align:center;margin:14px auto 0}
 .v-foot{font-family:var(--display);font-weight:500;font-size:clamp(1.15rem,2.2vw,1.6rem);
-  letter-spacing:-.02em;color:var(--text);text-align:center;margin:28px auto 0;max-width:32ch}
+  letter-spacing:-.02em;color:var(--text);text-align:center;margin:22px auto 0;max-width:32ch}
 
 /* compact triggers grid on the rebuilt page */
 #triggers .qa-card p{max-width:34ch}
