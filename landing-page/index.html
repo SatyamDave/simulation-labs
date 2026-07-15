@@ -31,7 +31,8 @@
     <section class="hero-sp">
       <div class="hero-sp__in">
         <p class="eyebrow">simulation research lab</p>
-        <h1>See where real users give up.</h1>
+        <h1 class="hero-h1">See where it breaks.<span class="hero-rot" aria-hidden="true"><span id="rotword">Before you ship.</span><span class="hero-caret"></span></span></h1>
+        <p class="sr-only">See where it breaks — before you ship, launch, or lose the sale.</p>
         <p class="hero-sp__sub">
           We study how real users behave by running a swarm of computer-use agents through
           your real flow — mechanically degraded and tuned to your ICP — and recording the
@@ -46,23 +47,6 @@
           <span class="pill">Now</span>
           We're taking on a small number of design partners. Built at the H Company Computer Use Hackathon · SF · Jul 2026 · MIT-licensed.
         </p>
-      </div>
-    </section>
-
-    <!-- ===== VISION ===== -->
-    <section class="sect" id="vision">
-      <div class="sect__in">
-        <div class="sect__label"><span class="sect__k">01 — Vision</span><h2>Synthetic users that do, not say</h2></div>
-        <div class="sect__body">
-          <div class="prose">
-            <p>Synthetic-user research has quietly become a way to interview a model instead of a person. You describe a persona, ask what it thinks of your checkout, and it answers — fluently, agreeably, and at a comfortable distance from anything it would actually have done. The answers are shallow and people-pleasing, a pattern the Nielsen Norman Group has written about plainly. When prompted LLM personas were measured against the real people they were meant to stand in for, the match was around 11.86% (arXiv 2503.20749). A survey is not a user; a stated preference is not a click.</p>
-            <h2>Mechanical fidelity, not psychological fidelity</h2>
-            <p>We are not reconstructing a human personality inside a language model. What we can reproduce faithfully are the constraints on the channel between a user and the screen: how sharply they see it, how precisely their clicks land, how little time and patience they bring. So we take a pre-trained computer-use model — a system that reads a screenshot and emits an action — and mechanically degrade its perception and action rather than prompt it to act impaired. We blur the frame, add Gaussian noise to the click coordinates, cap the number of steps, shrink the viewport, strip colour cues.</p>
-            <p>It is a deliberately narrow claim. We do not say these agents feel what a person feels or reason as they reason. We say the perceptual and motor limits we impose are real, measured, and reproducible even though the personality is synthetic — a smaller promise than the field usually makes, and one we can keep.</p>
-            <h2>What we're building toward</h2>
-            <p>We want the behavioral check to become a normal part of shipping — something you run before release the way you run a test suite, to see who fails your site before your users do. Not a forecast of conversion, and not a compliance verdict, but a rank-order signal: which page is worse, which fix helped, where abandonment clusters.</p>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -524,11 +508,54 @@
       </div>
     </section>
 
+    <!-- ===== VISION ===== -->
+    <section class="sect" id="vision">
+      <div class="sect__in">
+        <div class="sect__label"><span class="sect__k">01 — Vision</span><h2>Synthetic users that do, not say</h2></div>
+        <div class="sect__body">
+          <div class="prose">
+            <p>Synthetic-user research has quietly become a way to interview a model instead of a person. You describe a persona, ask what it thinks of your checkout, and it answers — fluently, agreeably, and at a comfortable distance from anything it would actually have done. The answers are shallow and people-pleasing, a pattern the Nielsen Norman Group has written about plainly. When prompted LLM personas were measured against the real people they were meant to stand in for, the match was around 11.86% (arXiv 2503.20749). A survey is not a user; a stated preference is not a click.</p>
+            <h2>Mechanical fidelity, not psychological fidelity</h2>
+            <p>We are not reconstructing a human personality inside a language model. What we can reproduce faithfully are the constraints on the channel between a user and the screen: how sharply they see it, how precisely their clicks land, how little time and patience they bring. So we take a pre-trained computer-use model — a system that reads a screenshot and emits an action — and mechanically degrade its perception and action rather than prompt it to act impaired. We blur the frame, add Gaussian noise to the click coordinates, cap the number of steps, shrink the viewport, strip colour cues.</p>
+            <p>It is a deliberately narrow claim. We do not say these agents feel what a person feels or reason as they reason. We say the perceptual and motor limits we impose are real, measured, and reproducible even though the personality is synthetic — a smaller promise than the field usually makes, and one we can keep.</p>
+            <h2>What we're building toward</h2>
+            <p>We want the behavioral check to become a normal part of shipping — something you run before release the way you run a test suite, to see who fails your site before your users do. Not a forecast of conversion, and not a compliance verdict, but a rank-order signal: which page is worse, which fix helped, where abandonment clusters.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+
     <!-- ===== RESEARCH ===== -->
     <section class="sect" id="research">
       <div class="sect__in">
         <div class="sect__label"><span class="sect__k">03 — Research</span><h2>Technical notes</h2></div>
         <div class="sect__body">
+          <div class="stat-grid">
+            <figure class="chart">
+              <figcaption class="chart__cap">tremor &sigma;=14px &middot; miss-rate vs target size</figcaption>
+              <svg class="chartsvg" viewBox="0 0 340 190" role="img" aria-label="At tremor sigma 14 pixels, a 24-pixel target is missed 60.9% of the time, a 44-pixel target 20.5%, and a 62-pixel target under 5%.">
+                <line class="axis" x1="44" y1="150" x2="330" y2="150"/>
+                <line class="thresh" x1="44" y1="140.3" x2="330" y2="140.3"/>
+                <text class="x" text-anchor="start" x="46" y="137">5% AA</text>
+                <rect class="b bf" x="58" y="32" width="46" height="118"/>
+                <rect class="b bo" x="150" y="110" width="46" height="40"/>
+                <rect class="b bk" x="242" y="141" width="46" height="9"/>
+                <text class="v vf" x="81" y="26">60.9%</text>
+                <text class="v vo" x="173" y="104">20.5%</text>
+                <text class="v vk" x="265" y="135">&lt;5%</text>
+                <text class="x" x="81" y="166">24px</text>
+                <text class="x" x="173" y="166">44px</text>
+                <text class="x" x="265" y="166">62px</text>
+                <text class="x" x="187" y="185">target size &rarr;</text>
+              </svg>
+              <p class="chart__note">offline Monte-Carlo &middot; 20,000 trials/cell</p>
+            </figure>
+            <div class="statcard"><div class="statcard__n n-live">61.4<span>ms</span></div><div class="statcard__l">median perception cost / frame</div></div>
+            <div class="statcard"><div class="statcard__n n-ok">8/8</div><div class="statcard__l">dimension-preserving &middot; byte-deterministic</div></div>
+          </div>
+          
           <p class="prose" style="color:#33363d;margin-bottom:1.6em">Honest technical notes on how the system works and what we've measured. Work in progress, not peer-reviewed; every number is tagged with how it was produced.</p>
           <div class="pub-grid">
             <article class="pub">

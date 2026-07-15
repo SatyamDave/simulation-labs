@@ -200,6 +200,39 @@
     els.forEach(function (e) { io.observe(e); });
   }
 
+  /* Hero: typewriter rotation on the closing phrase (the agent "editing" it). */
+  function heroRotate() {
+    var word = document.getElementById("rotword");
+    if (!word) return;
+    var hero = document.querySelector(".hero-sp");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      word.textContent = "Before you ship, launch, or lose the sale.";
+      return;
+    }
+    var phrases = ["Before you ship.", "Before you launch.", "Before they leave."];
+    var i = 0, idx = phrases[0].length, typing = false, paused = false, timer = null;
+    word.textContent = phrases[0];
+    function schedule(ms) { timer = setTimeout(step, ms); }
+    function step() {
+      if (paused) { schedule(300); return; }
+      var target = phrases[i];
+      if (typing) {
+        idx++; word.textContent = target.slice(0, idx);
+        if (idx >= target.length) { typing = false; schedule(1900); return; }
+        schedule(52 + Math.random() * 46);
+      } else {
+        idx--; word.textContent = target.slice(0, Math.max(0, idx));
+        if (idx <= 0) { typing = true; i = (i + 1) % phrases.length; schedule(180); return; }
+        schedule(30);
+      }
+    }
+    if (hero) {
+      ["mouseenter", "focusin"].forEach(function (e) { hero.addEventListener(e, function () { paused = true; }); });
+      ["mouseleave", "focusout"].forEach(function (e) { hero.addEventListener(e, function () { paused = false; }); });
+    }
+    schedule(1600);
+  }
+
   buildEditorial();
   gridPubs();
   docsSpy();
@@ -207,4 +240,5 @@
   navSpy();
   applyForm();
   reveals();
+  heroRotate();
 })();

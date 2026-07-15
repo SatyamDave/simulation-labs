@@ -1,16 +1,17 @@
 /* Simulation Labs — static research-lab site. White bg, black text, no motion. */
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Geist:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
 :root{
   --bg:#FBFAF7; --surface:#FFFFFF; --surface-2:#F5F3EE;
   --text:#191817; --muted:#6E6A63; --rule:#E7E3DB; --border-2:#D9D3C8; --code-bg:#F5F3EE;
-  --accent:#E8452C; --accent-hover:#C93A22; --accent-active:#AE3119;
-  --accent-tint:#FBEAE4; --accent-ring:rgba(232,69,44,.38);
+  --accent:#C2410C; --accent-hover:#9A3412; --accent-active:#7C2D12;
+  --accent-tint:#F7ECE2; --accent-ring:rgba(194,65,12,.34);
+  --ok:#2F855A; --ok-tint:#E7F2EC; --fail:#C1272D; --fail-tint:#FBEAEA;
   --shadow-sm:0 1px 2px rgba(20,18,16,.05); --shadow-md:0 6px 24px rgba(20,18,16,.07);
   --ui:'Geist',ui-sans-serif,system-ui,-apple-system,sans-serif;
   --display:'Bricolage Grotesque','Geist',ui-sans-serif,system-ui,sans-serif;
   --serif:'Bricolage Grotesque','Geist',ui-sans-serif,sans-serif;
-  --mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --measure:68ch;
 }
 *,*::before,*::after{box-sizing:border-box}
@@ -266,3 +267,52 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
   background:var(--accent);border-radius:2px;transition:right .2s cubic-bezier(.2,.7,.2,1)}
 .nav a:not(.apply):hover::after,.nav a:not(.apply).active::after{right:0}
 @media(prefers-reduced-motion:reduce){.nav a::after{display:none}}
+
+
+/* ================= semantic + instrument execution ================= */
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* hero: fixed lead-in + rotating close with agent-style caret */
+.hero-rot{display:block;color:var(--accent)}
+.hero-caret{display:inline-block;width:.52ch;height:.9em;margin-left:4px;vertical-align:-.06em;
+  background:var(--accent);border-radius:1px}
+@media(prefers-reduced-motion:no-preference){
+  .hero-caret{animation:sl-blink 1.05s steps(1) infinite}
+  @keyframes sl-blink{50%{opacity:0}}
+}
+@media(prefers-reduced-motion:reduce){.hero-caret{display:none}}
+
+/* semantic number classes */
+.n-live{color:var(--accent)} .n-ok{color:var(--ok)} .n-fail{color:var(--fail)}
+
+/* #2 + #5: promoted demo goes full-width / centered (breaks the label-left grid) */
+#product .sect__in{display:block;max-width:1080px;margin:0 auto}
+#product .sect__label{position:static;text-align:center;margin:0 auto 4px}
+#product .sect__label h2{font-size:clamp(1.9rem,3.6vw,2.5rem)}
+#product .sect__body>.prose{margin:0 auto 10px;text-align:center;max-width:66ch}
+#product .sect__more{display:block;text-align:center;margin-top:20px}
+
+/* #3 + #5: research goes full-width with a stat/chart grid */
+#research .sect__in{display:block;max-width:1120px;margin:0 auto}
+#research .sect__label{position:static;margin-bottom:20px}
+.stat-grid{display:grid;grid-template-columns:1fr;gap:16px;margin:0 0 36px}
+@media(min-width:760px){.stat-grid{grid-template-columns:1.5fr 1fr 1fr}}
+.chart{margin:0;border:1px solid var(--rule);border-radius:12px;background:var(--surface);
+  box-shadow:var(--shadow-sm);padding:16px 18px}
+.chart__cap{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;margin:0 0 10px}
+.chart__note{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin:10px 0 0}
+.chartsvg{width:100%;height:auto;display:block;font-family:var(--mono)}
+.chartsvg .axis{stroke:var(--rule);stroke-width:1}
+.chartsvg .thresh{stroke:var(--ok);stroke-dasharray:3 3;opacity:.6;stroke-width:1}
+.chartsvg .bf{fill:var(--fail)} .chartsvg .bo{fill:var(--accent)} .chartsvg .bk{fill:var(--ok)}
+.chartsvg .v{font-size:11px;text-anchor:middle;font-weight:600}
+.chartsvg .vf{fill:var(--fail)} .chartsvg .vo{fill:var(--accent)} .chartsvg .vk{fill:var(--ok)}
+.chartsvg .x{font-size:9.5px;fill:var(--muted);text-anchor:middle}
+.statcard{border:1px solid var(--rule);border-radius:12px;background:var(--surface);box-shadow:var(--shadow-sm);
+  padding:18px 20px;display:flex;flex-direction:column;justify-content:center}
+.statcard__n{font-family:var(--mono);font-size:2.1rem;font-weight:500;line-height:1;letter-spacing:-.02em}
+.statcard__n span{font-size:.95rem;color:var(--muted);margin-left:3px}
+.statcard__l{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.05em;margin-top:9px;line-height:1.45}
+@media(min-width:820px){.pub-grid{grid-template-columns:repeat(3,1fr)}}
