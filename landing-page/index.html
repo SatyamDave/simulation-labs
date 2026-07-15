@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Simulation Labs — behavioral simulation research</title>
 <meta name="description" content="Simulation Labs is a research lab studying how real users behave — we run mechanically-degraded computer-use agents against your real flows, tuned to your ICP, to find exactly where users give up. We're taking on design partners." />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='white'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%23C2410C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='white'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%230562EF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body id="top">
   <header class="masthead">
     <div class="masthead__in">
       <a class="brand" href="#top" aria-label="Simulation Labs — home">
-        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#C2410C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#0562EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Simulation Labs</span>
       </a>
       <nav class="nav" aria-label="Primary">
@@ -560,6 +560,49 @@
 })();
 </script>
           <a class="sect__more" href="#docs">How a run works, in the docs →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== QA MECHANISM — one engine, three triggers ===== -->
+    <section class="sect" id="qa">
+      <div class="sect__in">
+        <div class="sect__label"><span class="sect__k">Same engine</span><h2>One engine, three triggers</h2></div>
+        <div class="sect__body">
+          <div class="qa-grid">
+            <div class="qa-card">
+              <span class="qa-k"><i aria-hidden="true"></i>Manual</span>
+              <h3>Run it by hand</h3>
+              <p>Growth and product teams pick a flow, watch the swarm run, and read the failure report — no setup.</p>
+              <div class="qa-viz qa-manual" aria-hidden="true">
+                <span class="qa-chip on">Rushed</span>
+                <span class="qa-chip">Shaky hands</span>
+                <span class="qa-chip">Skims</span>
+                <span class="qa-chip">First-timer</span>
+                <span class="qa-chip">▶ run</span>
+              </div>
+            </div>
+            <div class="qa-card">
+              <span class="qa-k"><i aria-hidden="true"></i>MCP skill</span>
+              <h3>Call it mid-session</h3>
+              <p>Your coding agent invokes it after a UI change; the swarm clicks through the real flow in a real browser and reports pass/fail back to the terminal — no context-switch.</p>
+              <div class="qa-viz qa-term" aria-hidden="true">
+                <div><span class="p">›</span> <span class="c">agent: verify the new Pay button</span></div>
+                <div><span class="mut">→ simlabs.simulate(flow="checkout", icp=4)</span></div>
+                <div><span class="ok">✓ 3 / 4 passed</span> <span class="mut">· 1 abandoned @ "Pay"</span></div>
+              </div>
+            </div>
+            <div class="qa-card">
+              <span class="qa-k"><i aria-hidden="true"></i>CI/CD gate</span>
+              <h3>Block the merge</h3>
+              <p>Wire it into CI and it runs on every deploy automatically, blocking the merge if completion drops versus the last passing run.</p>
+              <div class="qa-viz qa-ci" aria-hidden="true">
+                <div class="qa-ci-row"><span class="qa-ci-dot ok"></span><span class="qa-ci-label">deploy #241 · checkout</span><span class="qa-ci-meta">92% · passed</span></div>
+                <div class="qa-ci-row is-block"><span class="qa-ci-dot block"></span><span class="qa-ci-label">deploy #242 · checkout</span><span class="qa-ci-meta">84% · blocked</span></div>
+              </div>
+            </div>
+          </div>
+          <p class="qa-note">Same swarm, same report — three ways to fire it. One product, not three.</p>
         </div>
       </div>
     </section>
