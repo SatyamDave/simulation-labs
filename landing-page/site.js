@@ -1,5 +1,6 @@
-/* Simulation Labs — small progressive enhancements: contents rail, scroll-spy,
-   publication grid, copy-code buttons, smooth in-page scroll. Reduced-motion safe. */
+/* Simulation Labs — light progressive enhancement. No per-frame/per-char work:
+   scroll reveals, a resting behavioral-agent cursor, contents rail, scroll-spy,
+   copy buttons, apply form. Reduced-motion safe. */
 (function () {
   "use strict";
   var reduce = window.matchMedia &&
@@ -30,18 +31,15 @@
     (targets || []).forEach(function (t) { if (t && t.id) io.observe(t); });
   }
 
-  /* Build a "Contents" rail from a prose/note page's <h2>s and go two-column. */
+  /* Build a "Contents" rail from a prose/note page's <h2>s (deep pages only). */
   function buildEditorial() {
     var main = document.querySelector("main.page");
     if (!main) return;
     var root = main.firstElementChild;
-    if (!root || root.classList.contains("docs")) return; // docs has its own rail
-
-    var scope = root.querySelector(".prose") ||
-      (root.classList.contains("note") ? root : root);
+    if (!root || root.classList.contains("docs")) return;
+    var scope = root.querySelector(".prose") || root;
     var hs = Array.prototype.slice.call(scope.querySelectorAll("h2"));
-    if (hs.length < 2) return; // home/research: no TOC
-
+    if (hs.length < 2) return;
     var ul = document.createElement("ul");
     hs.forEach(function (h) {
       if (!h.id) h.id = slug(h.textContent);
@@ -52,7 +50,6 @@
       li.appendChild(a);
       ul.appendChild(li);
     });
-
     var rail = document.createElement("aside");
     rail.className = "toc-rail";
     var nav = document.createElement("nav");
@@ -64,7 +61,6 @@
     nav.appendChild(label);
     nav.appendChild(ul);
     rail.appendChild(nav);
-
     var grid = document.createElement("div");
     grid.className = "editorial";
     var body = document.createElement("div");
@@ -73,11 +69,10 @@
     body.appendChild(root);
     grid.appendChild(rail);
     grid.appendChild(body);
-
     scrollspy(ul.querySelectorAll("a"), hs);
   }
 
-  /* Home/Research: lay the publication entries out across the full width. */
+  /* Research/notes: lay publication entries across the width (deep pages). */
   function gridPubs() {
     var wrap = document.querySelector("main.page .wrap");
     if (!wrap) return;
@@ -92,7 +87,7 @@
     pubs.forEach(function (p) { grid.appendChild(p); });
   }
 
-  /* Docs: scroll-spy the existing sidebar. */
+  /* Docs: scroll-spy the sidebar. */
   function docsSpy() {
     var side = document.querySelector(".docs__side");
     if (!side) return;
@@ -105,7 +100,7 @@
     scrollspy(links, targets);
   }
 
-  /* Copy buttons on code blocks. */
+  /* Copy buttons on code blocks (deep pages). */
   function copyButtons() {
     if (!navigator.clipboard) return;
     document.querySelectorAll("pre").forEach(function (pre) {
@@ -118,10 +113,7 @@
         navigator.clipboard.writeText(code.textContent).then(function () {
           btn.textContent = "Copied";
           btn.classList.add("copied");
-          setTimeout(function () {
-            btn.textContent = "Copy";
-            btn.classList.remove("copied");
-          }, 1400);
+          setTimeout(function () { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1400);
         });
       });
       pre.appendChild(btn);
@@ -185,145 +177,45 @@
     });
   }
 
-  /* Scroll-reveal: fade section bodies up as they enter. */
+  /* Scroll-reveal: fade elements up as they enter (CSS transition, one-shot). */
   function reveals() {
     if (!("IntersectionObserver" in window)) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var els = Array.prototype.slice.call(document.querySelectorAll(".sect__body"));
+    if (reduce) return;
+    var els = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
     if (!els.length) return;
-    els.forEach(function (e) { e.classList.add("reveal"); });
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); }
       });
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.06 });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
     els.forEach(function (e) { io.observe(e); });
   }
 
-  /* Hero: typewriter rotation on the closing phrase (the agent "editing" it). */
-  function heroRotate() {
-    var word = document.getElementById("rotword");
-    if (!word) return;
-    var hero = document.querySelector(".hero-sp");
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      word.textContent = "Before you ship, launch, or lose the sale.";
-      return;
+  /* Hero: the behavioral agent's cursor glides in and rests on the CTA, tapping
+     gently every few seconds. Pure CSS transforms — no per-frame work. */
+  function heroCursor() {
+    var cursor = document.getElementById("agentCursor"),
+        btn = document.getElementById("ctaBtn");
+    if (!cursor || !btn) return;
+    if (reduce) { cursor.style.display = "none"; return; }
+    var wrap = btn.parentElement;
+    function rest() {
+      var w = wrap.getBoundingClientRect(), b = btn.getBoundingClientRect();
+      var x = b.left - w.left + b.width * 0.6, y = b.top - w.top + b.height * 0.5 - 2;
+      cursor.style.transition = "transform 1.1s cubic-bezier(.33,.66,.24,1)";
+      cursor.style.transform = "translate(" + x + "px," + y + "px)";
     }
-    var phrases = ["Before you ship.", "Before you launch.", "Before they leave."];
-    var i = 0, idx = phrases[0].length, typing = false, paused = false, timer = null;
-    word.textContent = phrases[0];
-    function schedule(ms) { timer = setTimeout(step, ms); }
-    function step() {
-      if (paused) { schedule(300); return; }
-      var target = phrases[i];
-      if (typing) {
-        idx++; word.textContent = target.slice(0, idx);
-        if (idx >= target.length) { typing = false; schedule(1900); return; }
-        schedule(52 + Math.random() * 46);
-      } else {
-        idx--; word.textContent = target.slice(0, Math.max(0, idx));
-        if (idx <= 0) { typing = true; i = (i + 1) % phrases.length; schedule(180); return; }
-        schedule(30);
-      }
-    }
-    if (hero) {
-      ["mouseenter", "focusin"].forEach(function (e) { hero.addEventListener(e, function () { paused = true; }); });
-      ["mouseleave", "focusout"].forEach(function (e) { hero.addEventListener(e, function () { paused = false; }); });
-    }
-    schedule(1600);
-  }
-
-  /* Hero CTA: the agent's cursor travels between the wedge chips, clicks one, and
-     the CTA crossfades to that wedge's copy. Distance-based easing keeps it smooth.
-     Pauses on hover/focus so a real visitor can take over. */
-  function heroCta() {
-    var drive = document.querySelector(".hero-drive"),
-        label = document.getElementById("ctaLabel"),
-        cursor = document.getElementById("agentCursor"),
-        wrap = document.getElementById("ctaWedges");
-    if (!drive || !label || !wrap) return;
-    var pills = Array.prototype.slice.call(wrap.querySelectorAll("span"));
-    if (!pills.length) return;
-    if (reduce) {
-      label.textContent = "Apply for design-partner access";
-      if (cursor) cursor.style.display = "none";
-      selectPill(0);
-      return;
-    }
-    var i = 0, timer = null, paused = false, pos = { x: 24, y: -6 }, placed = false;
-
-    function selectPill(k) { pills.forEach(function (p, j) { p.classList.toggle("on", j === k); }); }
-    function swapLabel(text) {
-      label.textContent = text;          // change AT the tap (no lag)
-      label.classList.remove("is-in");
-      void label.offsetWidth;            // restart the wipe animation
-      label.classList.add("is-in");
-    }
-    function press(pill) {
-      pill.classList.add("is-press");
-      setTimeout(function () { pill.classList.remove("is-press"); }, 220);
-      var r = document.createElement("span");
-      r.className = "pill-ripple";
-      pill.appendChild(r);
-      setTimeout(function () { if (r.parentNode) r.parentNode.removeChild(r); }, 560);
-    }
-    /* the tap gesture — fire the "impact" (chip + CTA change) exactly on press-down */
-    function clickGesture(onImpact) {
-      if (!cursor) { onImpact(); return; }
+    cursor.style.transform = "translate(-12px,-6px)";
+    setTimeout(rest, 650);
+    setInterval(function () {
       cursor.classList.add("is-click");
-      setTimeout(onImpact, 80);
+      var r = document.createElement("span");
+      r.className = "cta-ripple";
+      btn.appendChild(r);
       setTimeout(function () { cursor.classList.remove("is-click"); }, 170);
-    }
-    function pillPoint(pill) {
-      var dr = drive.getBoundingClientRect(), b = pill.getBoundingClientRect();
-      return { x: b.left - dr.left + b.width / 2 - 3, y: b.top - dr.top + b.height / 2 - 2 };
-    }
-    function moveTo(pt, cb) {
-      if (!cursor) { cb(); return; }
-      var dist = Math.sqrt(Math.pow(pt.x - pos.x, 2) + Math.pow(pt.y - pos.y, 2)),
-          dur = Math.min(1.05, Math.max(0.5, dist / 560));
-      cursor.style.transition = "transform " + dur + "s cubic-bezier(.5,.02,.16,1)";
-      cursor.style.transform = "translate(" + pt.x + "px," + pt.y + "px)";
-      pos = pt;
-      setTimeout(cb, dur * 1000 + 70);
-    }
-    function place() {
-      if (placed) return;
-      placed = true;
-      var pt = pillPoint(pills[0]);
-      pos = pt;
-      if (cursor) { cursor.style.transition = "none"; cursor.style.transform = "translate(" + pt.x + "px," + pt.y + "px)"; }
-      i = 1;
-      timer = setTimeout(cycle, 1400);
-    }
-    function cycle() {
-      if (paused) { timer = setTimeout(cycle, 400); return; }
-      var k = i, pill = pills[k];
-      moveTo(pillPoint(pill), function () {
-        setTimeout(function () {
-          clickGesture(function () {   // impact fires chip + CTA together
-            press(pill);
-            selectPill(k);
-            swapLabel(pill.getAttribute("data-cta"));
-          });
-        }, 110);
-        i = (k + 1) % pills.length;
-        timer = setTimeout(cycle, 1750);
-      });
-    }
-
-    selectPill(0);
-    label.textContent = pills[0].getAttribute("data-cta");
-    ["mouseenter", "focusin"].forEach(function (e) { drive.addEventListener(e, function () { paused = true; }); });
-    ["mouseleave", "focusout"].forEach(function (e) { drive.addEventListener(e, function () { paused = false; }); });
-    if ("IntersectionObserver" in window) {
-      var io = new IntersectionObserver(function (ents) {
-        ents.forEach(function (e) { if (e.isIntersecting) { place(); io.disconnect(); } });
-      }, { threshold: 0.4 });
-      io.observe(drive);
-    } else {
-      setTimeout(place, 800);
-    }
+      setTimeout(function () { if (r.parentNode) r.parentNode.removeChild(r); }, 640);
+    }, 3600);
+    window.addEventListener("resize", rest);
   }
 
   buildEditorial();
@@ -333,6 +225,5 @@
   navSpy();
   applyForm();
   reveals();
-  heroRotate();
-  heroCta();
+  heroCursor();
 })();

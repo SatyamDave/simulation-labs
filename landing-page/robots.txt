@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://satyamdave.github.io/simulation-labs/sitemap.xml

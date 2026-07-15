@@ -706,3 +706,76 @@ a,.btn,.run-p,.cta-wedges span,.hv-tile,.dp-item,.pub{transition-timing-function
 /* product mocks stay LIGHT — real screens shown on a dark page */
 .run{--surface:#FFFFFF;--surface-2:#F4F3EE;--text:#0B1015;--muted:#5B6867;--dim:#8A8F8C;
   --rule:rgba(9,23,23,.12);--border-2:#CFD6D4}
+
+/* ================================================================
+   REBUILD v2 — short, shock-driven scroll. SAY/DO hero, giant-number
+   beats, two-verdicts device, lag-free resting agent cursor.
+   ================================================================ */
+
+/* HERO — SAY vs DO */
+.hero2{position:relative;overflow:hidden;border-bottom:1px solid var(--rule);
+  background:radial-gradient(80% 60% at 78% -10%,var(--accent-tint),transparent 60%),var(--bg)}
+.hero2::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(76,141,255,.16) 1px,transparent 1.5px);
+  background-size:20px 20px;
+  -webkit-mask-image:radial-gradient(115% 78% at 50% 122%,#000,transparent 62%);
+  mask-image:radial-gradient(115% 78% at 50% 122%,#000,transparent 62%)}
+.hero2__in{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:104px 24px 82px;text-align:center}
+.hero2 .eyebrow{display:inline-flex;align-items:center;justify-content:center;margin-bottom:26px}
+.saydo{font-family:var(--display);font-weight:500;letter-spacing:-.04em;line-height:1.03;
+  font-size:clamp(2.3rem,6vw,4.6rem);margin:0 auto;max-width:17ch;color:var(--text)}
+.saydo .hollow{color:transparent;-webkit-text-stroke:1.4px var(--muted);text-stroke:1.4px var(--muted)}
+.saydo .solid{color:var(--accent)}
+.hero2__sub{font-family:var(--ui);font-size:clamp(1.02rem,1.7vw,1.22rem);color:var(--muted);
+  max-width:56ch;margin:1.4rem auto 0;line-height:1.55}
+.hero2__cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;margin-top:34px}
+.ctawrap{position:relative;display:inline-flex}
+.hero2__note{font-family:var(--mono);font-size:.72rem;color:var(--dim);margin-top:22px;letter-spacing:.02em}
+
+/* CTA ripple (the resting agent's gentle tap) */
+.btn-accent{overflow:visible}
+.cta-ripple{position:absolute;inset:0;border:1.5px solid var(--accent-hover);pointer-events:none;
+  animation:cta-rip .6s ease-out forwards}
+@keyframes cta-rip{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
+
+/* GIANT-NUMBER shock beats */
+.big{border-top:1px solid var(--rule)}
+.big__in{max-width:1120px;margin:0 auto;padding:clamp(64px,9vw,104px) 24px}
+.big__num{font-family:var(--display);font-weight:500;letter-spacing:-.05em;line-height:.86;
+  color:var(--accent);font-size:clamp(4.5rem,17vw,12.5rem)}
+.big__num span{font-size:.38em;color:var(--muted);margin-left:.04em;letter-spacing:-.02em}
+.big__cap{font-family:var(--ui);font-size:clamp(1.02rem,1.7vw,1.3rem);color:var(--muted);
+  max-width:52ch;margin:1.3rem 0 0;line-height:1.5}
+.big__cap a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+.big--split .big__in{display:grid;grid-template-columns:1fr;gap:38px;align-items:center}
+@media(min-width:900px){.big--split .big__in{grid-template-columns:1.05fr .95fr;gap:60px}}
+.big__lead h2{font-family:var(--display);font-weight:500;letter-spacing:-.03em;line-height:1.12;
+  font-size:clamp(1.6rem,3.2vw,2.4rem);margin:.35em 0}
+.big--split .chart{background:var(--surface)}
+
+/* TWO VERDICTS — the unique SAY/DO representation */
+.verdicts{border-top:1px solid var(--rule)}
+.verdicts__in{max-width:1080px;margin:0 auto;padding:clamp(64px,8vw,92px) 24px}
+.v-head{margin-bottom:28px}
+.v-head h2{font-family:var(--display);font-weight:500;letter-spacing:-.03em;
+  font-size:clamp(1.8rem,3.6vw,2.7rem);margin:.3em 0 0}
+.v-grid{display:grid;grid-template-columns:1fr;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+@media(min-width:760px){.v-grid{grid-template-columns:1fr 1fr}}
+.v-card{background:var(--surface);padding:26px 24px;margin:0;display:flex;flex-direction:column;gap:14px;min-width:0}
+.v-say{background:var(--surface-2)}
+.v-do{box-shadow:inset 3px 0 0 var(--accent)}
+.v-tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
+.v-do .v-tag{color:var(--accent)}
+.v-bubble{font-family:var(--ui);font-size:1.12rem;font-style:italic;color:var(--muted);
+  line-height:1.4;border-left:2px solid var(--rule);padding-left:14px;margin:0}
+.v-trace{font-family:var(--mono);font-size:.86rem;color:var(--text);display:flex;flex-direction:column;gap:9px}
+.v-row{border-bottom:1px dashed var(--rule);padding-bottom:9px}
+.v-miss{color:var(--fail)}
+.v-dead b{color:var(--fail)}
+.v-who{font-family:var(--ui);font-size:.84rem;color:var(--dim);margin:0}
+.v-do .v-who em{color:var(--accent);font-style:normal;font-weight:600}
+.v-foot{font-family:var(--display);font-weight:500;font-size:clamp(1.15rem,2.2vw,1.6rem);
+  letter-spacing:-.02em;color:var(--text);text-align:center;margin:28px auto 0;max-width:32ch}
+
+/* compact triggers grid on the rebuilt page */
+#triggers .qa-card p{max-width:34ch}

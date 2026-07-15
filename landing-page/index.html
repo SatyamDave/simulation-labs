@@ -3,23 +3,39 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Simulation Labs — behavioral simulation research</title>
-<meta name="description" content="Simulation Labs is a research lab studying how real users behave — we run mechanically-degraded computer-use agents against your real flows, tuned to your ICP, to find exactly where users give up. We're taking on design partners." />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='white'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%230562EF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<title>Simulation Labs — Find Where Users Abandon</title>
+<meta name="description" content="Simulation Labs runs mechanically-degraded computer-use agents against your real flows to find the exact pixel where users give up. Simulate what users do, not what they say." />
+<link rel="canonical" href="https://satyamdave.github.io/simulation-labs/" />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://satyamdave.github.io/simulation-labs/" />
+<meta property="og:title" content="Simulation Labs — Find Where Users Abandon" />
+<meta property="og:description" content="Mechanically-degraded computer-use agents run your real flows and record the exact pixel where users give up. Simulate what users do, not what they say." />
+<meta property="og:image" content="https://satyamdave.github.io/simulation-labs/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Simulation Labs — Find Where Users Abandon" />
+<meta name="twitter:description" content="Mechanically-degraded computer-use agents run your real flows and record the exact pixel where users give up." />
+<meta name="twitter:image" content="https://satyamdave.github.io/simulation-labs/og.png" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B0D11'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%234C8DFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="styles.css" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Simulation Labs","url":"https://satyamdave.github.io/simulation-labs/","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"Behavioral synthetic users: mechanically-degraded computer-use agents run against real websites and flows to find exactly where real users abandon.","license":"https://opensource.org/licenses/MIT","codeRepository":"https://github.com/SatyamDave/simulation-labs","author":{"@type":"Person","name":"Satyam Dave"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
 </head>
 <body id="top">
   <header class="masthead">
     <div class="masthead__in">
       <a class="brand" href="#top" aria-label="Simulation Labs — home">
-        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#0562EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="26" height="16" viewBox="0 0 26 16" fill="none" aria-hidden="true"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#4C8DFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>Simulation Labs</span>
       </a>
       <nav class="nav" aria-label="Primary">
-        <a href="#vision">Vision</a>
+        <a href="#why">Why</a>
         <a href="#product">Product</a>
         <a href="#research">Research</a>
-        <a href="#docs">Docs</a>
+        <a href="docs.html">Docs</a>
         <span class="sep" aria-hidden="true"></span>
         <a class="apply" href="#apply">Design partners</a>
       </nav>
@@ -27,78 +43,20 @@
   </header>
 
   <main>
-    <!-- ===== HERO ===== -->
-    <section class="hero-sp" id="hero">
-      <div class="hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Behavioral simulation for real flows</p>
-          <h1 class="hero-h1">See where it breaks.<span class="hero-rot" aria-hidden="true"><span id="rotword">Before you ship.</span><span class="hero-caret"></span></span></h1>
-          <p class="sr-only">See where it breaks — before you ship, launch, or lose the sale.</p>
-          <p class="hero-sp__sub">
-            We run a swarm of computer-use agents through your real flow — mechanically
-            degraded and tuned to your ICP — and record the exact pixel where each one gives
-            up. We simulate what users <em>do</em>, not what they <em>say</em>.
-          </p>
-          <div class="hero-drive">
-            <div class="cta-wedges" id="ctaWedges" aria-hidden="true">
-              <span class="on" data-cta="Cut your checkout drop-off">Growth</span>
-              <span data-cta="De-risk your next launch">Launch</span>
-              <span data-cta="Gate every deploy">CI/CD</span>
-              <span data-cta="Verify from your terminal">On-demand</span>
-            </div>
-            <div class="hero-cta">
-              <a class="btn btn-lg btn-accent ctabtn" id="ctaBtn" href="#apply" aria-label="Apply for design-partner access"><span class="ctabtn__label" id="ctaLabel">Cut your checkout drop-off</span></a>
-              <a class="btn btn-lg btn-secondary" href="#product">See it run</a>
-            </div>
-            <span class="agentcursor" id="agentCursor" aria-hidden="true"><span class="ac-inner"><svg class="ac-ptr" viewBox="0 0 24 24" width="20" height="20"><path d="M3.5 2 L3.5 16.8 L7.2 13.4 L9.9 19.9 L12.3 18.9 L9.7 12.6 L14.6 12.6 Z"/></svg><span class="ac-tag">Simulation&nbsp;agent</span></span></span>
-            <p class="agent-hint" aria-hidden="true"><span class="agent-hint__dot"></span>A browser agent is choosing the use-case — watch it pick.</p>
-          </div>
-          <p class="hero-note">
-            <span class="pill"><span class="pill-dot" aria-hidden="true"></span>Now</span>
-            One swarm, four ways to win. Taking on a small number of design partners.
-          </p>
+    <!-- ===== HERO — SAY vs DO ===== -->
+    <section class="hero2" id="hero">
+      <div class="hero2__in">
+        <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Behavioral simulation for real flows</p>
+        <h1 class="saydo">They simulate what users <span class="hollow">say</span>.<br />We simulate what they <span class="solid">do</span>.</h1>
+        <p class="hero2__sub">A swarm of computer-use agents runs your real flow — perception and clicks mechanically degraded — and logs the exact pixel where each one gives up.</p>
+        <div class="hero2__cta">
+          <span class="ctawrap">
+            <a class="btn btn-lg btn-accent" id="ctaBtn" href="#apply">Apply for design-partner access</a>
+            <span class="agentcursor" id="agentCursor" aria-hidden="true"><span class="ac-inner"><svg class="ac-ptr" viewBox="0 0 24 24" width="20" height="20"><path d="M3.5 2 L3.5 16.8 L7.2 13.4 L9.9 19.9 L12.3 18.9 L9.7 12.6 L14.6 12.6 Z"/></svg><span class="ac-tag">Behavioral&nbsp;agent</span></span></span>
+          </span>
+          <a class="btn btn-lg btn-secondary" href="#product">See it run</a>
         </div>
-
-        <div class="hero-viz-wrap">
-          <div class="heroviz" role="img" aria-label="A simulation run dashboard: 12 agents ran a mobile checkout; 8 passed, 4 abandoned at the Pay button.">
-            <div class="hv-chrome">
-              <span class="hv-dot"></span><span class="hv-dot"></span><span class="hv-dot"></span>
-              <span class="hv-url">checkout.acme.com</span>
-              <span class="hv-live"><i></i>live</span>
-            </div>
-            <div class="hv-body">
-              <div class="hv-head">
-                <span class="hv-h-title">Swarm run — mobile checkout</span>
-                <span class="hv-h-meta">12 agents · <b class="hv-ok">8 passed</b> · <b class="hv-fail">4 abandoned</b></span>
-              </div>
-              <div class="hv-tiles">
-                <div class="hv-tile is-ok"><span class="hv-t-top"><i class="hv-s"></i>Rushed</span><span class="hv-t-metric">paid · 3.2s</span></div>
-                <div class="hv-tile is-fail"><span class="hv-t-top"><i class="hv-s"></i>Shaky hands</span><span class="hv-t-metric">gave up · Pay</span></div>
-                <div class="hv-tile is-fail"><span class="hv-t-top"><i class="hv-s"></i>Skims page</span><span class="hv-t-metric">gave up · Pay</span></div>
-                <div class="hv-tile is-run"><span class="hv-t-top"><i class="hv-s"></i>First-timer</span><span class="hv-t-metric">running · step 6</span></div>
-              </div>
-              <div class="hv-chart">
-                <div class="hv-chart-head"><span>Survival</span><span>agents alive vs. step</span></div>
-                <svg class="hv-svg" viewBox="0 0 420 116" preserveAspectRatio="none">
-                  <line class="hv-grid" x1="0" y1="20" x2="420" y2="20"/>
-                  <line class="hv-grid" x1="0" y1="62" x2="420" y2="62"/>
-                  <line class="hv-grid" x1="0" y1="104" x2="420" y2="104"/>
-                  <path class="hv-area" d="M0,18 L120,18 L120,44 L232,44 L232,70 L316,70 L420,70 L420,116 L0,116 Z"/>
-                  <path class="hv-line" d="M0,18 L120,18 L120,44 L232,44 L232,70 L316,70 L420,70"/>
-                  <circle class="hv-death" cx="120" cy="44" r="4"/>
-                  <circle class="hv-death" cx="232" cy="70" r="4"/>
-                  <circle class="hv-livedot" cx="316" cy="70" r="4"/>
-                </svg>
-                <div class="hv-axis"><span>100%</span><span>step budget →</span><span class="hv-ok">66%</span></div>
-              </div>
-              <div class="hv-finding">
-                <span class="hv-f-dot" aria-hidden="true"></span>
-                <span><b>Abandonment cluster —</b> “Pay $48” button · 4 of 12 agents missed or bounced here</span>
-              </div>
-            </div>
-          </div>
-          <span class="hv-cap">Representative run · illustrative</span>
-        </div>
+        <p class="hero2__note">Free and hands-on — we're taking a small number of design partners.</p>
       </div>
     </section>
 
@@ -112,361 +70,96 @@
           <li>Anthropic Claude</li>
           <li>NVIDIA NemoClaw</li>
         </ul>
-        <span class="trust__note">Built at the H&nbsp;Company Computer Use Hackathon · SF · 2026 · MIT-licensed</span>
+        <span class="trust__note">Working demo · 173 tests · MIT-licensed · Built at the H&nbsp;Company Computer Use Hackathon</span>
       </div>
     </section>
 
-    <!-- ===== PRODUCT (interactive) ===== -->
-    <section class="sect sect--band" id="product">
-      <div class="sect__in">
-        <div class="sect__label"><span class="sect__k">02 — Product</span><h2>Watch where users give up</h2></div>
-        <div class="sect__body">
-          <div class="prose" style="max-width:62ch">
-            <p><strong>Watch it happen.</strong> A synthetic user &mdash; perception and clicks mechanically degraded, tuned to your ICP &mdash; attempts a real checkout on its own. It reaches for the button, its aim drifts, it misses, and it gives up. Our swarm does this at scale on your live flow and records the exact pixel where each one breaks.</p>
-          </div>
-          <div class="run" id="run-root">
-            <div class="run-head">
-              <div class="run-personas" role="group" aria-label="Behavioral model">
-                <button class="run-p is-on" type="button" data-p="shaky">Shaky hands</button>
-                <button class="run-p" type="button" data-p="rushed">Rushed</button>
-                <button class="run-p" type="button" data-p="skims">Skims the page</button>
-                <button class="run-p" type="button" data-p="first">First-timer</button>
-              </div>
-              <span class="run-live"><i aria-hidden="true"></i>agent running</span>
+    <!-- ===== SHOCK — 11.86% ===== -->
+    <section class="big" id="why">
+      <div class="big__in reveal">
+        <p class="big__num">11.86<span>%</span></p>
+        <p class="big__cap">How often a prompted LLM persona matches the real person it stands in for
+          (<a href="https://arxiv.org/abs/2503.20749">arXiv&nbsp;2503.20749</a>).
+          A stated preference is not a click — so we stopped asking personas what they think, and started watching what they do.</p>
+      </div>
+    </section>
+
+    <!-- ===== SAY / DO — two verdicts ===== -->
+    <section class="verdicts" id="product">
+      <div class="verdicts__in">
+        <div class="v-head"><span class="sect__k">The difference</span><h2>Same persona. Two verdicts.</h2></div>
+        <div class="v-grid reveal">
+          <figure class="v-card v-say">
+            <figcaption class="v-tag">what it says · illustrative</figcaption>
+            <blockquote class="v-bubble">"Honestly? Pretty clean checkout. I'd buy again."</blockquote>
+            <p class="v-who">"Rushed" — a prompted survey persona</p>
+          </figure>
+          <figure class="v-card v-do">
+            <figcaption class="v-tag">what it does · real action trace</figcaption>
+            <div class="v-trace">
+              <div class="v-row">tap 1 &middot; <span class="v-miss">missed &ldquo;Pay $48&rdquo; &#10005;</span></div>
+              <div class="v-row">tap 2 &middot; <span class="v-miss">missed &ldquo;Pay $48&rdquo; &#10005;</span></div>
+              <div class="v-row v-dead">5.3s &middot; <b>abandoned</b> @ pixel (612, 480)</div>
             </div>
-            <div class="run-body">
-              <div class="run-stagewrap">
-                <div class="run-stage" id="run-stage">
-                  <div class="run-chrome"><span class="d"></span><span class="d"></span><span class="d"></span><span class="run-url">checkout.acme.com</span></div>
-                  <div class="run-page" id="run-page">
-                    <div class="run-title">Confirm &amp; pay</div>
-                    <div class="run-fld"><span class="run-lbl">Email</span><span class="run-inp">you@example.com</span></div>
-                    <div class="run-fld"><span class="run-lbl">Card number</span><span class="run-inp">&bull;&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;&bull;&nbsp;4242</span></div>
-                    <div class="run-sum"><span>Order total</span><b class="run-total">$48.00</b></div>
-                    <div class="run-acts">
-                      <button class="run-decoy" type="button" tabindex="-1">Keep shopping</button>
-                      <button class="run-target" id="run-target" type="button" tabindex="-1">Pay&nbsp;$48</button>
-                    </div>
-                  </div>
-                  <span class="run-cursor" id="run-cursor" aria-hidden="true"><span class="rc-inner"><svg class="rc-ptr" viewBox="0 0 24 24" width="22" height="22"><path d="M3.5 2 L3.5 16.8 L7.2 13.4 L9.9 19.9 L12.3 18.9 L9.7 12.6 L14.6 12.6 Z"/></svg><span class="rc-tag" id="run-cursor-tag">Shaky hands</span></span></span>
-                </div>
-                <div class="run-cap" id="run-cap" role="status" aria-live="polite">Reading the page&hellip;</div>
-              </div>
-              <div class="run-side">
-                <div class="run-hud">
-                  <div class="run-stat"><span class="run-n" id="run-taps">0</span><span class="run-l">taps</span></div>
-                  <div class="run-stat"><span class="run-n run-bad" id="run-miss">0</span><span class="run-l">misses</span></div>
-                  <div class="run-stat"><span class="run-n" id="run-t">0.0s</span><span class="run-l">elapsed</span></div>
-                </div>
-                <div class="run-outcome" id="run-outcome"><span class="run-o-dot" aria-hidden="true"></span><span id="run-o-txt">running&hellip;</span></div>
-                <p class="run-note">Representative run &middot; illustrative. We claim mechanical fidelity &mdash; a rank-order signal, not a forecast.</p>
-              </div>
-            </div>
-          </div>
-
-          <style>
-          .run{--ok:#1A8F4C;--bad:#C0392B;font-family:var(--ui);color:var(--text);
-            border:1px solid var(--rule);background:var(--surface);padding:18px;overflow:hidden}
-          .run *,.run *::before,.run *::after{box-sizing:border-box}
-          .run button{font-family:inherit}
-          .run-head{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
-          .run-personas{display:flex;flex-wrap:wrap;gap:6px}
-          .run-p{font-family:var(--mono);font-size:.72rem;color:var(--muted);cursor:pointer;
-            background:var(--surface-2);border:1px solid var(--rule);padding:7px 11px;transition:all .14s ease}
-          .run-p:hover{border-color:var(--accent);color:var(--text)}
-          .run-p.is-on{background:var(--accent);color:#fff;border-color:var(--accent)}
-          .run-p:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-          .run-live{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.7rem;
-            letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
-          .run-live i{width:7px;height:7px;border-radius:50%;background:var(--accent);
-            box-shadow:0 0 0 3px var(--accent-tint)}
-          .run-body{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
-          .run-stagewrap{flex:1 1 320px;min-width:0}
-          .run-side{flex:1 1 190px;min-width:0}
-          .run-stage{position:relative;border:1px solid var(--rule);overflow:visible;background:var(--surface)}
-          .run-page{overflow:hidden}
-          .run-chrome{display:flex;align-items:center;gap:6px;padding:9px 13px;background:var(--surface-2);
-            border-bottom:1px solid var(--rule)}
-          .run-chrome .d{width:9px;height:9px;border-radius:50%}
-          .run-chrome .d:nth-child(1){background:#E0655C}.run-chrome .d:nth-child(2){background:#E7B23F}.run-chrome .d:nth-child(3){background:#4FB477}
-          .run-url{margin-left:9px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
-          .run-page{padding:17px 17px 19px;transition:filter .3s ease}
-          .run-page.blur{filter:blur(3.2px)}
-          .run-title{font-family:var(--display);font-size:1.2rem;font-weight:600;letter-spacing:-.02em;margin-bottom:15px}
-          .run-fld{margin-bottom:11px}
-          .run-lbl{display:block;font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:4px}
-          .run-inp{display:block;border:1px solid var(--rule);padding:8px 10px;font-size:.85rem;color:var(--text);background:var(--surface)}
-          .run-sum{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0 15px;font-size:.85rem;color:var(--muted)}
-          .run-total{font-size:1rem;font-weight:700;color:var(--text)}
-          .run-acts{display:flex;align-items:center;gap:10px}
-          .run-decoy{flex:0 0 auto;border:1px solid var(--rule);padding:12px 18px;font-size:1rem;font-weight:600;
-            background:var(--surface-2);color:var(--text)}
-          .run-target{flex:0 0 auto;border:0;padding:7px 13px;font-size:.82rem;font-weight:700;
-            background:var(--accent);color:#fff;margin-left:auto}
-          .run.p-skims .run-target{background:var(--surface-2);color:var(--text);border:1px solid var(--rule);font-weight:600}
-          .run-cursor{position:absolute;top:0;left:0;z-index:8;pointer-events:none;will-change:transform;
-            transform:translate(30px,26px);filter:drop-shadow(0 2px 4px rgba(9,23,23,.34))}
-          .run-cursor.click{transform:scale(.82)}
-          .run-x{position:absolute;z-index:7;width:20px;height:20px;margin:-10px 0 0 -10px;pointer-events:none;
-            font-weight:700;font-size:19px;line-height:20px;text-align:center;color:var(--bad)}
-          .run-x::before{content:"\2715"}
-          .run-x.hit{color:var(--ok)}.run-x.hit::before{content:"\2713"}
-          .run-x.anim{animation:run-ripple .7s ease-out forwards}
-          @keyframes run-ripple{0%{transform:scale(.4);opacity:0}30%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:0}}
-          .run-page.shake{animation:run-shake .26s}
-          @keyframes run-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
-          .run-cap{margin-top:9px;font-family:var(--mono);font-size:.76rem;color:var(--muted);min-height:2.2em;line-height:1.4}
-          .run-hud{display:flex;gap:9px;margin-bottom:13px}
-          .run-stat{flex:1 1 0;min-width:0;background:var(--surface-2);border:1px solid var(--rule);padding:9px 8px;text-align:center}
-          .run-n{display:block;font-family:var(--mono);font-size:1.25rem;font-weight:700;line-height:1.1}
-          .run-l{display:block;font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-top:2px}
-          .run-bad{color:var(--bad)}
-          .run-outcome{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:.82rem;
-            border:1px solid var(--rule);padding:10px 12px;margin-bottom:13px;color:var(--muted)}
-          .run-o-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:0 0 auto}
-          .run-outcome.is-fail{background:var(--fail-tint);border-color:rgba(192,57,43,.3);color:var(--bad)}
-          .run-outcome.is-fail .run-o-dot{background:var(--bad)}
-          .run-note{margin:0;font-family:var(--ui);font-size:.74rem;color:var(--dim);line-height:1.5}
-          @media(max-width:520px){.run{padding:14px}.run-decoy,.run-target{padding-left:12px;padding-right:12px}}
-          @media(prefers-reduced-motion:reduce){.run-cursor,.run-page{transition:none!important}.run-x.anim{animation:none}.run-page.shake{animation:none}}
-          </style>
-
-          <script>
-          (function(){
-            "use strict";
-            var root=document.getElementById("run-root"); if(!root) return;
-            var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
-            var $=function(id){return document.getElementById(id);};
-            var stage=$("run-stage"),page=$("run-page"),target=$("run-target"),cursor=$("run-cursor"),
-                cap=$("run-cap"),tapsEl=$("run-taps"),missEl=$("run-miss"),tEl=$("run-t"),
-                outcome=$("run-outcome"),oTxt=$("run-o-txt");
-            var decoy=stage.querySelector(".run-decoy");
-            var cursorTag=$("run-cursor-tag");
-            var CC={shaky:"#2E7CF6",rushed:"#B7791F",skims:"#6D5EF6",first:"#C43E74"};
-            var CN={shaky:"Shaky hands",rushed:"Rushed",skims:"Skims the page",first:"First-timer"};
-            var chips=Array.prototype.slice.call(root.querySelectorAll(".run-p"));
-            var timers=[],raf=0,t0=0,cur="shaky",taps=0,misses=0;
-
-            function clearAll(){timers.forEach(clearTimeout);timers=[];if(raf){cancelAnimationFrame(raf);raf=0;}
-              var xs=stage.querySelectorAll(".run-x");for(var i=0;i<xs.length;i++)xs[i].remove();}
-            function after(ms,fn){var id=setTimeout(fn,ms);timers.push(id);return id;}
-            function centre(el){var s=stage.getBoundingClientRect(),b=el.getBoundingClientRect();
-              return {x:b.left-s.left+b.width/2,y:b.top-s.top+b.height/2};}
-            function moveTo(x,y,ms){cursor.style.transition="transform "+ms+"s cubic-bezier(.5,.4,.2,1)";
-              cursor.style.transform="translate("+x+"px,"+y+"px)";}
-            function elapsed(){return ((performance.now()-t0)/1000).toFixed(1);}
-            function tick(){tEl.textContent=elapsed()+"s";raf=requestAnimationFrame(tick);}
-            function cap_(s){cap.textContent=s;}
-            function clickAt(x,y,hit){taps++;tapsEl.textContent=taps;
-              cursor.classList.add("click");after(170,function(){cursor.classList.remove("click");});
-              var m=document.createElement("span");m.className="run-x"+(hit?" hit":"")+(reduce?"":" anim");
-              m.style.left=x+"px";m.style.top=y+"px";stage.appendChild(m);after(reduce?600:800,function(){m.remove();});
-              if(!hit){misses++;missEl.textContent=misses;page.classList.add("shake");after(250,function(){page.classList.remove("shake");});}}
-            function abandon(txt){if(raf){cancelAnimationFrame(raf);raf=0;}
-              outcome.className="run-outcome is-fail";oTxt.textContent=txt;
-              cap_("Abandoned. This is where the flow breaks — the exact pixel gets logged.");
-              after(2900,function(){start(cur);});}
-
-            var SCRIPTS={
-              shaky:[
-                [300,"Reading the page…",null],
-                [1150,"Reaching for “Pay $48”…",function(){var c=centre(target);moveTo(c.x-4,c.y-2,.9);}],
-                [2350,"Tremor — tap landed 22px off-target.",function(){var c=centre(target);clickAt(c.x+22,c.y+15,false);}],
-                [3350,"Adjusting aim…",function(){var c=centre(target);moveTo(c.x+15,c.y-16,.6);}],
-                [4150,"Missed again — the aim keeps drifting.",function(){var c=centre(target);clickAt(c.x+17,c.y-13,false);}],
-                [5300,"",function(){abandon("abandoned · missed Pay ×2");}]
-              ],
-              rushed:[
-                [300,"In a hurry — skimming fast…",null],
-                [950,"Grabbing the biggest button…",function(){var c=centre(decoy);moveTo(c.x,c.y,.5);}],
-                [1750,"Wrong one — doubling back…",function(){var c=centre(target);moveTo(c.x,c.y,.5);}],
-                [2600,"Hesitating past the patience budget…",null],
-                [3600,"",function(){abandon("bounced · out of patience");}]
-              ],
-              skims:[
-                [300,"Can’t read the labels (blurred)…",function(){page.classList.add("blur");}],
-                [1250,"Reaching for the biggest button…",function(){var c=centre(decoy);moveTo(c.x,c.y,.9);}],
-                [2500,"Clicked “Keep shopping” by mistake.",function(){var c=centre(decoy);clickAt(c.x,c.y,false);}],
-                [3700,"",function(){abandon("abandoned · wrong control");}]
-              ],
-              first:[
-                [300,"First time here — the controls look alike…",null],
-                [1250,"Comparing the two buttons…",function(){var c=centre(decoy);moveTo(c.x,c.y,.7);}],
-                [2200,"",function(){var c=centre(target);moveTo(c.x,c.y,.7);}],
-                [3050,"Still unsure which one pays…",function(){var c=centre(decoy);moveTo(c.x,c.y,.7);}],
-                [4100,"",function(){abandon("abandoned · never committed");}]
-              ]
-            };
-
-            function start(p){
-              clearAll();cur=p;taps=0;misses=0;
-              tapsEl.textContent="0";missEl.textContent="0";tEl.textContent="0.0s";
-              outcome.className="run-outcome";oTxt.textContent="running…";
-              page.classList.remove("blur");
-              root.className="run p-"+p;
-              cursor.style.setProperty("--cc",CC[p]||"#20808D");
-              if(cursorTag)cursorTag.textContent=CN[p]||"Agent";
-              chips.forEach(function(b){b.classList.toggle("is-on",b.getAttribute("data-p")===p);});
-              cursor.style.transition="none";cursor.style.transform="translate(30px,26px)";
-              t0=performance.now();
-              if(reduce){
-                var c=centre(target);
-                var m=document.createElement("span");m.className="run-x";m.style.left=(c.x+20)+"px";m.style.top=(c.y+14)+"px";stage.appendChild(m);
-                taps=2;misses=2;tapsEl.textContent="2";missEl.textContent="2";
-                outcome.className="run-outcome is-fail";oTxt.textContent="abandoned · missed Pay";
-                cap_("Abandoned at “Pay $48” (motion paused).");return;
-              }
-              raf=requestAnimationFrame(tick);
-              SCRIPTS[p].forEach(function(st){after(st[0],function(){if(st[1])cap_(st[1]);if(st[2])st[2]();});});
-            }
-
-            chips.forEach(function(b){b.addEventListener("click",function(){start(b.getAttribute("data-p"));});});
-
-            if("IntersectionObserver" in window){
-              var started=false;
-              var io=new IntersectionObserver(function(en){en.forEach(function(e){
-                if(e.isIntersecting&&!started){started=true;start("shaky");}});},{threshold:.25});
-              io.observe(root);
-            } else { start("shaky"); }
-          })();
-          </script>
-          <a class="sect__more" href="#docs">How a run works, in the docs →</a>
+            <p class="v-who">the <em>same</em> persona, on your real checkout</p>
+          </figure>
         </div>
+        <p class="v-foot">Every survey-persona tool can only show you the left. We show you the&nbsp;right.</p>
       </div>
     </section>
 
-    <!-- ===== QA MECHANISM — one engine, three triggers ===== -->
-    <section class="sect" id="qa">
+    <!-- ===== SHOCK — mechanical fidelity + 60.9% + chart ===== -->
+    <section class="big big--split" id="research">
+      <div class="big__in reveal">
+        <div class="big__lead">
+          <span class="sect__k">Mechanical fidelity</span>
+          <h2>We don't prompt an agent to act impaired. We break the machine — by measured amounts.</h2>
+          <p class="big__cap">Blur the frame, add Gaussian noise to the click, cap the steps, shrink the viewport. Real, reproducible, byte-deterministic limits — not vibes.</p>
+        </div>
+        <figure class="chart">
+          <figcaption class="chart__cap">tremor &sigma;=14px &middot; miss-rate vs target size</figcaption>
+          <svg class="chartsvg" viewBox="0 0 340 190" role="img" aria-label="At tremor sigma 14 pixels, a 24-pixel target is missed 60.9% of the time, a 44-pixel target 20.5%, and a 62-pixel target under 5%.">
+            <line class="axis" x1="44" y1="150" x2="330" y2="150"/>
+            <line class="thresh" x1="44" y1="140.3" x2="330" y2="140.3"/>
+            <text class="x" text-anchor="start" x="46" y="137">5% AA</text>
+            <rect class="b bf" x="58" y="32" width="46" height="118"/>
+            <rect class="b bo" x="150" y="110" width="46" height="40"/>
+            <rect class="b bk" x="242" y="141" width="46" height="9"/>
+            <text class="v vf" x="81" y="26">60.9%</text>
+            <text class="v vo" x="173" y="104">20.5%</text>
+            <text class="v vk" x="265" y="135">&lt;5%</text>
+            <text class="x" x="81" y="166">24px</text>
+            <text class="x" x="173" y="166">44px</text>
+            <text class="x" x="265" y="166">62px</text>
+            <text class="x" x="187" y="185">target size &rarr;</text>
+          </svg>
+          <p class="chart__note">offline Monte-Carlo &middot; 20,000 trials/cell &middot; <a href="note-tremor-targets.html">technical note &rarr;</a></p>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ===== ONE ENGINE, THREE TRIGGERS ===== -->
+    <section class="sect" id="triggers">
       <div class="sect__in">
         <div class="sect__label"><span class="sect__k">Same engine</span><h2>One engine, three triggers</h2></div>
         <div class="sect__body">
-          <div class="qa-grid">
+          <div class="qa-grid reveal">
             <div class="qa-card">
               <span class="qa-k"><i aria-hidden="true"></i>Manual</span>
               <h3>Run it by hand</h3>
-              <p>Growth and product teams pick a flow, watch the swarm run, and read the failure report — no setup.</p>
-              <div class="qa-viz qa-manual" aria-hidden="true">
-                <span class="qa-chip on">Rushed</span>
-                <span class="qa-chip">Shaky hands</span>
-                <span class="qa-chip">Skims</span>
-                <span class="qa-chip">First-timer</span>
-                <span class="qa-chip">▶ run</span>
-              </div>
+              <p>Pick a flow, watch the swarm run, read the failure report. No setup.</p>
             </div>
             <div class="qa-card">
               <span class="qa-k"><i aria-hidden="true"></i>MCP skill</span>
               <h3>Call it mid-session</h3>
-              <p>Your coding agent invokes it after a UI change; the swarm clicks through the real flow in a real browser and reports pass/fail back to the terminal — no context-switch.</p>
-              <div class="qa-viz qa-term" aria-hidden="true">
-                <div><span class="p">›</span> <span class="c">agent: verify the new Pay button</span></div>
-                <div><span class="mut">→ simlabs.simulate(flow="checkout", icp=4)</span></div>
-                <div><span class="ok">✓ 3 / 4 passed</span> <span class="mut">· 1 abandoned @ "Pay"</span></div>
-              </div>
+              <p>Your coding agent invokes it after a UI change and gets pass/fail back in the terminal.</p>
             </div>
             <div class="qa-card">
               <span class="qa-k"><i aria-hidden="true"></i>CI/CD gate</span>
               <h3>Block the merge</h3>
-              <p>Wire it into CI and it runs on every deploy automatically, blocking the merge if completion drops versus the last passing run.</p>
-              <div class="qa-viz qa-ci" aria-hidden="true">
-                <div class="qa-ci-row"><span class="qa-ci-dot ok"></span><span class="qa-ci-label">deploy #241 · checkout</span><span class="qa-ci-meta">92% · passed</span></div>
-                <div class="qa-ci-row is-block"><span class="qa-ci-dot block"></span><span class="qa-ci-label">deploy #242 · checkout</span><span class="qa-ci-meta">84% · blocked</span></div>
-              </div>
+              <p>Runs on every deploy; blocks the merge if completion drops versus the last passing run.</p>
             </div>
           </div>
-          <p class="qa-note">Same swarm, same report — three ways to fire it. One product, not three.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== VISION ===== -->
-    <section class="sect" id="vision">
-      <div class="sect__in">
-        <div class="sect__label"><span class="sect__k">01 — Vision</span><h2>Synthetic users that do, not say</h2></div>
-        <div class="sect__body">
-          <p class="vision-lead">Synthetic-user research has quietly become a way to interview a model instead of a person. You describe a persona, ask what it thinks of your checkout, and it answers — fluently, agreeably, and at a comfortable distance from anything it would actually have done. The answers are shallow and people-pleasing, a pattern the Nielsen Norman Group has written about plainly. When prompted LLM personas were measured against the real people they were meant to stand in for, the match was around <span class="mono">11.86%</span> (arXiv 2503.20749). A survey is not a user; a stated preference is not a click.</p>
-          <div class="thesis-grid">
-            <div class="thesis">
-              <span class="thesis-n">01 / method</span>
-              <h3>Mechanical fidelity, not psychological fidelity</h3>
-              <p>We are not reconstructing a human personality inside a language model. What we can reproduce faithfully are the constraints on the channel between a user and the screen: how sharply they see it, how precisely their clicks land, how little time and patience they bring. So we take a pre-trained computer-use model — a system that reads a screenshot and emits an action — and mechanically degrade its perception and action rather than prompt it to act impaired. We blur the frame, add Gaussian noise to the click coordinates, cap the number of steps, shrink the viewport, strip colour cues.</p>
-              <p>It is a deliberately narrow claim. We do not say these agents feel what a person feels or reason as they reason. We say the perceptual and motor limits we impose are real, measured, and reproducible even though the personality is synthetic — a smaller promise than the field usually makes, and one we can keep.</p>
-            </div>
-            <div class="thesis">
-              <span class="thesis-n">02 / goal</span>
-              <h3>What we're building toward</h3>
-              <p>We want the behavioral check to become a normal part of shipping — something you run before release the way you run a test suite, to see who fails your site before your users do. Not a forecast of conversion, and not a compliance verdict, but a rank-order signal: which page is worse, which fix helped, where abandonment clusters.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    
-
-    <!-- ===== RESEARCH ===== -->
-    <section class="sect" id="research">
-      <div class="sect__in">
-        <div class="sect__label"><span class="sect__k">03 — Research</span><h2>Technical notes</h2></div>
-        <div class="sect__body">
-          <div class="stat-grid">
-            <figure class="chart">
-              <figcaption class="chart__cap">tremor &sigma;=14px &middot; miss-rate vs target size</figcaption>
-              <svg class="chartsvg" viewBox="0 0 340 190" role="img" aria-label="At tremor sigma 14 pixels, a 24-pixel target is missed 60.9% of the time, a 44-pixel target 20.5%, and a 62-pixel target under 5%.">
-                <line class="axis" x1="44" y1="150" x2="330" y2="150"/>
-                <line class="thresh" x1="44" y1="140.3" x2="330" y2="140.3"/>
-                <text class="x" text-anchor="start" x="46" y="137">5% AA</text>
-                <rect class="b bf" x="58" y="32" width="46" height="118"/>
-                <rect class="b bo" x="150" y="110" width="46" height="40"/>
-                <rect class="b bk" x="242" y="141" width="46" height="9"/>
-                <text class="v vf" x="81" y="26">60.9%</text>
-                <text class="v vo" x="173" y="104">20.5%</text>
-                <text class="v vk" x="265" y="135">&lt;5%</text>
-                <text class="x" x="81" y="166">24px</text>
-                <text class="x" x="173" y="166">44px</text>
-                <text class="x" x="265" y="166">62px</text>
-                <text class="x" x="187" y="185">target size &rarr;</text>
-              </svg>
-              <p class="chart__note">offline Monte-Carlo &middot; 20,000 trials/cell</p>
-            </figure>
-            <div class="statcard"><div class="statcard__n n-live">61.4<span>ms</span></div><div class="statcard__l">median perception cost / frame</div></div>
-            <div class="statcard"><div class="statcard__n n-ok">8/8</div><div class="statcard__l">dimension-preserving &middot; byte-deterministic</div></div>
-          </div>
-          
-          <p class="prose" style="color:var(--muted);margin-bottom:1.6em">Honest technical notes on how the system works and what we've measured. Work in progress, not peer-reviewed; every number is tagged with how it was produced.</p>
-          <div class="pub-grid">
-            <article class="pub">
-              <p class="pub__meta">Jul 2026 · Technical note</p>
-              <h3 class="pub__title"><a href="note-mechanical-fidelity.html">Mechanical fidelity: degrading perception and action instead of prompting personas</a></h3>
-              <p class="pub__authors">S. Dave</p>
-              <p class="pub__sum">Prompted personas match real users only ~11.86% of the time (arXiv 2503.20749); we degrade a screenshot-in / action-out model's channels instead, which keeps coordinates exact.</p>
-            </article>
-            <article class="pub">
-              <p class="pub__meta">Jul 2026 · Technical note</p>
-              <h3 class="pub__title"><a href="note-tremor-targets.html">Tremor and target size: a Monte-Carlo study of click miss-rates</a></h3>
-              <p class="pub__authors">S. Dave</p>
-              <p class="pub__sum">In an offline Monte-Carlo of our tremor actuation (20,000 trials/cell), a 14px jitter misses a 44px target 20.5% of the time and needs ≥62px targets to hold the miss-rate under 5%.</p>
-            </article>
-            <article class="pub">
-              <p class="pub__meta">Jul 2026 · Technical note</p>
-              <h3 class="pub__title"><a href="note-perturbation-invariants.html">Perturbation invariants and pipeline cost</a></h3>
-              <p class="pub__authors">S. Dave</p>
-              <p class="pub__sum">Offline: perturbations preserve image dimensions and are byte-deterministic (8/8), the perception pipeline costs a median 61.4 ms/frame, and the stuck-detector scored perfectly on 225 synthetic labeled histories.</p>
-            </article>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== DOCS ===== -->
-    <section class="sect" id="docs">
-      <div class="sect__in">
-        <div class="sect__label"><span class="sect__k">04 — Docs</span><h2>How it works</h2></div>
-        <div class="sect__body">
-          <div class="prose">
-            <p>The engine (internal package <code>ghostpanel</code>) drives H Company's Holo — a pre-trained, screenshot-in / action-out model (<code>holo3-1-35b-a3b</code>, which we consume, not train) — around a real browser via Playwright. Each step: take a screenshot, <strong>perceive</strong> (perturb the frame), get an action from the model, <strong>actuate</strong> (add tremor jitter), execute the click verbatim, emit an event. The loop ends on success, a step budget, a time budget, or the stuck-detector.</p>
-            <p>It's a five-module, frozen-contract design (engine · runner · server · report · voice) where modules talk only through Pydantic contracts. Coordinates from the model arrive on a 0–1000 grid and are denormalised to true viewport pixels. Every run produces a survival curve, an abandonment heatmap, per-persona stats, and a 0–100 Simulation Score. Findings are a rank-order signal and "evidence of risk", never a conformance verdict. Working end-to-end; 173 tests; MIT-licensed.</p>
-          </div>
-          <a class="sect__more" href="docs.html">Read the full documentation →</a>
         </div>
       </div>
     </section>
@@ -474,33 +167,27 @@
     <!-- ===== DESIGN PARTNERS ===== -->
     <section class="sect sect--band" id="apply">
       <div class="sect__in">
-        <div class="sect__label"><span class="sect__k">05 — Design partners</span><h2>Test one flow with us</h2></div>
+        <div class="sect__label"><span class="sect__k">Design partners</span><h2>Bring one flow. We'll tell you who fails it.</h2></div>
         <div class="sect__body">
-          <p class="prose" style="color:var(--muted)">We're taking on a small number of design partners. Bring one flow you care about — a checkout, a signup, a new onboarding — and we'll run the swarm against it and hand you the failure report, direct. Early, hands-on, and free while we're in this phase.</p>
-          <div class="dp-grid">
-            <div class="dp-item"><h3>Your flow, your ICP</h3><p>We build ICP models tuned to your real user segments and run them against your actual flow.</p></div>
-            <div class="dp-item"><h3>A real failure report</h3><p>Survival curve, abandonment heatmap, the exact pixels, and per-model reasons — not a survey.</p></div>
-            <div class="dp-item"><h3>Direct access</h3><p>You work with us directly and help shape what we build next.</p></div>
-            <div class="dp-item"><h3>Rank-order, honest</h3><p>Signals on where risk is and whether a fix helped — never conversion forecasts or a compliance verdict.</p></div>
-          </div>
+          <p class="prose" style="color:var(--muted);max-width:52ch">You bring one flow and a work email. We run the swarm and hand you the failure report — survival curve, abandonment heatmap, the exact pixels. Free while we're in this phase.</p>
           <div class="apply-console">
-          <div class="apply-console__bar">
-            <span class="apply-console__dot" aria-hidden="true"></span>
-            <svg class="apply-trace" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M0 12 H82 l5 0 l4 -8 l5 15 l4 -7 H176 l6 -4 l5 4 H300"/></svg>
-            <span class="apply-console__tag">apply · design partner</span>
-          </div>
-          <form class="apply-form" id="applyForm" novalidate>
-            <div class="row">
-              <label class="field"><span>Name</span><input type="text" name="name" autocomplete="name" /></label>
-              <label class="field"><span>Company</span><input type="text" name="company" autocomplete="organization" /></label>
+            <div class="apply-console__bar">
+              <span class="apply-console__dot" aria-hidden="true"></span>
+              <svg class="apply-trace" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M0 12 H82 l5 0 l4 -8 l5 15 l4 -7 H176 l6 -4 l5 4 H300"/></svg>
+              <span class="apply-console__tag">apply · design partner</span>
             </div>
-            <div class="row">
-              <label class="field"><span>Work email</span><input type="email" name="email" autocomplete="email" required /></label>
-              <label class="field"><span>What flow should we test?</span><input type="text" name="flow" placeholder="e.g. mobile checkout" /></label>
-            </div>
-            <button class="btn btn-lg btn-accent" type="submit">Apply for design-partner access</button>
-            <p class="apply-status" id="applyStatus" role="status" aria-live="polite" hidden></p>
-          </form>
+            <form class="apply-form" id="applyForm" novalidate>
+              <div class="row">
+                <label class="field"><span>Name</span><input type="text" name="name" autocomplete="name" /></label>
+                <label class="field"><span>Company</span><input type="text" name="company" autocomplete="organization" /></label>
+              </div>
+              <div class="row">
+                <label class="field"><span>Work email</span><input type="email" name="email" autocomplete="email" required /></label>
+                <label class="field"><span>What flow should we test?</span><input type="text" name="flow" placeholder="e.g. mobile checkout" /></label>
+              </div>
+              <button class="btn btn-lg btn-accent" type="submit">Apply for design-partner access</button>
+              <p class="apply-status" id="applyStatus" role="status" aria-live="polite" hidden></p>
+            </form>
           </div>
         </div>
       </div>
@@ -510,7 +197,7 @@
   <footer class="foot">
     <div class="foot__in">
       <span>Simulation Labs · Behavioral simulation research</span>
-      <span>Built at the H Company Computer Use Hackathon · SF · Jul 2026 · MIT-licensed</span>
+      <span>Built at the H Company Computer Use Hackathon · SF · 2026 · MIT-licensed</span>
       <span><a href="https://github.com/SatyamDave/simulation-labs">GitHub</a> · <a href="mailto:satyam@agentmade.ai">Contact</a> · © 2026</span>
     </div>
   </footer>
