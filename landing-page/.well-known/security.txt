@@ -1,0 +1,19 @@
+# Simulation Labs — security.txt (RFC 9116)
+#
+# This file tells security researchers how to report vulnerabilities in
+# Simulation Labs (behavioral / conversion-testing platform). Served at
+# https://<your-domain>/.well-known/security.txt
+#
+# PLACEHOLDERS: the contact address and domain below are examples
+# (*.example). Replace them with the production security inbox and canonical
+# URL before go-live, and keep `Expires` no more than ~12 months out.
+
+Contact: mailto:security@simulationlabs.example
+Expires: 2027-01-01T00:00:00.000Z
+Policy: https://simulationlabs.example/docs/security-disclosure
+Preferred-Languages: en
+Canonical: https://simulationlabs.example/.well-known/security.txt
+
+# Reports about our sub-processors (H Company / Holo, Gradium, Anthropic,
+# Stripe, object storage) should go to that vendor directly; report anything
+# reachable through a Simulation Labs surface to us.

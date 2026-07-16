@@ -19,8 +19,8 @@ jobs:
         run: python -m playwright install --with-deps chromium
       - name: Lint
         run: ruff check src tests
-      - name: Test
-        run: pytest -q
+      - name: Test (with coverage gate)
+        run: pytest --cov=ghostpanel --cov-report=term-missing --cov-fail-under=73 -q
 
   web:
     runs-on: ubuntu-latest
@@ -38,5 +38,5 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
-      - name: Test
-        run: npm test
+      - name: Test (with coverage gate)
+        run: npx vitest run --coverage

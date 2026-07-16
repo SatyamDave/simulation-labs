@@ -10,5 +10,28 @@ export default defineConfig({
     globals: true,
     setupFiles: ["src/dashboard/test-setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    coverage: {
+      provider: "v8",
+      // text = human-readable CI log; json-summary = machine-readable total for
+      // dashboards / future gate tooling.
+      reporter: ["text", "json-summary"],
+      // Measure every source file (not just imported ones) so untested pages
+      // count against us and the floor stays honest as the suite grows.
+      all: true,
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.{test,spec}.{ts,tsx}",
+        "src/dashboard/test-setup.ts",
+        "src/**/*.d.ts",
+      ],
+      // Floors sit just under the measured 2026-07 totals so the gate passes
+      // today while ratcheting protects against regressions. See docs/testing.md.
+      thresholds: {
+        statements: 2,
+        branches: 50,
+        functions: 25,
+        lines: 2,
+      },
+    },
   },
 });

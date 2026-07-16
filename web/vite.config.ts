@@ -13,5 +13,20 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        // Split the long-lived framework/vendor code out of the app entry so it
+        // caches independently and the main entry only carries app code. React
+        // and its router/animation deps rarely change; app code changes often.
+        manualChunks: {
+          "vendor-react": [
+            "react",
+            "react-dom",
+            "react-router-dom",
+          ],
+          "vendor-motion": ["framer-motion"],
+        },
+      },
+    },
   },
 });
