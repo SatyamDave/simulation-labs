@@ -1,0 +1,294 @@
+# Prometheus alerting rules for Ghostpanel.
+#
+# These rules run against the metrics exposed by src/ghostpanel/server/metrics.py
+# at GET /metrics. The exact series they key on:
+#
+#   http_requests_total{path,method,status}          (counter)
+#   http_request_duration_seconds_bucket{path,le}    (histogram; also _sum/_count)
+#   runs_total{outcome}                              (counter; outcome in
+#                                                     success|step_budget|time_budget|stuck|error)
+#   jobs_total{state}                                (counter of job state transitions:
+#                                                     queued|running|done|failed|...)
+#
+# NOTE: metrics.py is process-local — each replica exposes its own /metrics and
+# Prometheus aggregates across scrapes. All ratios below therefore sum()/rate()
+# across instances (job="ghostpanel") so a single replica cannot skew or hide a
+# fleet-wide problem. Adjust the job label to match your scrape_config.
+#
+# Each rule maps to an SLO in docs/slos.md. Multi-window burn-rate alerts follow
+# the Google SRE workbook: a fast-burn pair (short + long window both hot) pages,
+# a slow-burn pair tickets.
+
+groups:
+  # ------------------------------------------------------------------------
+  # API availability + latency SLOs
+  # ------------------------------------------------------------------------
+  - name: ghostpanel-api-availability
+    rules:
+      # High 5xx ratio — protects the "API availability" SLO (99.5%).
+      # Fast burn: 5xx ratio > 5% over both a 5m and 1h window (~14.4x the
+      # 0.5% budget) → page.
+      - alert: GhostpanelHigh5xxRatioFastBurn
+        expr: |
+          (
+            sum(rate(http_requests_total{job="ghostpanel",status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job="ghostpanel"}[5m]))
+          ) > 0.05
+          and
+          (
+            sum(rate(http_requests_total{job="ghostpanel",status=~"5.."}[1h]))
+            /
+            sum(rate(http_requests_total{job="ghostpanel"}[1h]))
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: page
+          slo: api-availability
+        annotations:
+          summary: "High HTTP 5xx ratio (fast burn) on Ghostpanel API"
+          description: >
+            More than 5% of HTTP responses are 5xx over the last 5m and 1h
+            ({{ $value | humanizePercentage }}). This burns the 0.5% availability
+            error budget ~14x too fast. Check /readyz, the DB, and recent deploys.
+
+      # Slow burn: 5xx ratio > 1% over 30m and 6h (~6x budget) → ticket.
+      - alert: GhostpanelHigh5xxRatioSlowBurn
+        expr: |
+          (
+            sum(rate(http_requests_total{job="ghostpanel",status=~"5.."}[30m]))
+            /
+            sum(rate(http_requests_total{job="ghostpanel"}[30m]))
+          ) > 0.01
+          and
+          (
+            sum(rate(http_requests_total{job="ghostpanel",status=~"5.."}[6h]))
+            /
+            sum(rate(http_requests_total{job="ghostpanel"}[6h]))
+          ) > 0.01
+        for: 15m
+        labels:
+          severity: ticket
+          slo: api-availability
+        annotations:
+          summary: "Elevated HTTP 5xx ratio (slow burn) on Ghostpanel API"
+          description: >
+            HTTP 5xx ratio above 1% over 30m and 6h
+            ({{ $value | humanizePercentage }}). Availability error budget is
+            burning ~6x too fast; investigate before it becomes a page.
+
+      # p95 request latency from the histogram — protects the API latency SLO
+      # (p95 < 1s). histogram_quantile over the per-le bucket rate.
+      - alert: GhostpanelApiLatencyP95High
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (
+              rate(http_request_duration_seconds_bucket{job="ghostpanel"}[5m])
+            )
+          ) > 1
+        for: 10m
+        labels:
+          severity: ticket
+          slo: api-latency
+        annotations:
+          summary: "Ghostpanel API p95 latency > 1s"
+          description: >
+            p95 request latency is {{ $value | humanizeDuration }} over the last
+            5m (SLO target < 1s). Look for slow DB queries, a saturated event
+            loop, or an overloaded replica.
+
+      # Per-route p95 — surfaces which endpoint is slow (informational).
+      - alert: GhostpanelRouteLatencyP95High
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le, path) (
+              rate(http_request_duration_seconds_bucket{job="ghostpanel"}[5m])
+            )
+          ) > 2.5
+        for: 10m
+        labels:
+          severity: ticket
+          slo: api-latency
+        annotations:
+          summary: "Slow route on Ghostpanel API (p95 > 2.5s)"
+          description: >
+            Route {{ $labels.path }} p95 is {{ $value | humanizeDuration }} over
+            5m. Isolate the endpoint before it drags the global latency SLO.
+
+  # ------------------------------------------------------------------------
+  # Run success-rate SLO (behavioral runs)
+  # ------------------------------------------------------------------------
+  - name: ghostpanel-run-success
+    rules:
+      # Run failure-rate SLO burn — protects the "run success rate" SLO (95%).
+      # "Failure" = any outcome != success. NOTE: outcome="error" is infra
+      # failure (see contracts) and is included here on purpose because a spike
+      # in infra errors is itself an incident; docs/slos.md documents the
+      # success-only definition and this alerting choice.
+      # Fast burn: >20% non-success over 5m and 1h (~4x the 5% budget) → page.
+      - alert: GhostpanelRunFailureRateFastBurn
+        expr: |
+          (
+            sum(rate(runs_total{job="ghostpanel",outcome!="success"}[5m]))
+            /
+            sum(rate(runs_total{job="ghostpanel"}[5m]))
+          ) > 0.20
+          and
+          (
+            sum(rate(runs_total{job="ghostpanel",outcome!="success"}[1h]))
+            /
+            sum(rate(runs_total{job="ghostpanel"}[1h]))
+          ) > 0.20
+        for: 5m
+        labels:
+          severity: page
+          slo: run-success-rate
+        annotations:
+          summary: "Ghostpanel run failure rate spiking (fast burn)"
+          description: >
+            {{ $value | humanizePercentage }} of runs are non-success over 5m and
+            1h (SLO: >=95% success). Burning the 5% error budget ~4x too fast.
+            Check the engine/Holo API, Playwright, and worker health.
+
+      # Slow burn: >10% non-success over 30m and 6h (~2x budget) → ticket.
+      - alert: GhostpanelRunFailureRateSlowBurn
+        expr: |
+          (
+            sum(rate(runs_total{job="ghostpanel",outcome!="success"}[30m]))
+            /
+            sum(rate(runs_total{job="ghostpanel"}[30m]))
+          ) > 0.10
+          and
+          (
+            sum(rate(runs_total{job="ghostpanel",outcome!="success"}[6h]))
+            /
+            sum(rate(runs_total{job="ghostpanel"}[6h]))
+          ) > 0.10
+        for: 30m
+        labels:
+          severity: ticket
+          slo: run-success-rate
+        annotations:
+          summary: "Ghostpanel run failure rate elevated (slow burn)"
+          description: >
+            {{ $value | humanizePercentage }} of runs non-success over 30m and 6h
+            (SLO: >=95% success). Error budget burning ~2x; triage the dominant
+            failure outcome (step_budget / time_budget / stuck / error).
+
+      # Infra-error isolation — a burst of outcome="error" is an infra incident
+      # distinct from behavioral abandonment.
+      - alert: GhostpanelRunInfraErrors
+        expr: |
+          sum(rate(runs_total{job="ghostpanel",outcome="error"}[10m])) > 0.1
+        for: 10m
+        labels:
+          severity: page
+          slo: run-success-rate
+        annotations:
+          summary: "Ghostpanel runs failing with infra errors"
+          description: >
+            runs_total{outcome="error"} increasing at
+            {{ $value | humanize }}/s over 10m. This is infrastructure failure
+            (excluded from survival stats) — inspect logs/Sentry.
+
+  # ------------------------------------------------------------------------
+  # Job queue health SLO (enqueue -> result)
+  # ------------------------------------------------------------------------
+  - name: ghostpanel-jobs
+    rules:
+      # Job backlog growth — protects the "enqueue -> result p95" SLO.
+      # jobs_total is a counter of state transitions, so we detect a backlog by
+      # comparing the enqueue rate against the completion rate: if jobs are
+      # entering QUEUED faster than they leave (done+failed) for a sustained
+      # period, the queue is growing.
+      - alert: GhostpanelJobBacklogGrowing
+        expr: |
+          (
+            sum(rate(jobs_total{job="ghostpanel",state="queued"}[10m]))
+            -
+            sum(rate(jobs_total{job="ghostpanel",state=~"done|failed"}[10m]))
+          ) > 0.05
+        for: 15m
+        labels:
+          severity: ticket
+          slo: enqueue-to-result
+        annotations:
+          summary: "Ghostpanel job queue backlog growing"
+          description: >
+            Jobs are being enqueued faster than they complete
+            (net +{{ $value | humanize }}/s over 10m). Workers may be starved,
+            stuck, or scaled too low — check worker health and reaper.
+
+      # Sustained high enqueue rate with no completions at all → workers down.
+      - alert: GhostpanelNoJobCompletions
+        expr: |
+          sum(rate(jobs_total{job="ghostpanel",state="queued"}[10m])) > 0
+          and
+          sum(rate(jobs_total{job="ghostpanel",state=~"done|failed"}[10m])) == 0
+        for: 10m
+        labels:
+          severity: page
+          slo: enqueue-to-result
+        annotations:
+          summary: "Ghostpanel jobs enqueued but none completing"
+          description: >
+            Jobs are being enqueued but zero have reached done/failed in 10m.
+            The worker pool is likely down or wedged. Page on-call.
+
+      # Rising job failures — dead-letter pressure.
+      - alert: GhostpanelJobFailureRateHigh
+        expr: |
+          (
+            sum(rate(jobs_total{job="ghostpanel",state="failed"}[15m]))
+            /
+            clamp_min(sum(rate(jobs_total{job="ghostpanel",state=~"done|failed"}[15m])), 1e-9)
+          ) > 0.10
+        for: 15m
+        labels:
+          severity: ticket
+          slo: enqueue-to-result
+        annotations:
+          summary: "Ghostpanel job failure rate > 10%"
+          description: >
+            {{ $value | humanizePercentage }} of terminal jobs are FAILED over
+            15m. Check dead_letters() and the reaper (W1-A reliability).
+
+  # ------------------------------------------------------------------------
+  # Probe / liveness — requires an external prober (blackbox exporter or
+  # Prometheus `up`). The Ghostpanel process itself exposes GET /readyz and
+  # GET /healthz but cannot alert on its own absence.
+  # ------------------------------------------------------------------------
+  - name: ghostpanel-probes
+    rules:
+      # /readyz down — ASSUMES a blackbox_exporter module probing /readyz and
+      # emitting probe_success{instance=".../readyz"}. Enable the blackbox
+      # scrape job for this to fire; otherwise this rule stays inactive.
+      - alert: GhostpanelReadyzDown
+        expr: |
+          probe_success{job="blackbox",instance=~".*/readyz"} == 0
+        for: 3m
+        labels:
+          severity: page
+          slo: api-availability
+        annotations:
+          summary: "Ghostpanel /readyz probe failing"
+          description: >
+            The blackbox probe of /readyz has been failing for 3m
+            (instance {{ $labels.instance }}). The app is up but not ready —
+            usually the database is unreachable. Page on-call.
+
+      # Target scrape down — Prometheus can't reach the app's /metrics at all.
+      - alert: GhostpanelTargetDown
+        expr: |
+          up{job="ghostpanel"} == 0
+        for: 3m
+        labels:
+          severity: page
+          slo: api-availability
+        annotations:
+          summary: "Ghostpanel metrics target is down"
+          description: >
+            Prometheus has failed to scrape {{ $labels.instance }} for 3m. The
+            replica is likely down or unreachable. Page on-call.

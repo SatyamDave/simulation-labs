@@ -32,7 +32,16 @@ from ghostpanel.store.repo import Store
 from ghostpanel.storage.base import ArtifactStorage
 from ghostpanel.storage.factory import build_storage
 
+from ghostpanel.server.metrics import inc_job, inc_run
+
 from .queue import JobQueue
+from .reliability import (
+    DEFAULT_JOB_TIMEOUT_S,
+    DEFAULT_LEASE_S,
+    JobTimeout,
+    reap_stuck_jobs,
+    run_with_timeout,
+)
 
 logger = logging.getLogger("ghostpanel.worker")
 
@@ -140,10 +149,14 @@ async def run_job(
         except Exception as exc:  # noqa: BLE001 - a publish hiccup must not fail the job
             logger.warning("Artifact publish failed for run %s: %s", run_id, exc)
         await queue.mark_done(job.id)
+        inc_run("finished")
+        inc_job("done")
     else:
         error = error or "swarm produced no report"
         await store.set_run_state(run_id, RunState.ERROR, error=error[:300])
         await queue.mark_failed(job.id, error)
+        inc_run("error")
+        inc_job("failed")
 
     return run_id
 
@@ -174,24 +187,48 @@ async def _worker_loop(
             continue
         logger.info("[%s] claimed job %s (attempt %s)", worker_id, job.id, job.attempts)
         try:
-            run_id = await run_job(
-                job,
-                store=store,
-                queue=queue,
-                storage=storage,
-                settings=settings,
-                browser=browser,
-                holo_client=holo_client,
+            # Bound each run so a hung page/model can't hold a slot forever; a
+            # timeout flows through the same retry/dead-letter path as any failure.
+            run_id = await run_with_timeout(
+                run_job(
+                    job,
+                    store=store,
+                    queue=queue,
+                    storage=storage,
+                    settings=settings,
+                    browser=browser,
+                    holo_client=holo_client,
+                ),
+                timeout_s=DEFAULT_JOB_TIMEOUT_S,
             )
             logger.info("[%s] finished job %s -> run %s", worker_id, job.id, run_id or "n/a")
         except asyncio.CancelledError:
             raise
-        except Exception as exc:  # noqa: BLE001 - safety net: run_job usually self-marks
-            logger.exception("[%s] job %s crashed", worker_id, job.id)
+        except Exception as exc:  # noqa: BLE001 - safety net: timeout / crash before self-mark
+            if isinstance(exc, JobTimeout):
+                logger.warning("[%s] job %s timed out", worker_id, job.id)
+            else:
+                logger.exception("[%s] job %s crashed", worker_id, job.id)
             try:
                 await queue.mark_failed(job.id, f"{type(exc).__name__}: {exc}"[:300])
+                inc_job("failed")
             except Exception:  # noqa: BLE001
                 pass
+
+
+async def _reaper_loop(stop_event: asyncio.Event, *, interval_s: float = 60.0) -> None:
+    """Periodically requeue/dead-letter jobs stuck in RUNNING past the lease."""
+    while not stop_event.is_set():
+        try:
+            n = await reap_stuck_jobs(lease_seconds=DEFAULT_LEASE_S)
+            if n:
+                logger.info("reaper: recovered %s stuck job(s)", n)
+        except Exception as exc:  # noqa: BLE001 - a reap hiccup must not kill the worker
+            logger.warning("reaper error: %s", exc)
+        try:
+            await asyncio.wait_for(stop_event.wait(), timeout=interval_s)
+        except asyncio.TimeoutError:
+            pass
 
 
 async def _amain() -> int:
@@ -243,6 +280,8 @@ async def _amain() -> int:
             )
             for i in range(concurrency)
         ]
+        # Reaper: requeue jobs whose worker died mid-run (RUNNING past the lease).
+        tasks.append(asyncio.create_task(_reaper_loop(stop_event)))
 
         await stop_event.wait()
         logger.info("Shutdown signal received; draining %s worker slot(s)...", concurrency)

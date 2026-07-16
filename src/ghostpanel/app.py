@@ -72,6 +72,13 @@ def create_app(
         raise RuntimeError(
             "SESSION_SECRET must be overridden in production (GHOSTPANEL_ENV=production)."
         )
+
+    # Error tracking (optional): initializes only when SENTRY_DSN is set AND
+    # sentry-sdk is installed + `ops` is importable. No-op otherwise.
+    with contextlib.suppress(Exception):
+        from ops.observability import configure as _configure_sentry
+
+        _configure_sentry(app=None, settings=settings)
     if enable_voice is None:
         enable_voice = settings.has_gradium
 
