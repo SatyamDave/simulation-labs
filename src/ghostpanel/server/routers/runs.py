@@ -135,6 +135,17 @@ async def start_run(
     project: Project = Depends(current_project),
 ) -> EnqueueResponse:
     queue = request.app.state.queue
+
+    # Tier quota: block enqueue when the project is over its monthly run budget.
+    from ghostpanel.billing import usage
+    from ghostpanel.billing.entitlements import QuotaExceeded, check_can_enqueue
+
+    used = await usage.runs_this_period(project.id)
+    try:
+        check_can_enqueue(project.tier, used)
+    except QuotaExceeded as exc:
+        raise HTTPException(status_code=402, detail=str(exc)) from exc
+
     spec: dict[str, Any] = {
         "url": body.url,
         "task": body.task,

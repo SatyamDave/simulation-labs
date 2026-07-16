@@ -11,6 +11,8 @@ import { ProjectSwitcher } from "./components/ProjectSwitcher";
 const NAV = [
   { to: "/app/runs", label: "Runs" },
   { to: "/app/flows", label: "Flows" },
+  { to: "/app/members", label: "Members" },
+  { to: "/app/billing", label: "Billing" },
   { to: "/app/settings", label: "Settings" },
 ] as const;
 

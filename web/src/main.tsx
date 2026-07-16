@@ -11,6 +11,8 @@ import Runs from "./dashboard/pages/Runs";
 import RunDetail from "./dashboard/pages/RunDetail";
 import Flows from "./dashboard/pages/Flows";
 import Settings from "./dashboard/pages/Settings";
+import Billing from "./dashboard/pages/Billing";
+import Members from "./dashboard/pages/Members";
 import "./styles.css";
 
 const el = document.getElementById("root");
@@ -33,6 +35,8 @@ createRoot(el).render(
               <Route path="runs" element={<Runs />} />
               <Route path="runs/:runId" element={<RunDetail />} />
               <Route path="flows" element={<Flows />} />
+              <Route path="members" element={<Members />} />
+              <Route path="billing" element={<Billing />} />
               <Route path="settings" element={<Settings />} />
             </Route>
           </Route>

@@ -45,12 +45,16 @@ def register_hosted(
     # Import routers lazily so importing this module never drags in the router
     # (and its transitive auth/store) import graph before the caller wants it.
     from .routers.auth import router as auth_router
+    from .routers.billing import router as billing_router
+    from .routers.members import router as members_router
     from .routers.projects import router as projects_router
     from .routers.runs import router as runs_router
 
     app.include_router(auth_router)
     app.include_router(projects_router)
     app.include_router(runs_router)
+    app.include_router(billing_router)
+    app.include_router(members_router)
 
 
 __all__ = ["register_hosted"]
