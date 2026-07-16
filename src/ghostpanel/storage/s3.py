@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import mimetypes
 from pathlib import Path
+from typing import Optional
 
 from .base import ArtifactStorage
 
@@ -105,6 +106,31 @@ class S3ArtifactStorage(ArtifactStorage):
         if self.region and self.region != "us-east-1":
             return f"https://{self.bucket}.s3.{self.region}.amazonaws.com/{key}"
         return f"https://{self.bucket}.s3.amazonaws.com/{key}"
+
+    # --- authed read path ------------------------------------------------
+    def _download(self, key: str) -> Optional[bytes]:
+        from botocore.exceptions import ClientError  # noqa: PLC0415 — lazy
+
+        try:
+            resp = self._get_client().get_object(Bucket=self.bucket, Key=key)
+            return resp["Body"].read()
+        except ClientError:
+            # NoSuchKey / access denied / missing object → treat as absent.
+            return None
+
+    async def read(self, run_id: str, rel_path: str) -> Optional[bytes]:
+        key = self._key(run_id, rel_path)
+        return await asyncio.to_thread(self._download, key)
+
+    def presigned_url(
+        self, run_id: str, rel_path: str, *, expires_s: int = 3600
+    ) -> Optional[str]:
+        key = self._key(run_id, rel_path)
+        return self._get_client().generate_presigned_url(
+            "get_object",
+            Params={"Bucket": self.bucket, "Key": key},
+            ExpiresIn=expires_s,
+        )
 
 
 __all__ = ["S3ArtifactStorage"]

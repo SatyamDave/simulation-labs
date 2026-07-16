@@ -27,6 +27,8 @@ def client():
         stripe_webhook_secret = ""
         stripe_price_team = ""
         has_stripe = False
+        is_production = False
+        session_cookie_secure = False
 
     app = FastAPI()
 

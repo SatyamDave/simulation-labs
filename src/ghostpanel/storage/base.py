@@ -9,7 +9,7 @@ run code caring which. Keys are ``<run_id>/<relative path>``.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Protocol, runtime_checkable
+from typing import Optional, Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -34,6 +34,18 @@ class ArtifactStorage(Protocol):
     def url_for(self, run_id: str, rel_path: str) -> str:
         """The URL a client uses to fetch the artifact. For local storage this is a
         server path like ``/artifacts/<run_id>/<rel_path>``; for S3 a bucket/CDN URL."""
+        ...
+
+    async def read(self, run_id: str, rel_path: str) -> Optional[bytes]:
+        """Return the artifact's bytes, or None if it doesn't exist. Used by the
+        authed artifact route to stream from local disk. Must reject path traversal
+        (rel_path escaping the run dir) — return None rather than read outside."""
+        ...
+
+    def presigned_url(self, run_id: str, rel_path: str, *, expires_s: int = 3600) -> Optional[str]:
+        """A short-lived direct URL (e.g. an S3 presigned GET) the client can fetch
+        without hitting our server, or None when the backend can't presign (local) —
+        in which case the caller streams via ``read``."""
         ...
 
 

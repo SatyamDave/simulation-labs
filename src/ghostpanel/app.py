@@ -27,7 +27,6 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 import gradium
 
-from ghostpanel.engine.holo_client import LiveHoloClient
 from ghostpanel.runner.policy import RequestPolicy
 from ghostpanel.voice.gradium_voice import GradiumVoiceEngine
 from ghostpanel.voice.voices import assign_voices
@@ -67,6 +66,12 @@ def create_app(
     launch_browser: bool = True,
 ) -> FastAPI:
     settings = settings or get_settings()
+
+    # Refuse to boot in production with the insecure default session secret.
+    if settings.is_production and settings.session_secret == "dev-insecure-secret-change-me":
+        raise RuntimeError(
+            "SESSION_SECRET must be overridden in production (GHOSTPANEL_ENV=production)."
+        )
     if enable_voice is None:
         enable_voice = settings.has_gradium
 
@@ -101,12 +106,11 @@ def create_app(
 
         holo = holo_client
         if holo is None:
-            holo = LiveHoloClient(
-                api_key=settings.hai_api_key,
-                base_url=settings.holo_base_url,
-                model=settings.hai_model,
-                rpm=settings.hai_rpm,
-            )
+            # Pluggable inference backend (MODEL_BACKEND=holo|echo|...); Holo is the
+            # default. Keeps the swarm vendor-swappable — see engine/models/registry.
+            from ghostpanel.engine.models.registry import build_model, default_backend
+
+            holo = build_model(default_backend(), settings)
 
         voice_factory = None
         voice_assigner = None
@@ -195,16 +199,16 @@ def create_app(
     )
 
     # Observability: request-id + structured access logging + /readyz.
+    from ghostpanel.server.metrics import add_metrics
     from ghostpanel.server.middleware import add_observability
 
     add_observability(app)
+    add_metrics(app)
 
-    # Serve artifacts (.webm / .wav / report.html) from the artifact dir.
-    app.mount(
-        "/artifacts",
-        StaticFiles(directory=str(artifact_dir), check_dir=False),
-        name="artifacts",
-    )
+    # NOTE: artifacts are NOT served from an open static mount anymore (that was a
+    # cross-tenant IDOR — see docs/security-audit.md #2). They go through the authed
+    # route GET /v2/runs/{run_id}/artifacts/{path} (session/api-key scoped or a signed
+    # token), registered by register_hosted above.
 
     # Mount the built frontend at "/" if present (registered last: catch-all).
     if _WEB_DIST.is_dir():

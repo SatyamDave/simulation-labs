@@ -122,6 +122,13 @@ export const setBaseline = (
     run_id: runId,
   });
 
-// Absolute URL for a stored artifact (report.html / video / audio), for links + <img>.
-export const artifactUrl = (relPath: string) =>
-  `${API_BASE}${relPath.startsWith("/") ? "" : "/"}${relPath}`;
+// URL for a stored artifact via the AUTHED route (session cookie scopes access;
+// the old open /artifacts mount was a cross-tenant IDOR — see security-audit.md).
+// Accepts either a bare filename or a legacy "/artifacts/<run_id>/<path>" value and
+// normalizes to /v2/runs/<run_id>/artifacts/<path>.
+export function runArtifactUrl(runId: string, pathOrRel: string): string {
+  let rel = pathOrRel.replace(/^\/+/, "");
+  const legacy = `artifacts/${runId}/`;
+  if (rel.startsWith(legacy)) rel = rel.slice(legacy.length);
+  return `${API_BASE}/v2/runs/${runId}/artifacts/${rel}`;
+}

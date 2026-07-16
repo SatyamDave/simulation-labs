@@ -92,6 +92,7 @@ def _set_cookie(request: Request, response: Response, token: str) -> None:
         max_age=max_age,
         httponly=True,
         samesite="lax",
+        secure=settings.session_cookie_secure,
         path="/",
     )
 

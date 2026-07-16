@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import shutil
 from pathlib import Path
+from typing import Optional
 
 from .base import ArtifactStorage
 
@@ -62,6 +63,40 @@ class LocalArtifactStorage(ArtifactStorage):
     def url_for(self, run_id: str, rel_path: str) -> str:
         rel = Path(rel_path.replace("\\", "/")).as_posix()
         return f"/artifacts/{run_id}/{rel}"
+
+    # --- authed read path (traversal-safe) -------------------------------
+    def _read_safe(self, run_id: str, rel_path: str) -> Optional[bytes]:
+        """Resolve ``root/run_id/rel_path`` and read it, but only if the real
+        (symlink-resolved) path stays inside ``root/run_id``. Any ``..``,
+        absolute segment, or symlink that escapes the run dir yields None."""
+        if not run_id:
+            return None
+        base = (self.root / run_id).resolve()
+        rel = rel_path.replace("\\", "/")
+        # Path.__truediv__ with an absolute right operand discards ``base``;
+        # resolve() then normalises ``..`` and follows symlinks.
+        try:
+            resolved = (base / rel).resolve()
+        except (OSError, RuntimeError, ValueError):
+            return None
+        # Must be base itself or a descendant of base (containment check).
+        if resolved != base and base not in resolved.parents:
+            return None
+        if not resolved.is_file():
+            return None
+        try:
+            return resolved.read_bytes()
+        except OSError:
+            return None
+
+    async def read(self, run_id: str, rel_path: str) -> Optional[bytes]:
+        return await asyncio.to_thread(self._read_safe, run_id, rel_path)
+
+    def presigned_url(
+        self, run_id: str, rel_path: str, *, expires_s: int = 3600
+    ) -> Optional[str]:
+        # Local disk can't presign — the caller streams via ``read``.
+        return None
 
 
 __all__ = ["LocalArtifactStorage"]

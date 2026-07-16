@@ -95,6 +95,19 @@ class Settings:
     stripe_webhook_secret: str = ""
     stripe_price_team: str = ""
 
+    # Deployment env: "dev" (default) or "production". Drives cookie-secure +
+    # the boot-time refusal of the default session secret.
+    env: str = "dev"
+
+    @property
+    def is_production(self) -> bool:
+        return self.env.strip().lower() in ("production", "prod")
+
+    @property
+    def session_cookie_secure(self) -> bool:
+        """Send the session cookie only over HTTPS in production."""
+        return self.is_production
+
     @property
     def effective_database_url(self) -> str:
         """The async DB URL, defaulting to a repo-local SQLite file."""
@@ -165,4 +178,5 @@ def get_settings() -> Settings:
         stripe_secret_key=_get_str("STRIPE_SECRET_KEY"),
         stripe_webhook_secret=_get_str("STRIPE_WEBHOOK_SECRET"),
         stripe_price_team=_get_str("STRIPE_PRICE_TEAM"),
+        env=_get_str("GHOSTPANEL_ENV", "dev"),
     )

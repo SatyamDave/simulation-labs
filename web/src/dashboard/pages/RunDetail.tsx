@@ -215,8 +215,8 @@ export default function RunDetail() {
   const nameOf = (id: string) =>
     report.survival.find((s) => s.persona_id === id)?.persona_name || id;
 
-  const reportHtml = api2.artifactUrl(`/artifacts/${report.run_id}/report.html`);
-  const targetShot = api2.artifactUrl(`/artifacts/${report.run_id}/target.png`);
+  const reportHtml = api2.runArtifactUrl(report.run_id, "report.html");
+  const targetShot = api2.runArtifactUrl(report.run_id, "target.png");
 
   const resultsWithMedia = report.results.filter(
     (r) => r.video_path || r.audio_path
@@ -356,7 +356,7 @@ export default function RunDetail() {
                   <span className="ml-auto flex items-center gap-4">
                     {r.video_path && (
                       <a
-                        href={api2.artifactUrl(r.video_path)}
+                        href={api2.runArtifactUrl(report.run_id, r.video_path)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-sm text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 rounded"
@@ -366,7 +366,7 @@ export default function RunDetail() {
                     )}
                     {r.audio_path && (
                       <a
-                        href={api2.artifactUrl(r.audio_path)}
+                        href={api2.runArtifactUrl(report.run_id, r.audio_path)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-sm text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 rounded"

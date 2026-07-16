@@ -41,23 +41,20 @@ def build_holo_client(settings: Settings) -> Optional[Any]:
     """Build the ONE shared, rate-limited Holo client (Settings.hai_rpm is the hard
     cap for the whole swarm). Returns None when no API key is configured — the worker
     still runs, but those jobs error at drive time. Never crashes on import/build."""
-    if not settings.hai_api_key.strip():
+    from ghostpanel.engine.models.registry import build_model, default_backend
+
+    backend = default_backend()
+    # The default Holo backend needs a key; a keyless build would error every job.
+    if backend == "holo" and not settings.hai_api_key.strip():
         logger.warning(
             "HAI_API_KEY is empty — worker will run but every claimed job will ERROR "
             "(no Holo client). Set HAI_API_KEY to actually drive swarms."
         )
         return None
     try:
-        from ghostpanel.engine.holo_client import LiveHoloClient
-
-        return LiveHoloClient(
-            api_key=settings.hai_api_key,
-            base_url=settings.holo_base_url,
-            model=settings.hai_model,
-            rpm=settings.hai_rpm,
-        )
+        return build_model(backend, settings)
     except Exception as exc:  # noqa: BLE001 - never let client build crash the worker
-        logger.warning("Failed to build LiveHoloClient (%s); jobs will ERROR.", exc)
+        logger.warning("Failed to build model backend %r (%s); jobs will ERROR.", backend, exc)
         return None
 
 
