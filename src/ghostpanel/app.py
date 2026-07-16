@@ -23,6 +23,7 @@ from typing import Any, Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 import gradium
 
@@ -37,6 +38,21 @@ from .server.config import Settings, get_settings
 from .server.runs import RunRegistry
 from .server.swarm import SwarmManager
 from .server.ws import WebSocketHub
+
+class _SPAStaticFiles(StaticFiles):
+    """Static files with a single-page-app fallback: any unmatched path returns
+    index.html so client-side routes (/app, /login, /app/runs/<id>) resolve on a
+    deep link or refresh. API routes are registered before this mount, so they
+    always win; only genuinely unmatched GETs fall through to the SPA shell."""
+
+    async def get_response(self, path, scope):  # noqa: ANN001
+        try:
+            return await super().get_response(path, scope)
+        except StarletteHTTPException as exc:
+            if exc.status_code == 404:
+                return await super().get_response("index.html", scope)
+            raise
+
 
 # web/dist lives at the repo root: src/ghostpanel/app.py -> parents[2]
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -189,7 +205,7 @@ def create_app(
     if _WEB_DIST.is_dir():
         app.mount(
             "/",
-            StaticFiles(directory=str(_WEB_DIST), html=True, check_dir=False),
+            _SPAStaticFiles(directory=str(_WEB_DIST), html=True, check_dir=False),
             name="web",
         )
 
