@@ -949,7 +949,7 @@ body.tour-on .tour-ov,body.tour-on .tour-spot,body.tour-on .tour-cur,body.tour-o
   box-shadow:0 0 0 9999px rgba(6,8,11,.82),0 0 26px 2px rgba(76,141,255,.4),inset 0 0 0 1px rgba(76,141,255,.3)}
 .tour-spot.hit{border-color:#fff;
   box-shadow:0 0 0 9999px rgba(6,8,11,.82),0 0 38px 7px rgba(76,141,255,.72),inset 0 0 0 1px rgba(255,255,255,.55)}
-.tour-cur{position:fixed;top:0;left:0;z-index:73;pointer-events:none;will-change:transform;
+.tour-cur{position:fixed;top:0;left:0;z-index:75;pointer-events:none;will-change:transform;
   filter:drop-shadow(0 3px 7px rgba(0,0,0,.55))}
 .tour-cur svg{display:block;transform-origin:6px 4px;transition:transform .12s cubic-bezier(.3,.7,.3,1)}
 .tour-cur.is-click svg{transform:scale(.68)}
@@ -969,8 +969,9 @@ body.tour-on .tour-ov,body.tour-on .tour-spot,body.tour-on .tour-cur,body.tour-o
 .tt-line{font-family:var(--ui);font-size:.92rem;color:var(--muted);line-height:1.5;margin:7px 14px 0}
 .tt-ctl{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:15px 14px 0}
 .tt-hint{font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim)}
-.tt-next{font-family:var(--ui);font-size:.85rem;font-weight:500;padding:8px 16px;cursor:default;
+.tt-next{font-family:var(--ui);font-size:.85rem;font-weight:500;padding:8px 16px;cursor:pointer;
   border:1px solid var(--accent);background:var(--accent);color:#fff;transition:box-shadow .12s ease,background .12s ease}
+.tt-next:hover{background:var(--accent-hover)}
 .tt-next.flash{background:var(--accent-hover);box-shadow:0 0 0 4px var(--accent-tint)}
 
 /* ================= design partners — Cohort 01 ================= */

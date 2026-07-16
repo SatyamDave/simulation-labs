@@ -300,11 +300,14 @@
         '<button class="tt-x" type="button" aria-label="Exit tour">esc to exit</button></div>' +
         '<h4 class="tt-title"></h4><p class="tt-line"></p>' +
         '<div class="tt-ctl"><span class="tt-hint">agent is driving</span>' +
-        '<button class="tt-next" type="button" tabindex="-1">Next</button></div>';
+        '<button class="tt-next" type="button">Next</button></div>';
       [ov, spot, cur, tip].forEach(function (n) { document.body.appendChild(n); });
       bar = tip.querySelector(".tt-bar i");
       nextBtn = tip.querySelector(".tt-next");
       tip.querySelector(".tt-x").addEventListener("click", stop);
+      // Agent drives on a timer, but a human can take over: clicking Next cancels the
+      // pending auto-advance and steps immediately (no double-advance).
+      nextBtn.addEventListener("click", function () { if (!on) return; clearTimers(); next(); });
     }
     function focusEl(step) { var s = document.getElementById(step.sec); return s ? (s.querySelector(step.focus) || s) : null; }
     function render() {
@@ -321,8 +324,11 @@
         tip.style.top = top + "px";
         // agent cursor: rests on the focused element, then travels to the Next button
         var ce = (curEl === nextBtn) ? nextBtn : fe, cr = ce.getBoundingClientRect();
-        var cx = (ce === nextBtn) ? (cr.left + cr.width * 0.5) : (cr.right - 6);
-        var cy = (ce === nextBtn) ? (cr.top + cr.height * 0.5) : (cr.bottom - 4);
+        // On the Next button the cursor's tip lands on the button (anchor offset by the arrow
+        // tip's ~6/4 origin) so the press reads as a real click; the cursor sits above the
+        // tooltip in z-order (see .tour-cur z-index) so it's never hidden behind the button.
+        var cx = (ce === nextBtn) ? (cr.left + cr.width * 0.5 - 6) : (cr.right - 6);
+        var cy = (ce === nextBtn) ? (cr.top + cr.height * 0.5 - 4) : (cr.bottom - 4);
         cur.style.transform = "translate(" + cx + "px," + cy + "px)";
       }
       raf = requestAnimationFrame(render);
