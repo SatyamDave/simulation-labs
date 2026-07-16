@@ -25,6 +25,12 @@
 - on_demand_audit (manual swarm run + report, for growth/product)
 - mcp_skill (mid-session, called by a coding agent) [next]
 
+## Pricing
+- Free: $0, CI gate on public repos, one flow (for open source)
+- Team: $49/seat/mo, CI gate on private repos, multiple flows, ICP tuning
+- Audit: $5-15k/run, full manual swarm run + report (growth/product)
+- Design partners get founding-partner terms. MIT-licensed; degradation primitives open-sourced.
+
 ## Contact
 - Apply for design-partner access: satyam@agentmade.ai
 - Repo: https://github.com/SatyamDave/simulation-labs

@@ -251,6 +251,32 @@
               <p>Your coding agent invokes it right after a UI change and gets pass/fail back in the terminal.</p>
             </div>
           </div>
+
+          <div class="ci-snip" aria-label="Illustrative CI integration">
+            <div class="ci-snip__bar"><span class="ci-snip__dot" aria-hidden="true"></span>.github/workflows/simulate.yml<span class="ci-snip__tag">illustrative</span></div>
+            <pre class="ci-snip__code"><span class="c-c"># behavioral tests for every deploy</span>
+- uses: <span class="c-s">simulationlabs/gate@v1</span>
+  with:
+    flow: <span class="c-v">checkout</span>
+    icp: <span class="c-v">your-segments</span>
+    fail-under: <span class="c-v">last-passing</span>   <span class="c-c"># block the merge if completion drops</span></pre>
+          </div>
+
+          <div class="tiers" aria-label="Plans">
+            <div class="tier">
+              <span class="tier__n">Free</span><span class="tier__p">$0</span>
+              <span class="tier__d">CI gate on public repos, one flow. For open source.</span>
+            </div>
+            <div class="tier tier--mid">
+              <span class="tier__n">Team</span><span class="tier__p">$49<i>/seat · mo</i></span>
+              <span class="tier__d">CI gate on private repos, multiple flows, ICP tuning.</span>
+            </div>
+            <div class="tier">
+              <span class="tier__n">Audit</span><span class="tier__p">$5&ndash;15k<i>/run</i></span>
+              <span class="tier__d">A full manual swarm run and report. Growth and product.</span>
+            </div>
+          </div>
+          <p class="tiers__fine">Free for public repos and MIT-licensed. Design partners get founding-partner terms.</p>
         </div>
       </div>
     </section>
@@ -344,6 +370,9 @@ evidence     : prompted-persona fidelity ~11.86%  [arXiv:2503.20749]
                  (offline Monte-Carlo, 20k trials/cell, illustrative)
                173 tests · MIT · frozen-contract 5-module architecture
 triggers     : ci_cd_gate(regression vs last-passing) [primary] · on_demand_audit · mcp_skill(mid-session)
+pricing      : free($0, ci gate, public repos, 1 flow) · team($49/seat/mo, private + icp tuning)
+               · audit($5-15k/run, manual swarm + report) · design-partner: founding terms
+distribution : MIT-licensed; degradation primitives (blur/tremor/icp-fitter) open-sourced
 cta          : apply_design_partner(email) -> satyam@agentmade.ai
 repo         : https://github.com/SatyamDave/simulation-labs</pre>
       </div>
