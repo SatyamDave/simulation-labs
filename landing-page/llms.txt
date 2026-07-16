@@ -21,7 +21,9 @@
 - Holo (holo3-1-35b-a3b), Playwright, Gradium (voice), Claude (optional narration), NVIDIA NemoClaw (network policy)
 
 ## Triggers
-- manual, mcp_skill (mid-session), ci_cd_gate (regression vs last-passing)
+- ci_cd_gate (regression vs last-passing) [primary wedge: gate every deploy]
+- on_demand_audit (manual swarm run + report, for growth/product)
+- mcp_skill (mid-session, called by a coding agent) [next]
 
 ## Contact
 - Apply for design-partner access: satyam@agentmade.ai

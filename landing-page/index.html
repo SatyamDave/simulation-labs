@@ -228,26 +228,27 @@
       </div>
     </section>
 
-    <!-- ===== ONE ENGINE, THREE TRIGGERS ===== -->
-    <section class="sect" id="triggers" data-tour="Three triggers">
+    <!-- ===== WEDGE — start at the deploy gate ===== -->
+    <section class="sect" id="triggers" data-tour="Where to start">
       <div class="sect__in">
-        <div class="sect__label"><span class="sect__k">Same engine</span><h2>One engine, three triggers</h2></div>
+        <div class="sect__label"><span class="sect__k">Where to start</span><h2>Gate every deploy. Expand from there.</h2></div>
         <div class="sect__body">
+          <p class="prose" style="color:var(--muted);max-width:56ch;margin-bottom:1.6em">One engine, one place to start: wire the swarm into CI so every deploy is tested against your ICP before it ships. Behavioral tests, like unit tests. Everything else is expansion.</p>
           <div class="qa-grid reveal">
-            <div class="qa-card">
-              <span class="qa-k"><i aria-hidden="true"></i>Manual</span>
-              <h3>Run it by hand</h3>
-              <p>Pick a flow, watch the swarm run, read the failure report. No setup.</p>
-            </div>
-            <div class="qa-card">
-              <span class="qa-k"><i aria-hidden="true"></i>MCP skill</span>
-              <h3>Call it mid-session</h3>
-              <p>Your coding agent invokes it after a UI change and gets the result back in the terminal.</p>
-            </div>
-            <div class="qa-card">
-              <span class="qa-k"><i aria-hidden="true"></i>CI/CD gate</span>
+            <div class="qa-card is-primary">
+              <span class="qa-k"><i aria-hidden="true"></i>CI/CD gate · start here</span>
               <h3>Block the merge</h3>
-              <p>Runs on every deploy, blocking the merge if completion drops versus the last passing run.</p>
+              <p>The swarm runs on every deploy and blocks the merge when completion drops versus the last passing run. A daily behavioral test suite for your real flows.</p>
+            </div>
+            <div class="qa-card">
+              <span class="qa-k"><i aria-hidden="true"></i>On-demand audit</span>
+              <h3>Deep-dive one flow</h3>
+              <p>A full manual swarm run on a flow that matters: survival curve, abandonment heatmap, video, voice. For growth and product teams.</p>
+            </div>
+            <div class="qa-card">
+              <span class="qa-k"><i aria-hidden="true"></i>MCP skill · next</span>
+              <h3>Call it mid-session</h3>
+              <p>Your coding agent invokes it right after a UI change and gets pass/fail back in the terminal.</p>
             </div>
           </div>
         </div>
@@ -342,7 +343,7 @@ evidence     : prompted-persona fidelity ~11.86%  [arXiv:2503.20749]
                tremor sigma=14px miss-rate: 60.9%@24px, 20.5%@44px, &lt;5%@&gt;=62px
                  (offline Monte-Carlo, 20k trials/cell, illustrative)
                173 tests · MIT · frozen-contract 5-module architecture
-triggers     : manual · mcp_skill(mid-session) · ci_cd_gate(regression vs last-passing)
+triggers     : ci_cd_gate(regression vs last-passing) [primary] · on_demand_audit · mcp_skill(mid-session)
 cta          : apply_design_partner(email) -> satyam@agentmade.ai
 repo         : https://github.com/SatyamDave/simulation-labs</pre>
       </div>

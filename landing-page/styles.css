@@ -780,6 +780,10 @@ a,.btn,.run-p,.cta-wedges span,.hv-tile,.dp-item,.pub{transition-timing-function
 
 /* compact triggers grid on the rebuilt page */
 #triggers .qa-card p{max-width:34ch}
+.qa-card.is-primary{box-shadow:inset 0 3px 0 0 var(--accent);
+  background:linear-gradient(180deg,rgba(76,141,255,.07),transparent 42%)}
+.qa-card.is-primary .qa-k{color:var(--accent)}
+.qa-card.is-primary .qa-k i{background:var(--accent)}
 
 /* ================================================================
    v3 — Built-with logos · ICP emphasis · unique charts · guide rail
@@ -861,7 +865,8 @@ a,.btn,.run-p,.cta-wedges span,.hv-tile,.dp-item,.pub{transition-timing-function
 .vital__t{font-family:var(--mono);font-size:9px;fill:var(--dim)}
 
 /* Guide rail — the agent's reading position */
-.guide{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:15px;align-items:flex-end}
+.guide{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:15px;align-items:flex-end;transition:opacity .35s ease}
+.guide.at-hero{opacity:0;pointer-events:none}
 @media(max-width:900px){.guide{display:none}}
 .guide__dot{display:flex;align-items:center;gap:10px;text-decoration:none;justify-content:flex-end}
 .guide__dot i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--border-2);background:transparent;flex:0 0 auto;transition:background .2s,border-color .2s,transform .2s}

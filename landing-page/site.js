@@ -207,14 +207,6 @@
     }
     cursor.style.transform = "translate(-12px,-6px)";
     setTimeout(rest, 650);
-    setInterval(function () {
-      cursor.classList.add("is-click");
-      var r = document.createElement("span");
-      r.className = "cta-ripple";
-      btn.appendChild(r);
-      setTimeout(function () { cursor.classList.remove("is-click"); }, 170);
-      setTimeout(function () { if (r.parentNode) r.parentNode.removeChild(r); }, 640);
-    }, 3600);
     window.addEventListener("resize", rest);
   }
 
@@ -243,7 +235,7 @@
     var secs = Array.prototype.slice.call(document.querySelectorAll("main > section[data-tour]"));
     if (secs.length < 2) return;
     var rail = document.createElement("nav");
-    rail.className = "guide";
+    rail.className = "guide at-hero";
     rail.setAttribute("aria-label", "Page guide");
     var dots = [];
     secs.forEach(function (s, i) {
@@ -265,9 +257,12 @@
       var io = new IntersectionObserver(function (ents) {
         ents.forEach(function (e) {
           if (!e.isIntersecting) return;
-          dots.forEach(function (d) { d.classList.toggle("is-on", d.getAttribute("href") === "#" + e.target.id); });
+          var id = e.target.id, isHero = (id === "hero");
+          dots.forEach(function (d) { d.classList.toggle("is-on", d.getAttribute("href") === "#" + id); });
+          rail.classList.toggle("at-hero", isHero);      // keep the hero screen calm
           var note = e.target.getAttribute("data-tour");
-          if (note) { narrTxt.textContent = "reading: " + note; narr.classList.add("show"); }
+          if (isHero || !note) { narr.classList.remove("show"); }
+          else { narrTxt.textContent = "reading: " + note; narr.classList.add("show"); }
         });
       }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
       secs.forEach(function (s) { io.observe(s); });
@@ -287,7 +282,7 @@
       { sec: "icp",      focus: ".icp__lead h2",title: "Your ICP",       line: "Every browser agent is driven by a behavioral model custom-fit to your real segments." },
       { sec: "receipts", focus: ".heat",        title: "The receipts",   line: "You get the exact pixel. Here, agents cluster and die on the Pay button." },
       { sec: "research", focus: ".chart",       title: "Measured limits",line: "A 14px tremor misses a 24px target 60.9% of the time. Real, reproducible numbers." },
-      { sec: "triggers", focus: ".qa-grid",     title: "Three triggers", line: "Run it by hand, call it from your coding agent, or gate every deploy in CI." },
+      { sec: "triggers", focus: ".is-primary",  title: "Where to start", line: "Start by gating every deploy in CI. On-demand audits and an MCP skill expand from there." },
       { sec: "apply",    focus: ".dp2__card",   title: "Ten seats",      line: "We take ten partners a cohort, first come. When the tenth seat is gone, we close. Request yours before it does." }
     ];
     var ov, spot, cur, tip, bar, nextBtn, i = 0, on = false, raf = 0, timers = [], curEl = null, READ = 3400;
