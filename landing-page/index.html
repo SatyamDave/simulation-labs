@@ -253,14 +253,15 @@
             </div>
           </div>
 
-          <div class="ci-snip" aria-label="Illustrative CI integration">
-            <div class="ci-snip__bar"><span class="ci-snip__dot" aria-hidden="true"></span>.github/workflows/simulate.yml<span class="ci-snip__tag">illustrative</span></div>
+          <div class="ci-snip" aria-label="CI integration">
+            <div class="ci-snip__bar"><span class="ci-snip__dot" aria-hidden="true"></span>.github/workflows/simulate.yml</div>
             <pre class="ci-snip__code"><span class="c-c"># behavioral tests for every deploy</span>
 - uses: <span class="c-s">simulationlabs/gate@v1</span>
   with:
     flow: <span class="c-v">checkout</span>
     icp: <span class="c-v">your-segments</span>
-    fail-under: <span class="c-v">last-passing</span>   <span class="c-c"># block the merge if completion drops</span></pre>
+    fail-under: <span class="c-v">last-passing</span>   <span class="c-c"># block the merge if completion drops</span>
+    hai-api-key: <span class="c-v">${{ secrets.HAI_API_KEY }}</span></pre>
           </div>
 
           <div class="tiers" aria-label="Plans">

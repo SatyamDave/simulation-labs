@@ -75,6 +75,50 @@ class Settings:
     port: int = 8000
     artifact_dir: Path = _REPO_ROOT / "artifacts"
 
+    # --- Hosted product (Phase 2+) ---
+    # Async SQLAlchemy URL. Default: local SQLite file (dev/test). Prod overrides
+    # with postgresql+asyncpg://...  Empty string => the sqlite default below.
+    database_url: str = ""
+    # HMAC secret for session JWTs. MUST be overridden in prod (loud check).
+    session_secret: str = "dev-insecure-secret-change-me"
+    session_ttl_hours: int = 720
+    # Artifact storage backend: "local" (artifact_dir) or "s3".
+    storage_backend: str = "local"
+    s3_bucket: str = ""
+    s3_endpoint_url: str = ""      # for MinIO / S3-compatible; empty => AWS
+    s3_region: str = ""
+    s3_public_base_url: str = ""   # optional CDN/base for building artifact URLs
+    # Number of concurrent swarm jobs a worker runs (keep small for the RPM cap).
+    worker_concurrency: int = 1
+    # --- Billing (Phase 4; test-mode until real keys) ---
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_price_team: str = ""
+
+    # Deployment env: "dev" (default) or "production". Drives cookie-secure +
+    # the boot-time refusal of the default session secret.
+    env: str = "dev"
+
+    @property
+    def is_production(self) -> bool:
+        return self.env.strip().lower() in ("production", "prod")
+
+    @property
+    def session_cookie_secure(self) -> bool:
+        """Send the session cookie only over HTTPS in production."""
+        return self.is_production
+
+    @property
+    def effective_database_url(self) -> str:
+        """The async DB URL, defaulting to a repo-local SQLite file."""
+        if self.database_url.strip():
+            return self.database_url.strip()
+        return f"sqlite+aiosqlite:///{_REPO_ROOT / 'ghostpanel.db'}"
+
+    @property
+    def has_stripe(self) -> bool:
+        return bool(self.stripe_secret_key.strip())
+
     # --- NemoClaw / NVIDIA (optional stretch) ---
     nemoclaw_gateway_url: str = ""
     # OpenShell preset the swarm mirrors client-side (see runner.policy).
@@ -122,4 +166,17 @@ def get_settings() -> Settings:
         artifact_dir=Path(artifact_dir).expanduser().resolve(),
         nemoclaw_gateway_url=_get_str("NEMOCLAW_GATEWAY_URL"),
         nemoclaw_policy_file=_resolve_policy_file(),
+        database_url=_get_str("DATABASE_URL"),
+        session_secret=_get_str("SESSION_SECRET", "dev-insecure-secret-change-me"),
+        session_ttl_hours=_get_int("SESSION_TTL_HOURS", 720),
+        storage_backend=_get_str("STORAGE_BACKEND", "local"),
+        s3_bucket=_get_str("S3_BUCKET"),
+        s3_endpoint_url=_get_str("S3_ENDPOINT_URL"),
+        s3_region=_get_str("S3_REGION"),
+        s3_public_base_url=_get_str("S3_PUBLIC_BASE_URL"),
+        worker_concurrency=_get_int("WORKER_CONCURRENCY", 1),
+        stripe_secret_key=_get_str("STRIPE_SECRET_KEY"),
+        stripe_webhook_secret=_get_str("STRIPE_WEBHOOK_SECRET"),
+        stripe_price_team=_get_str("STRIPE_PRICE_TEAM"),
+        env=_get_str("GHOSTPANEL_ENV", "dev"),
     )

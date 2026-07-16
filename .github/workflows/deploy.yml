@@ -1,0 +1,222 @@
+# Staged deploy pipeline for the Simulation Labs / Ghostpanel hosted backend.
+#
+#   build  ─►  migrate  ─►  deploy-staging  ─►  smoke  ─►  deploy-prod
+#
+# The pipeline builds the Docker image, runs Alembic migrations against the
+# STAGING database (a hard gate — a failed migration stops the deploy), deploys
+# the image to a staging target, smoke-tests staging's health probes, and only
+# then promotes to production behind a manual GitHub Environment approval.
+#
+# ---------------------------------------------------------------------------
+# TARGETS ARE ILLUSTRATIVE. Fly.io is used as the example deploy target because
+# the repo already ships a fly.toml. Swap the deploy jobs for your own target
+# (ECS, Cloud Run, k8s, Render, …) — the build → migrate → deploy → smoke →
+# promote SHAPE is what matters, not the vendor.
+#
+# OPERATOR-CONFIGURED SECRETS (Settings ▸ Secrets and variables ▸ Actions):
+#   FLY_API_TOKEN          Fly deploy token (`fly tokens create deploy`). Used
+#                          for BOTH staging and prod; scope per-app if you split.
+#   STAGING_DATABASE_URL   Async SQLAlchemy URL of the STAGING Postgres, e.g.
+#                          postgresql+asyncpg://user:pw@host:5432/db  (env.py
+#                          converts async→sync for Alembic; see docs/migrations.md)
+#   PROD_DATABASE_URL      Same, for the PRODUCTION database (used by deploy-prod).
+#   GITHUB_TOKEN           Auto-provided by Actions; used only to log in to GHCR
+#                          for the build cache. No manual setup required.
+#
+# OPERATOR-CONFIGURED VARIABLES (repo/org Variables — non-secret):
+#   STAGING_FLY_APP        Fly app name for staging   (default below: simulation-labs-staging)
+#   PROD_FLY_APP           Fly app name for production (default below: simulation-labs)
+#   STAGING_BASE_URL       Public base URL of staging  (default below), smoke-tested.
+#   PROD_BASE_URL          Public base URL of production (post-deploy smoke).
+#
+# The `production` GitHub Environment (Settings ▸ Environments) MUST exist with
+# required reviewers configured — that is what makes deploy-prod pause for a
+# human approval. See docs/deploy-runbook.md.
+# ---------------------------------------------------------------------------
+name: Deploy (staged)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never run two deploys of the same ref at once; let an in-flight deploy finish.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write   # push the build cache / image to GHCR
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+  # Fall back to sensible defaults so the workflow is valid out of the box;
+  # override with repo Variables (vars.*) for your real environments.
+  STAGING_FLY_APP: ${{ vars.STAGING_FLY_APP || 'simulation-labs-staging' }}
+  PROD_FLY_APP: ${{ vars.PROD_FLY_APP || 'simulation-labs' }}
+  STAGING_BASE_URL: ${{ vars.STAGING_BASE_URL || 'https://simulation-labs-staging.fly.dev' }}
+  PROD_BASE_URL: ${{ vars.PROD_BASE_URL || 'https://simulation-labs.fly.dev' }}
+
+jobs:
+  # -------------------------------------------------------------------------
+  # 1. build — compile the Docker image. Fails fast on a broken Dockerfile /
+  #    dependency before we touch any database or environment. Pushes to GHCR
+  #    tagged by commit SHA so the exact artifact is traceable; the deploy step
+  #    (flyctl) rebuilds from the same Dockerfile on Fly's remote builder.
+  # -------------------------------------------------------------------------
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max
+
+  # -------------------------------------------------------------------------
+  # 2. migrate — apply Alembic migrations to STAGING. This GATES the deploy:
+  #    if `alembic upgrade head` fails, deploy-staging never runs. Migrations
+  #    run against the DB BEFORE the new code ships (docs/migrations.md).
+  # -------------------------------------------------------------------------
+  migrate:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install package + sync Postgres driver
+        # psycopg (v3) is the sync driver Alembic needs; the app itself uses
+        # asyncpg. env.py converts the async DATABASE_URL to its sync form.
+        run: |
+          pip install -e .
+          pip install "psycopg[binary]"
+      - name: alembic upgrade head (staging DB)
+        env:
+          # env.py reads DATABASE_URL via server.config.get_settings().
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: alembic upgrade head
+
+  # -------------------------------------------------------------------------
+  # 3. deploy-staging — ship the image to the staging target (Fly, illustrative).
+  #    `flyctl deploy` rebuilds from Dockerfile on Fly's remote builder and does
+  #    a rolling release across the app + worker process groups (see fly.toml).
+  # -------------------------------------------------------------------------
+  deploy-staging:
+    needs: migrate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy to staging
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl deploy \
+            --app "${{ env.STAGING_FLY_APP }}" \
+            --strategy rolling \
+            --wait-timeout 300
+
+  # -------------------------------------------------------------------------
+  # 4. smoke — hit staging's liveness (/healthz) and readiness (/readyz) probes.
+  #    curl -f exits non-zero on any HTTP >=400, so a bad deploy fails the job
+  #    and blocks promotion. Retries briefly to absorb the rolling restart.
+  # -------------------------------------------------------------------------
+  smoke:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Smoke test staging health probes
+        env:
+          BASE_URL: ${{ env.STAGING_BASE_URL }}
+        run: |
+          set -euo pipefail
+          for path in /healthz /readyz; do
+            echo "Probing ${BASE_URL}${path} ..."
+            ok=""
+            for attempt in 1 2 3 4 5 6; do
+              code=$(curl -fsS -o /dev/null -w '%{http_code}' "${BASE_URL}${path}") && ok=1 && break
+              echo "  attempt ${attempt}: not ready yet (last code: ${code:-none}); retrying in 10s"
+              sleep 10
+            done
+            if [ -z "$ok" ]; then
+              echo "::error::${path} did not return 200 after retries"
+              exit 1
+            fi
+            echo "  ${path} OK (200)"
+          done
+
+  # -------------------------------------------------------------------------
+  # 5. deploy-prod — promote to production. Guarded by:
+  #    * needs: smoke        → staging must be green first
+  #    * environment: production → GitHub pauses here for a required-reviewer
+  #      approval before any step runs (configure the Environment in repo settings).
+  #    Migrations are applied to the PROD database first, then the image ships.
+  #    ROLLBACK: see docs/deploy-runbook.md — `flyctl releases` + redeploy the
+  #    previous image, and Alembic downgrade only for a truly incompatible change.
+  # -------------------------------------------------------------------------
+  deploy-prod:
+    needs: smoke
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ env.PROD_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install package + sync Postgres driver
+        run: |
+          pip install -e .
+          pip install "psycopg[binary]"
+      - name: alembic upgrade head (production DB)
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: alembic upgrade head
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy to production
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl deploy \
+            --app "${{ env.PROD_FLY_APP }}" \
+            --strategy rolling \
+            --wait-timeout 300
+      - name: Smoke test production health probes
+        env:
+          BASE_URL: ${{ env.PROD_BASE_URL }}
+        run: |
+          set -euo pipefail
+          for path in /healthz /readyz; do
+            echo "Probing ${BASE_URL}${path} ..."
+            ok=""
+            for attempt in 1 2 3 4 5 6; do
+              code=$(curl -fsS -o /dev/null -w '%{http_code}' "${BASE_URL}${path}") && ok=1 && break
+              echo "  attempt ${attempt}: not ready yet (last code: ${code:-none}); retrying in 10s"
+              sleep 10
+            done
+            if [ -z "$ok" ]; then
+              echo "::error::${path} did not return 200 after retries"
+              exit 1
+            fi
+            echo "  ${path} OK (200)"
+          done

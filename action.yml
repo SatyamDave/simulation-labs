@@ -1,0 +1,218 @@
+# Simulation Labs — behavioral gate (composite Action)
+#
+# Runs the behavioral swarm against a real user flow on every deploy and FAILS
+# the build when completion drops versus the last passing run. No backend — it
+# runs on the customer's own Holo (HAI) API key.
+#
+# Public interface is fixed by the landing page:  flow / icp / fail-under.
+# Usage (see .github/workflows/simulate.yml for a full example):
+#
+#   - uses: SatyamDave/simulation-labs@main   # -> simulationlabs/gate@v1 once released
+#     with:
+#       flow: checkout
+#       icp: your-segments
+#       fail-under: last-passing
+#       hai-api-key: ${{ secrets.HAI_API_KEY }}
+
+name: "Simulation Labs — behavioral gate"
+description: >-
+  Point a swarm of behavioral synthetic users at a real flow on every deploy and
+  block the merge when completion regresses. Simulates what users DO, not what
+  they say. Runs on your own Holo (HAI) API key — no backend.
+author: "Simulation Labs"
+
+branding:
+  icon: shield
+  color: purple
+
+inputs:
+  flow:
+    description: >-
+      Named flow to gate (e.g. "checkout", "signup"). Resolved from your config
+      file (sim.yml) where the flow's URL, task and budgets are defined. Leave
+      empty to gate the default/first flow in the config.
+    required: false
+    default: ""
+  icp:
+    description: >-
+      Which ideal-customer segments (personas) to send. Comma-separated persona
+      ids, or "auto" to use the full default roster. Keep swarms small (<=6) to
+      respect the shared Holo RPM cap.
+    required: false
+    default: "auto"
+  fail-under:
+    description: >-
+      The bar the run must clear. "last-passing" fails the build when completion
+      drops versus the last passing baseline (regression gate). A float 0..1 sets
+      an absolute completion-rate bar instead (e.g. "0.7").
+    required: false
+    default: "last-passing"
+  url:
+    description: >-
+      Target URL to drive when NOT using a config file. Ignored if the `config`
+      file exists (the flow's URL comes from there instead).
+    required: false
+    default: ""
+  task:
+    description: >-
+      Plain-English goal the personas try to accomplish (e.g. "sign up for a free
+      account"). Used with `url` when NOT driving from a config file.
+    required: false
+    default: ""
+  config:
+    description: >-
+      Path to the Simulation Labs config file. When this file exists the gate is
+      driven from it (flows, budgets, safety allowlist) and `url`/`task` are
+      ignored. Run `sim init` to scaffold one.
+    required: false
+    default: "sim.yml"
+  hai-api-key:
+    description: >-
+      Your H Company Holo Models API key (format hk-...). Exported to the CLI as
+      HAI_API_KEY. Store it as a repository secret — never inline it.
+    required: true
+  github-token:
+    description: >-
+      Token used to post/update the pull-request comment. Defaults to the
+      workflow token; needs `pull-requests: write` permission.
+    required: false
+    default: ${{ github.token }}
+  out:
+    description: >-
+      Directory the gate writes its artifacts to (report.json, summary.md,
+      pr-comment.md, junit.xml). Uploaded as a build artifact.
+    required: false
+    default: ".sim"
+  comment-pr:
+    description: >-
+      When "true" and the event is a pull_request, post (or update) a sticky PR
+      comment with the survival summary from <out>/pr-comment.md.
+    required: false
+    default: "true"
+  python-version:
+    description: "Python version used to install and run the sim CLI."
+    required: false
+    default: "3.11"
+
+outputs:
+  passed:
+    description: '"true" if the gate passed, "false" if it failed (regression / below threshold).'
+    value: ${{ steps.gate.outputs.passed }}
+  exit-code:
+    description: "Raw exit code from `sim gate` (0=OK, 1=GATE_FAILED, 2=config, 3=run error, 4=unsafe URL)."
+    value: ${{ steps.gate.outputs.exit-code }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install Simulation Labs CLI
+      shell: bash
+      run: |
+        set -euo pipefail
+        # TODO: once published to PyPI this becomes `pip install "simulationlabs"`
+        #       and the action itself is pinned to `simulationlabs/gate@v1`.
+        python -m pip install --upgrade pip
+        pip install "ghostpanel @ git+https://github.com/SatyamDave/simulation-labs@main"
+        python -m playwright install --with-deps chromium
+
+    - name: Run behavioral gate
+      id: gate
+      shell: bash
+      env:
+        # Exported so the CLI's LiveHoloClient picks up the customer's key.
+        HAI_API_KEY: ${{ inputs.hai-api-key }}
+        SIM_FLOW: ${{ inputs.flow }}
+        SIM_ICP: ${{ inputs.icp }}
+        SIM_FAIL_UNDER: ${{ inputs.fail-under }}
+        SIM_URL: ${{ inputs.url }}
+        SIM_TASK: ${{ inputs.task }}
+        SIM_CONFIG: ${{ inputs.config }}
+        SIM_OUT: ${{ inputs.out }}
+      run: |
+        # No `set -e`: we must capture the CLI's exit code (1 == GATE_FAILED is the
+        # block-merge signal) and still let the later if:always() steps run.
+        set -uo pipefail
+
+        args=( gate --fail-under "$SIM_FAIL_UNDER" --out "$SIM_OUT" )
+
+        # Drive from the config file when it exists; otherwise from url/task.
+        if [ -f "$SIM_CONFIG" ]; then
+          args+=( --config "$SIM_CONFIG" )
+          # `flow` selects which flow in sim.yml to gate (its URL/task/budgets
+          # live there). Only meaningful with a config; ignored for url/task runs.
+          [ -n "$SIM_FLOW" ] && args+=( --flow "$SIM_FLOW" )
+        else
+          [ -n "$SIM_URL" ]  && args+=( --url "$SIM_URL" )
+          [ -n "$SIM_TASK" ] && args+=( --task "$SIM_TASK" )
+        fi
+
+        # `icp` selects which personas to send; "auto" (default) means full roster.
+        if [ -n "$SIM_ICP" ] && [ "$SIM_ICP" != "auto" ]; then
+          args+=( --personas "$SIM_ICP" )
+        fi
+
+        echo "+ sim ${args[*]}"
+        python -m ghostpanel.cli "${args[@]}"
+        code=$?
+
+        echo "exit-code=$code" >> "$GITHUB_OUTPUT"
+        if [ "$code" -eq 0 ]; then
+          echo "passed=true"  >> "$GITHUB_OUTPUT"
+        else
+          echo "passed=false" >> "$GITHUB_OUTPUT"
+        fi
+
+        # Propagate the code so GATE_FAILED (1) fails the job / blocks the merge.
+        exit $code
+
+    - name: Upload gate artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: simulationlabs-gate
+        path: ${{ inputs.out }}
+        if-no-files-found: warn
+
+    - name: Comment on pull request
+      if: always() && inputs.comment-pr == 'true' && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      env:
+        SIM_OUT: ${{ inputs.out }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          const marker = '<!-- simulationlabs-gate -->';
+          const file = path.join(process.env.SIM_OUT || '.sim', 'pr-comment.md');
+
+          let body;
+          try {
+            body = fs.readFileSync(file, 'utf8');
+          } catch (e) {
+            core.info(`No PR comment to post (missing ${file}): ${e.message}`);
+            return;
+          }
+          if (!body.includes(marker)) {
+            body = `${marker}\n\n${body}`;
+          }
+
+          const { owner, repo } = context.repo;
+          const issue_number = context.issue.number;
+          const comments = await github.paginate(github.rest.issues.listComments, {
+            owner, repo, issue_number, per_page: 100,
+          });
+          const existing = comments.find(c => c.body && c.body.includes(marker));
+
+          if (existing) {
+            await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            core.info(`Updated existing gate comment #${existing.id}`);
+          } else {
+            await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            core.info('Created gate comment');
+          }

@@ -35,3 +35,9 @@ artifacts/
 # TS build cache
 *.tsbuildinfo
 .run/
+
+# --- hosted product (Phase 2+) ---
+ghostpanel.db
+*.db
+*.db-journal
+.sim/
