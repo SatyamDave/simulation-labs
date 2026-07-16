@@ -136,6 +136,16 @@ async def start_run(
 ) -> EnqueueResponse:
     queue = request.app.state.queue
 
+    # SSRF guard: the worker will navigate this URL, so reject internal/loopback/
+    # metadata targets at the API boundary (hosted runs never allow private hosts;
+    # a self-hoster can widen this via a future allowlist setting).
+    from ghostpanel.cli.safety import UnsafeURLError, assert_url_allowed
+
+    try:
+        assert_url_allowed(body.url, allow_private=False)
+    except UnsafeURLError as exc:
+        raise HTTPException(status_code=400, detail=f"unsafe target URL: {exc}") from exc
+
     # Tier quota: block enqueue when the project is over its monthly run budget.
     from ghostpanel.billing import usage
     from ghostpanel.billing.entitlements import QuotaExceeded, check_can_enqueue

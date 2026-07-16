@@ -49,10 +49,14 @@ class ApiKeyOut(BaseModel):
 
 
 class ApiKeyCreatedOut(BaseModel):
-    """Returned once at creation: the plaintext key plus the (hash-free) row."""
+    """Returned once at creation: the plaintext secret plus the (hash-free) row.
 
-    key: str
-    api_key: ApiKeyOut
+    Field names match the frontend contract (web/src/dashboard/types2.ts
+    `CreatedApiKey`): `plaintext` = the full secret shown once, `key` = the row.
+    """
+
+    plaintext: str
+    key: ApiKeyOut
 
 
 # --- request models ---------------------------------------------------------
@@ -104,7 +108,7 @@ async def create_key(
 ) -> ApiKeyCreatedOut:
     store = request.app.state.store
     row, plaintext = await store.create_api_key(project.id, body.name.strip())
-    return ApiKeyCreatedOut(key=plaintext, api_key=ApiKeyOut.from_row(row))
+    return ApiKeyCreatedOut(plaintext=plaintext, key=ApiKeyOut.from_row(row))
 
 
 @router.get("/{project_id}/keys", response_model=list[ApiKeyOut])

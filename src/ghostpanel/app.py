@@ -194,6 +194,11 @@ def create_app(
         settings=settings,
     )
 
+    # Observability: request-id + structured access logging + /readyz.
+    from ghostpanel.server.middleware import add_observability
+
+    add_observability(app)
+
     # Serve artifacts (.webm / .wav / report.html) from the artifact dir.
     app.mount(
         "/artifacts",
