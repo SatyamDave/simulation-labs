@@ -45,6 +45,7 @@ dev = [
 
 [project.scripts]
 ghostpanel = "ghostpanel.server.main:main"
+sim = "ghostpanel.cli.main:main"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]

@@ -18,6 +18,25 @@ Behavioral user research that *does*, not *says*. The internal engine/codebase i
 
 ---
 
+## Quickstart: the CI gate
+
+Wire the behavioral swarm into CI so every deploy is tested against a real flow and the
+build **fails when completion regresses** — a behavioral test suite, like unit tests. Full
+guide: **[docs/ci.md](docs/ci.md)**.
+
+```bash
+pip install "git+https://github.com/SatyamDave/simulation-labs@main"   # pipx works too
+export HAI_API_KEY=hai-...        # your own H Company Holo key — no backend, runs on your key
+sim init                          # writes sim.yml + .github/workflows/simulate.yml
+sim gate --fail-under last-passing   # exit 1 blocks the merge when users start abandoning
+```
+
+`sim baseline` seeds the first green run; after that `sim gate` compares each run against the
+last-passing baseline. See **[docs/ci.md](docs/ci.md)** for the `sim.yml` schema, exit codes,
+and the GitHub Actions setup (`simulationlabs/gate@v1`).
+
+---
+
 ## Why it's different
 
 Every "synthetic user research" tool simulates what users *say* (shallow, people-pleasing).

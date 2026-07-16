@@ -1,0 +1,29 @@
+# Behavioral tests for every deploy — see docs/ci.md
+#
+# Copy this file into your repo at .github/workflows/simulate.yml.
+# It sends a swarm of behavioral synthetic users through a real flow on every
+# pull request and blocks the merge when completion drops versus the last
+# passing run. Runs on your own Holo key — add it as the HAI_API_KEY secret.
+
+name: Behavioral gate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  behavioral-gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Simulation Labs — behavioral gate
+        uses: SatyamDave/simulation-labs@main # -> pin to simulationlabs/gate@v1 once released
+        with:
+          flow: checkout
+          icp: your-segments
+          fail-under: last-passing
+          hai-api-key: ${{ secrets.HAI_API_KEY }}
