@@ -1,0 +1,134 @@
+# ---------------------------------------------------------------------------
+# Ghostpanel / Simulation Labs — full local hosted stack.
+#
+#   docker compose up --build
+#
+# Brings up Postgres, MinIO (S3-compatible storage + console), the API, and a
+# background worker. Secrets (HAI_API_KEY, etc.) are read from your host env or
+# a sibling .env file; everything else has a dev-safe default.
+# ---------------------------------------------------------------------------
+
+services:
+  # --- Postgres -----------------------------------------------------------
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ghostpanel
+      POSTGRES_PASSWORD: ghostpanel
+      POSTGRES_DB: ghostpanel
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ghostpanel -d ghostpanel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # --- MinIO (S3-compatible artifact storage) -----------------------------
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # web console
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # --- One-shot: create the artifact bucket, then exit --------------------
+  createbucket:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 minioadmin minioadmin &&
+      mc mb --ignore-existing local/${S3_BUCKET:-ghostpanel} &&
+      mc anonymous set download local/${S3_BUCKET:-ghostpanel} &&
+      echo 'bucket ready';
+      "
+
+  # --- API (uvicorn) ------------------------------------------------------
+  api:
+    build: .
+    command: ["uvicorn", "--factory", "ghostpanel.app:create_app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      createbucket:
+        condition: service_completed_successfully
+    environment:
+      # persistence
+      DATABASE_URL: postgresql+asyncpg://ghostpanel:ghostpanel@db:5432/ghostpanel
+      # auth — override with a strong value in prod
+      SESSION_SECRET: ${SESSION_SECRET:-dev-insecure-secret-change-me}
+      # storage → MinIO
+      STORAGE_BACKEND: s3
+      S3_BUCKET: ${S3_BUCKET:-ghostpanel}
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_PUBLIC_BASE_URL: http://localhost:9000/${S3_BUCKET:-ghostpanel}
+      # boto3 standard credential env vars (not Settings fields) → MinIO root creds
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_DEFAULT_REGION: ${S3_REGION:-us-east-1}
+      # swarm / model — passed through from host env (with dev defaults)
+      HAI_API_KEY: ${HAI_API_KEY:-}
+      HAI_BASE_URL: ${HAI_BASE_URL:-https://api.hcompany.ai/v1/}
+      HAI_MODEL: ${HAI_MODEL:-holo3-1-35b-a3b}
+      HAI_RPM: ${HAI_RPM:-5}
+      GRADIUM_API_KEY: ${GRADIUM_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # billing (Phase 4) — inert until real keys are set
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_TEAM: ${STRIPE_PRICE_TEAM:-}
+
+  # --- Worker (durable job runner) ----------------------------------------
+  # Same image, command swapped to the ghostpanel-worker console script.
+  worker:
+    build: .
+    command: ["ghostpanel-worker"]
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_started
+      createbucket:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ghostpanel:ghostpanel@db:5432/ghostpanel
+      SESSION_SECRET: ${SESSION_SECRET:-dev-insecure-secret-change-me}
+      STORAGE_BACKEND: s3
+      S3_BUCKET: ${S3_BUCKET:-ghostpanel}
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_PUBLIC_BASE_URL: http://localhost:9000/${S3_BUCKET:-ghostpanel}
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_DEFAULT_REGION: ${S3_REGION:-us-east-1}
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-1}
+      HAI_API_KEY: ${HAI_API_KEY:-}
+      HAI_BASE_URL: ${HAI_BASE_URL:-https://api.hcompany.ai/v1/}
+      HAI_MODEL: ${HAI_MODEL:-holo3-1-35b-a3b}
+      HAI_RPM: ${HAI_RPM:-5}
+      GRADIUM_API_KEY: ${GRADIUM_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+
+volumes:
+  pgdata:
+  miniodata:

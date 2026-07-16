@@ -1,0 +1,63 @@
+# ---------------------------------------------------------------------------
+# Fly.io deployment for the Ghostpanel / Simulation Labs hosted backend.
+#
+# One image, two process groups:
+#   app    — the uvicorn API (gets the public HTTP service + health check)
+#   worker — the durable job runner (no inbound service; drains the queue)
+#
+# Secrets are NOT stored here. Set them once with `fly secrets set`:
+#
+#   fly secrets set \
+#     DATABASE_URL="postgresql+asyncpg://USER:PASS@HOST:5432/DB" \
+#     SESSION_SECRET="$(openssl rand -hex 32)" \
+#     HAI_API_KEY="hk-..." \
+#     STORAGE_BACKEND="s3" S3_BUCKET="..." S3_REGION="..." \
+#     AWS_ACCESS_KEY_ID="..." AWS_SECRET_ACCESS_KEY="..." \
+#     GRADIUM_API_KEY="gd-..." ANTHROPIC_API_KEY="sk-ant-..."
+#
+# See docs/deploy.md for the full production checklist.
+# ---------------------------------------------------------------------------
+
+app = "simulation-labs"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  GHOSTPANEL_HOST = "0.0.0.0"
+  GHOSTPANEL_PORT = "8000"
+  STORAGE_BACKEND = "s3"
+
+# Two process groups off the same image. `app` uses the image's default CMD
+# (uvicorn); `worker` overrides it with the console script.
+[processes]
+  app = "uvicorn --factory ghostpanel.app:create_app --host 0.0.0.0 --port 8000"
+  worker = "ghostpanel-worker"
+
+# Public HTTP service — only the `app` process serves traffic.
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/healthz"
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "10s"
+
+# VM sizing — Chromium is memory-hungry; give both groups room.
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"
+  processes = ["app"]
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"
+  processes = ["worker"]

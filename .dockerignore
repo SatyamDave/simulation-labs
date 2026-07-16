@@ -1,0 +1,53 @@
+# ---------------------------------------------------------------------------
+# Keep the build context small and reproducible. Anything matched here never
+# reaches the Docker daemon, so builds are faster and images stay clean.
+# ---------------------------------------------------------------------------
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Node / frontend dependency trees (the built web/dist is copied; node_modules is not)
+node_modules/
+web/node_modules/
+landing-page/node_modules/
+landing-page/
+
+# Version control
+.git/
+.gitignore
+
+# Runtime artifacts + local databases (never bake these into an image)
+artifacts/
+*.db
+*.sqlite
+*.sqlite3
+
+# Local secrets — must be injected at runtime, never copied in
+.env
+
+# Python caches / build output
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Tests are not needed in the runtime image
+tests/
+
+# Editor / OS cruft
+.DS_Store
+.idea/
+.vscode/
+
+# The deploy artifacts themselves don't belong in the context
+Dockerfile
+.dockerignore
+docker-compose.yml
+fly.toml

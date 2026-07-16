@@ -66,7 +66,14 @@ def create_app(
 
     @contextlib.asynccontextmanager
     async def lifespan(app: FastAPI):  # noqa: ANN202
-        # --- startup: launch the shared browser + build the swarm ---
+        # --- startup: create the hosted-product tables, then launch the swarm ---
+        # create_all is idempotent + dev-only (Postgres prod adopts Alembic — see
+        # docs/deploy.md). Fails fast if a configured DB is unreachable.
+        from ghostpanel.store.db import init_db
+
+        await init_db()
+
+        # --- launch the shared browser + build the swarm ---
         browser = None
         if launch_browser:
             from playwright.async_api import async_playwright
@@ -153,6 +160,23 @@ def create_app(
 
     # API routes first so they win over the catch-all "/" mount below.
     app.include_router(router)
+
+    # Hosted product (Phase 2): persistence + auth + durable job queue + artifact
+    # storage, exposed under /v2. Registered before the "/" static mount so the
+    # API wins the route match. State (store/queue/storage/settings) is set on
+    # app.state by register_hosted for the auth dependencies + routers to read.
+    from ghostpanel.jobs.queue import JobQueue
+    from ghostpanel.server.hosted import register_hosted
+    from ghostpanel.storage.factory import build_storage
+    from ghostpanel.store.repo import Store
+
+    register_hosted(
+        app,
+        store=Store(),
+        queue=JobQueue(),
+        storage=build_storage(settings),
+        settings=settings,
+    )
 
     # Serve artifacts (.webm / .wav / report.html) from the artifact dir.
     app.mount(
