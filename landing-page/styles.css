@@ -477,10 +477,10 @@ body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
   .hero-viz-wrap{opacity:0;animation:sl-rise .8s cubic-bezier(.2,.7,.2,1) .28s forwards}
 }
 
-/* clean mobile header: brand + CTA only */
+/* mobile header: hide in-page anchors (reachable by scroll), keep Docs + toggle + CTA */
 @media(max-width:640px){
-  .nav{gap:0}
-  .nav a:not(.apply){display:none}
+  .nav{gap:14px}
+  .nav a[href^="#"]:not(.apply){display:none}
   .nav .sep{display:none}
 }
 
