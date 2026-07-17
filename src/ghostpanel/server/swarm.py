@@ -30,7 +30,7 @@ from ghostpanel_contracts import (
 from ghostpanel.engine.persona_agent import HoloPersonaAgent
 from ghostpanel.engine.personas import load_personas
 from ghostpanel.report.builder import SurvivalReportBuilder
-from ghostpanel.report.html_report import write_html_report
+from ghostpanel.report import write_deliverable_report
 from ghostpanel.report.insights import build_insights
 from ghostpanel.runner.policy import RequestPolicy
 from ghostpanel.runner.session import PlaywrightSessionRunner
@@ -205,7 +205,7 @@ class SwarmManager:
             try:
                 # insights=None (a guarded failure above) lets the renderer
                 # recompute its own from the personas we hand it.
-                write_html_report(
+                write_deliverable_report(
                     report, self.artifact_dir, insights=insights, personas=personas
                 )
             except Exception:  # noqa: BLE001 - a report render hiccup must not kill the run

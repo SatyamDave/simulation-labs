@@ -22,7 +22,15 @@ from typing import Optional
 from ghostpanel_contracts import RunReport
 
 from . import config as cfgmod
-from . import ci_output, driver, exit_codes, regression, render, safety
+from . import (
+    ci_output,
+    driver,
+    exit_codes,
+    preflight,
+    regression,
+    render,
+    safety,
+)
 
 # Minimal GitHub Actions workflow written by `sim init` (never clobbers an
 # existing file). It runs the gate the same way the marketing promises: one
@@ -161,10 +169,13 @@ def _write_json(path: Path, report: RunReport) -> None:
 
 
 def _run_swarm(params: _RunParams, *, progress: bool) -> driver.RunOutcome:
-    """Safety-check the URL, then drive the swarm. Raises UnsafeURLError."""
-    safety.assert_url_allowed(
-        params.url, allow_private=params.allow_private, allowlist=params.allowlist
-    )
+    """Preflight-validate (personas, output dir, URL, reachability, SSRF, model
+    key), warn if the run will be rate-limited, then drive the swarm. Raises
+    preflight.PreflightError or safety.UnsafeURLError before any time is burned."""
+    preflight.run_preflight(params)
+    notice = preflight.rate_limit_notice(params)
+    if notice and progress:
+        print(notice)
     on_event = render.make_progress_printer() if progress else None
     return driver.run_flow(
         url=params.url,
@@ -213,10 +224,25 @@ def _cmd_run(args: argparse.Namespace) -> int:
     outcome = _run_swarm(params, progress=not args.quiet)
     if outcome.error:
         print(f"run error: {outcome.error}")
+        hint = preflight.classify_run_error(outcome.error)
+        if hint:
+            print(hint)
         return exit_codes.RUN_ERROR
     report = outcome.report
     assert report is not None
     _write_json(params.out_dir / "report.json", report)
+    if preflight.usable_results(report) == 0:
+        print(
+            f"no usable results: all {len(report.results)} personas hit infra "
+            f"errors before acting — nothing to report."
+        )
+        first = next(
+            (r.failure_reason for r in report.results if r.failure_reason), None
+        )
+        if first:
+            print(f"first error: {first}")
+        print(f"raw report (for debugging): {params.out_dir / 'report.json'}")
+        return exit_codes.NO_RESULTS
     render.print_summary(report)
     print(f"report: {params.out_dir / 'report.json'}")
     return exit_codes.OK
@@ -231,8 +257,17 @@ def _obtain_report(args: argparse.Namespace, params: Optional[_RunParams]):
     outcome = _run_swarm(params, progress=not args.quiet)
     if outcome.error:
         print(f"run error: {outcome.error}")
+        hint = preflight.classify_run_error(outcome.error)
+        if hint:
+            print(hint)
         return None, params, exit_codes.RUN_ERROR
     _write_json(params.out_dir / "report.json", outcome.report)
+    if preflight.usable_results(outcome.report) == 0:
+        print(
+            "no usable results: all personas hit infra errors — cannot produce a "
+            "gate verdict or baseline. Fix the run error above and re-run."
+        )
+        return None, params, exit_codes.NO_RESULTS
     return outcome.report, params, None
 
 
@@ -297,6 +332,14 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sim",
         description="Simulation Labs — behavioral swarm CI gate.",
+        epilog=(
+            "Canonical invocation (always works, no install step):\n"
+            "  python -m ghostpanel.cli run --url https://your-app/signup --task \"sign up\"\n"
+            "The `sim` / `ghostpanel` console scripts do the same once installed via\n"
+            "`pip install -e .` (or `python -m pip install -e .`). Offline test:\n"
+            "  python -m ghostpanel.cli run --fixture fixtures/hostile_form.html --task \"sign up\""
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -338,9 +381,23 @@ def main(argv: list[str] | None = None) -> int:
     handler = _DISPATCH[args.command]
     try:
         return handler(args)
+    except preflight.PreflightError as exc:
+        # Already a one-line, human, actionable message with its own exit code.
+        print(exc.message)
+        return exc.code
     except safety.UnsafeURLError as exc:
         print(f"unsafe URL refused: {exc}")
         return exit_codes.UNSAFE_URL
     except (ValueError, FileNotFoundError) as exc:
         print(f"config error: {exc}")
         return exit_codes.CONFIG_ERROR
+    except KeyboardInterrupt:
+        # Ctrl-C mid-run: exit cleanly, never dump a traceback in front of a client.
+        print("\ninterrupted — run cancelled.")
+        return exit_codes.INTERRUPTED
+
+
+if __name__ == "__main__":  # `python -m ghostpanel.cli.main` mirrors `sim`
+    import sys
+
+    sys.exit(main(sys.argv[1:]))

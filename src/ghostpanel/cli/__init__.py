@@ -8,6 +8,22 @@ report into a pass/fail gate (`regression.compare`) and CI-native output
 frozen interfaces every submodule implements.
 """
 
-from .exit_codes import CONFIG_ERROR, GATE_FAILED, OK, RUN_ERROR, UNSAFE_URL
+from .exit_codes import (
+    CONFIG_ERROR,
+    GATE_FAILED,
+    INTERRUPTED,
+    MISSING_KEY,
+    NO_RESULTS,
+    OK,
+    OUTPUT_ERROR,
+    RUN_ERROR,
+    UNKNOWN_PERSONA,
+    UNREACHABLE_URL,
+    UNSAFE_URL,
+)
 
-__all__ = ["OK", "GATE_FAILED", "CONFIG_ERROR", "RUN_ERROR", "UNSAFE_URL"]
+__all__ = [
+    "OK", "GATE_FAILED", "CONFIG_ERROR", "RUN_ERROR", "UNSAFE_URL",
+    "MISSING_KEY", "UNKNOWN_PERSONA", "UNREACHABLE_URL", "OUTPUT_ERROR",
+    "NO_RESULTS", "INTERRUPTED",
+]
