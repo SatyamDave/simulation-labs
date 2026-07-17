@@ -71,7 +71,8 @@ def test_enqueue_rejects_unsafe_urls(client, url):
     key = _api_key(client)
     r = client.post(
         "/v2/runs",
-        json={"url": url, "task": "do it"},
+        # authorized=True so we exercise the SSRF guard, not the attestation gate.
+        json={"url": url, "task": "do it", "authorized": True},
         headers={"X-API-Key": key},
     )
     assert r.status_code == 400, (url, r.status_code, r.text)
@@ -90,7 +91,11 @@ def test_enqueue_accepts_public_https(client, monkeypatch):
     key = _api_key(client)
     r = client.post(
         "/v2/runs",
-        json={"url": "https://app.example.com/checkout", "task": "buy"},
+        json={
+            "url": "https://app.example.com/checkout",
+            "task": "buy",
+            "authorized": True,
+        },
         headers={"X-API-Key": key},
     )
     assert r.status_code == 202, r.text

@@ -47,6 +47,14 @@ class StartRunRequest(BaseModel):
         default=None,
         description="Subset of persona ids; omit/empty for the full roster.",
     )
+    authorized: bool = Field(
+        default=False,
+        description=(
+            "Attestation that the caller owns the target site or has explicit "
+            "permission to run automated tests against it. Runs are rejected "
+            "without it."
+        ),
+    )
 
 
 class StartRunResponse(BaseModel):
@@ -69,6 +77,14 @@ async def start_run(req: StartRunRequest, request: Request) -> StartRunResponse:
     swarm = request.app.state.swarm
     if swarm is None:
         raise HTTPException(status_code=503, detail="Swarm not initialized.")
+
+    # Authorization gate: reject the run unless the caller attests they own the
+    # target site / are permitted to test it. Enforced server-side, not just in
+    # the UI. (See ghostpanel.server.attestation.)
+    from ghostpanel.server.attestation import require_attestation
+
+    require_attestation(req.authorized, req.target_url)
+
     run_id = await swarm.start_run(req.target_url, req.task, req.persona_ids)
     return StartRunResponse(run_id=run_id)
 

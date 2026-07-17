@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { Link } from "react-router-dom";
 import { MotionConfig } from "framer-motion";
 import { LaunchForm, type LaunchValues } from "./components/LaunchForm";
 import { PersonaGrid } from "./components/PersonaGrid";
@@ -212,6 +213,29 @@ export default function App() {
         <footer className="border-t border-border mt-24 py-8 px-6">
           <div className="mx-auto max-w-6xl flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 text-xs text-muted-foreground">
             <span className="font-mono">simulation labs</span>
+            <nav
+              aria-label="Legal"
+              className="flex flex-wrap items-baseline gap-x-5 gap-y-1"
+            >
+              <Link
+                to="/legal/terms"
+                className="hover:text-foreground transition-colors"
+              >
+                Terms
+              </Link>
+              <Link
+                to="/legal/privacy"
+                className="hover:text-foreground transition-colors"
+              >
+                Privacy
+              </Link>
+              <Link
+                to="/legal/acceptable-use"
+                className="hover:text-foreground transition-colors"
+              >
+                Acceptable Use
+              </Link>
+            </nav>
             <span>Powered by H Company Holo &amp; Gradium · © 2026</span>
           </div>
         </footer>

@@ -13,6 +13,9 @@ export interface StartRunPayload {
   target_url: string;
   task: string;
   persona_ids: string[];
+  // Attestation that the caller owns / is permitted to test the target site.
+  // The server rejects the run without it.
+  authorized: boolean;
 }
 
 export interface StartRunResponse {

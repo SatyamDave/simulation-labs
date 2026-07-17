@@ -95,6 +95,14 @@ class StartRunRequest(BaseModel):
     task: str = Field(..., min_length=1, description="The goal, e.g. 'sign up'.")
     persona_ids: Optional[list[str]] = None
     flow_name: str = ""
+    authorized: bool = Field(
+        False,
+        description=(
+            "Attestation that the caller owns the target site or has explicit "
+            "permission to run automated tests against it. Runs are rejected "
+            "without it."
+        ),
+    )
 
 
 class SetBaselineRequest(BaseModel):
@@ -136,6 +144,13 @@ async def start_run(
 ) -> EnqueueResponse:
     queue = request.app.state.queue
 
+    # Authorization gate: the swarm drives an autonomous browser against this URL,
+    # so the caller must attest they own it / are permitted to test it. Enforced
+    # server-side (never trust the client) and persisted with the job for audit.
+    from ghostpanel.server.attestation import require_attestation
+
+    attestation = require_attestation(body.authorized, body.url, subject=project.id)
+
     # SSRF guard: the worker will navigate this URL, so reject internal/loopback/
     # metadata targets at the API boundary (hosted runs never allow private hosts;
     # a self-hoster can widen this via a future allowlist setting).
@@ -161,6 +176,9 @@ async def start_run(
         "task": body.task,
         "persona_ids": list(body.persona_ids or []),
         "flow_name": body.flow_name or "",
+        # Audit trail: who attested, when, and for which domain (persisted in the
+        # job spec JSON — no schema change to the frozen RunRow/JobRow needed).
+        "attestation": attestation,
     }
     job = await queue.enqueue(project.id, spec)
     return EnqueueResponse(

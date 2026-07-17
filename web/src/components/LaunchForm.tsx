@@ -10,6 +10,22 @@ export interface LaunchValues {
   target_url: string;
   task: string;
   persona_ids: string[];
+  // Caller attests they own / are permitted to test the target site.
+  authorized: boolean;
+}
+
+// Best-effort registrable host of the target URL, for the attestation copy.
+function targetDomain(raw: string): string {
+  const s = raw.trim();
+  try {
+    return new URL(s).hostname || s;
+  } catch {
+    try {
+      return new URL(`https://${s}`).hostname || s;
+    } catch {
+      return s;
+    }
+  }
 }
 
 interface Props {
@@ -57,6 +73,7 @@ export function LaunchForm({ onLaunch, onOfflineDemo, onIndex, busy, error }: Pr
   const [selected, setSelected] = useState<string[]>(
     PERSONA_CATALOG.map((p) => p.id)
   );
+  const [authorized, setAuthorized] = useState(false);
 
   // Prefer the backend's live roster (GET /personas); the static catalog is
   // the offline/backendless fallback.
@@ -78,7 +95,9 @@ export function LaunchForm({ onLaunch, onOfflineDemo, onIndex, busy, error }: Pr
     );
   }
 
-  const canLaunch = url.trim() && task.trim() && selected.length > 0 && !busy;
+  const domain = targetDomain(url);
+  const canLaunch =
+    url.trim() && task.trim() && selected.length > 0 && authorized && !busy;
 
   return (
     <section className="px-6 pt-20 pb-24 md:pt-28">
@@ -107,6 +126,7 @@ export function LaunchForm({ onLaunch, onOfflineDemo, onIndex, busy, error }: Pr
                 target_url: url.trim(),
                 task: task.trim(),
                 persona_ids: selected,
+                authorized,
               });
           }}
         >
@@ -207,6 +227,39 @@ export function LaunchForm({ onLaunch, onOfflineDemo, onIndex, busy, error }: Pr
               })}
             </div>
           </div>
+
+          <label className="flex items-start gap-3 rounded-lg border border-border p-3.5 cursor-pointer hover:bg-hover transition-colors">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+              checked={authorized}
+              onChange={(e) => setAuthorized(e.target.checked)}
+              aria-describedby="attestation-help"
+            />
+            <span className="text-sm leading-relaxed text-foreground">
+              I confirm I own{" "}
+              <span className="font-mono text-xs text-muted-foreground">
+                {domain}
+              </span>{" "}
+              or have explicit permission to run automated tests against it.
+              <span
+                id="attestation-help"
+                className="mt-1 block text-xs text-muted-foreground"
+              >
+                Ghostpanel drives a real browser agent against this site. Only
+                test sites you are authorized to. See our{" "}
+                <a
+                  href="/legal/acceptable-use"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  Acceptable Use Policy
+                </a>
+                .
+              </span>
+            </span>
+          </label>
 
           {error && <p className="text-sm text-fail">{error}</p>}
 

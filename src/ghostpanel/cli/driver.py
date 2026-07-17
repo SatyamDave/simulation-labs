@@ -17,7 +17,7 @@ from typing import Any, Callable, Optional
 
 from ghostpanel_contracts import RunReport
 
-from ghostpanel.engine.holo_client import FakeHoloClient, LiveHoloClient
+from ghostpanel.engine.holo_client import FakeHoloClient
 from ghostpanel.server.runs import RunRegistry
 from ghostpanel.server.swarm import SwarmManager
 from ghostpanel.server.ws import WebSocketHub
@@ -34,20 +34,24 @@ class RunOutcome:
 
 
 def _build_holo(fixture: bool, rpm: Optional[int]) -> Any:
-    """Pick the Holo client: a deterministic Fake for fixtures/tests, else the
-    real OpenAI-compatible ``LiveHoloClient`` built from the server settings."""
+    """Pick the inference client: a deterministic Fake for fixtures/tests, else the
+    configured model backend (``MODEL_BACKEND``: holo | selfhost | echo) built from
+    the server settings. Routing through ``build_model`` means CLI/CI runs (the
+    ``simulationlabs/gate`` conversion gate) honour the SAME vendor-agnostic seam as
+    the server and worker — so a paid Holo key or a self-hosted vLLM endpoint both
+    work here with no code change. ``rpm`` overrides ``Settings.hai_rpm`` when given."""
     if fixture:
         return FakeHoloClient(scripted_actions=None)
     # Late import so `--fixture` runs never touch env/settings machinery.
+    import dataclasses
+
+    from ghostpanel.engine.models.registry import build_model, default_backend
     from ghostpanel.server.config import get_settings
 
     settings = get_settings()
-    return LiveHoloClient(
-        api_key=settings.hai_api_key,
-        base_url=settings.holo_base_url,
-        model=settings.hai_model,
-        rpm=float(rpm) if rpm is not None else settings.hai_rpm,
-    )
+    if rpm is not None:
+        settings = dataclasses.replace(settings, hai_rpm=float(rpm))
+    return build_model(default_backend(), settings)
 
 
 async def _consume_events(

@@ -1,0 +1,58 @@
+# Self-hosted Holo inference for Ghostpanel (OpenAI-compatible vLLM).
+#
+# This stands up ONLY the inference server. Point the Ghostpanel app at it by
+# setting, in the app's environment:
+#
+#   MODEL_BACKEND=selfhost
+#   HAI_BASE_URL=http://<this-host>:8000/v1
+#   HAI_MODEL=Hcompany/Holo-3.1-35B-A3B
+#   HAI_RPM=1000000          # self-host has no vendor cap; effectively disabled
+#   HAI_API_KEY=             # leave empty unless you start vLLM with --api-key
+#
+# Usage:
+#   HF_TOKEN=hf_xxx docker compose -f deploy/vllm/docker-compose.yml up -d
+#   curl http://localhost:8000/v1/models      # readiness check
+#
+# Requires the NVIDIA Container Toolkit on the host (GPU passthrough).
+
+services:
+  holo-vllm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghostpanel-holo-vllm
+    container_name: ghostpanel-holo-vllm
+    ports:
+      - "8000:8000"
+    environment:
+      # Hugging Face token to download the gated/large weights on first boot.
+      HF_TOKEN: ${HF_TOKEN:-}
+      MODEL_ID: Hcompany/Holo-3.1-35B-A3B
+      SERVED_MODEL_NAME: Hcompany/Holo-3.1-35B-A3B
+      QUANTIZATION: fp8
+      MAX_MODEL_LEN: "65536"
+      GPU_MEMORY_UTILIZATION: "0.92"
+      PORT: "8000"
+    # Cache the downloaded weights on the host so restarts are fast.
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+    # vLLM needs a large /dev/shm for tensor-parallel / CUDA IPC.
+    shm_size: "16gb"
+    # GPU passthrough (Docker Compose >= v2.3 / Compose Spec).
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -fsS http://localhost:8000/v1/models || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 600s   # first boot downloads ~tens of GB of weights
+    restart: unless-stopped
+
+volumes:
+  hf-cache:

@@ -13,6 +13,7 @@ and ``jobs.queue`` is implemented; it flips to real coverage as those land.
 from __future__ import annotations
 
 import inspect
+import json
 import sqlite3
 
 import pytest
@@ -189,6 +190,7 @@ def test_post_run_enqueues_job(tmp_path):
                 "url": "https://example.com/signup",
                 "task": "sign up for an account",
                 "flow_name": "signup",
+                "authorized": True,
             },
         )
         assert run.status_code in (200, 201, 202)  # 202 Accepted (enqueued)
@@ -203,6 +205,89 @@ def test_post_run_enqueues_job(tmp_path):
         conn.close()
     assert any(jid == job_id for (jid, _pid) in rows)
     assert all(pid == project_id for (_jid, pid) in rows)
+
+
+def test_run_rejected_without_authorization(tmp_path):
+    """Authorization gate: POST /v2/runs is rejected (403) when the caller does
+    not attest ownership/permission for the target site — enforced server-side,
+    before any job is enqueued."""
+    client, dbfile = _build_client(tmp_path)
+    with client as c:
+        signup = c.post(
+            "/v2/auth/signup",
+            json={"email": "founder@example.com", "password": "hunter2hunter2"},
+        )
+        project_id = _project_id_of(signup.json())
+        keys = c.post(f"/v2/projects/{project_id}/keys", json={"name": "ci"})
+        plaintext = _plaintext_key_of(keys.json())
+
+        # Missing attestation -> defaults to false -> 403.
+        r = c.post(
+            "/v2/runs",
+            headers={"X-API-Key": plaintext},
+            json={"url": "https://example.com/signup", "task": "sign up"},
+        )
+        assert r.status_code == 403, r.text
+        assert "authoriz" in r.json()["detail"].lower()
+
+        # Explicit false -> still 403.
+        r = c.post(
+            "/v2/runs",
+            headers={"X-API-Key": plaintext},
+            json={
+                "url": "https://example.com/signup",
+                "task": "sign up",
+                "authorized": False,
+            },
+        )
+        assert r.status_code == 403, r.text
+
+    # No job row was written for the rejected requests.
+    conn = sqlite3.connect(dbfile)
+    try:
+        (count,) = conn.execute("SELECT COUNT(*) FROM jobs").fetchone()
+    finally:
+        conn.close()
+    assert count == 0
+
+
+def test_run_accepted_with_authorization_persists_attestation(tmp_path):
+    """With the attestation the run is enqueued (202) and the audit record
+    (who / when / which domain) is persisted in the durable job spec."""
+    client, dbfile = _build_client(tmp_path)
+    with client as c:
+        signup = c.post(
+            "/v2/auth/signup",
+            json={"email": "founder@example.com", "password": "hunter2hunter2"},
+        )
+        project_id = _project_id_of(signup.json())
+        keys = c.post(f"/v2/projects/{project_id}/keys", json={"name": "ci"})
+        plaintext = _plaintext_key_of(keys.json())
+
+        r = c.post(
+            "/v2/runs",
+            headers={"X-API-Key": plaintext},
+            json={
+                "url": "https://example.com/checkout",
+                "task": "buy",
+                "authorized": True,
+            },
+        )
+        assert r.status_code == 202, r.text
+
+    # The job spec carries the attestation audit trail.
+    conn = sqlite3.connect(dbfile)
+    try:
+        rows = conn.execute("SELECT spec FROM jobs").fetchall()
+    finally:
+        conn.close()
+    assert len(rows) == 1
+    spec = json.loads(rows[0][0])
+    att = spec["attestation"]
+    assert att["authorized"] is True
+    assert att["authorized_by"] == project_id
+    assert att["authorized_domain"] == "example.com"
+    assert att["authorized_at"]  # ISO timestamp present
 
 
 def test_runs_history_requires_auth_and_is_scoped(tmp_path):

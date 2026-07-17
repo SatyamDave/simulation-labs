@@ -141,6 +141,26 @@ export default function DashboardLayout() {
             <Outlet />
           </div>
         </main>
+
+        <footer className="border-t border-border px-6 py-6">
+          <nav
+            aria-label="Legal"
+            className="mx-auto max-w-5xl flex flex-wrap items-baseline gap-x-5 gap-y-1 text-xs text-muted-foreground"
+          >
+            <Link to="/legal/terms" className="hover:text-foreground transition-colors">
+              Terms
+            </Link>
+            <Link to="/legal/privacy" className="hover:text-foreground transition-colors">
+              Privacy
+            </Link>
+            <Link
+              to="/legal/acceptable-use"
+              className="hover:text-foreground transition-colors"
+            >
+              Acceptable Use
+            </Link>
+          </nav>
+        </footer>
       </div>
     </div>
   );

@@ -81,6 +81,7 @@ def test_post_run_then_report_and_list(client, target_url):
             "target_url": target_url,
             "task": "sign up for an account",
             "persona_ids": ["grandma-72", "power-user"],
+            "authorized": True,
         },
     )
     assert resp.status_code == 200
@@ -103,7 +104,12 @@ def test_post_run_then_report_and_list(client, target_url):
 def test_websocket_replays_events(client, target_url):
     resp = client.post(
         "/runs",
-        json={"target_url": target_url, "task": "sign up", "persona_ids": ["power-user"]},
+        json={
+            "target_url": target_url,
+            "task": "sign up",
+            "persona_ids": ["power-user"],
+            "authorized": True,
+        },
     )
     run_id = resp.json()["run_id"]
     _wait_for_report(client, run_id)  # let the run finish; buffer holds the backlog
@@ -120,6 +126,47 @@ def test_websocket_replays_events(client, target_url):
     assert kinds[-1] == "run_finished"
     assert "persona_started" in kinds
     assert "step" in kinds
+
+
+def test_run_rejected_without_authorization(client, target_url):
+    """The authorization gate: a run with no (or false) ownership attestation is
+    rejected with 403 before any swarm work happens."""
+    # Missing entirely -> defaults to false -> rejected.
+    resp = client.post(
+        "/runs",
+        json={"target_url": target_url, "task": "sign up", "persona_ids": ["power-user"]},
+    )
+    assert resp.status_code == 403, resp.text
+    assert "authoriz" in resp.json()["detail"].lower()
+
+    # Explicit false -> still rejected.
+    resp = client.post(
+        "/runs",
+        json={
+            "target_url": target_url,
+            "task": "sign up",
+            "persona_ids": ["power-user"],
+            "authorized": False,
+        },
+    )
+    assert resp.status_code == 403, resp.text
+
+
+def test_run_accepted_with_authorization(client, target_url):
+    """With the attestation present the run is accepted and produces a report."""
+    resp = client.post(
+        "/runs",
+        json={
+            "target_url": target_url,
+            "task": "sign up",
+            "persona_ids": ["power-user"],
+            "authorized": True,
+        },
+    )
+    assert resp.status_code == 200, resp.text
+    run_id = resp.json()["run_id"]
+    assert run_id
+    _wait_for_report(client, run_id)
 
 
 def test_report_404_for_unknown_run(client):

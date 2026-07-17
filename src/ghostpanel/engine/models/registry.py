@@ -9,6 +9,9 @@ for a ``HoloClient`` by name.
 Backends:
     * ``"holo"`` — the real H-Company Holo Models API (``LiveHoloClient``); the
       default and production backend.
+    * ``"selfhost"`` — a self-hosted vLLM endpoint serving the SAME Holo weights
+      (``SelfHostedHoloClient``). Vendor-independent, no shared RPM cap. Point
+      ``HAI_BASE_URL`` at your vLLM ``/v1``. See ``docs/SELF_HOSTING.md``.
     * ``"echo"`` — a trivial, deterministic, offline backend (``EchoModelClient``)
       that proves a non-Holo vendor plugs into the same seam.
 """
@@ -20,10 +23,15 @@ import os
 from ghostpanel_contracts import HoloClient
 
 from ..holo_client import LiveHoloClient
+from ..selfhost_client import (
+    DEFAULT_SELFHOST_BASE_URL,
+    UNCAPPED_RPM,
+    SelfHostedHoloClient,
+)
 from .echo import EchoModelClient
 
 # Registered backend names (kept in sync with the branches in ``build_model``).
-_BACKENDS = ("holo", "echo")
+_BACKENDS = ("holo", "selfhost", "echo")
 
 
 def available() -> list[str]:
@@ -59,6 +67,24 @@ def build_model(name: str, settings) -> HoloClient:
             base_url=settings.holo_base_url,
             model=settings.hai_model,
             rpm=settings.hai_rpm,
+        )
+    if key == "selfhost":
+        # Same weights, same 0-1000 coordinate grid as "holo", but pointed at a
+        # self-hosted vLLM endpoint and with no vendor RPM cap. Reuses the base
+        # URL from settings (set HAI_BASE_URL to your vLLM /v1). If it still
+        # points at the hosted vendor default, fall back to the local default so
+        # a mis-set env doesn't silently hit the capped vendor API.
+        base_url = settings.holo_base_url
+        if not base_url or "hcompany.ai" in base_url:
+            base_url = DEFAULT_SELFHOST_BASE_URL
+        # Honour an explicitly-high HAI_RPM as a self-imposed throttle; otherwise
+        # leave the cap effectively disabled (SelfHostedHoloClient's default).
+        rpm = settings.hai_rpm if (settings.hai_rpm and settings.hai_rpm > 100) else UNCAPPED_RPM
+        return SelfHostedHoloClient(
+            api_key=settings.hai_api_key,
+            base_url=base_url,
+            model=settings.hai_model,
+            rpm=rpm,
         )
     if key == "echo":
         return EchoModelClient()

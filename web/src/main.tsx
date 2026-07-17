@@ -22,6 +22,9 @@ const Flows = lazy(() => import("./dashboard/pages/Flows"));
 const Settings = lazy(() => import("./dashboard/pages/Settings"));
 const Billing = lazy(() => import("./dashboard/pages/Billing"));
 const Members = lazy(() => import("./dashboard/pages/Members"));
+const Terms = lazy(() => import("./legal/Terms"));
+const Privacy = lazy(() => import("./legal/Privacy"));
+const AcceptableUse = lazy(() => import("./legal/AcceptableUse"));
 
 const el = document.getElementById("root");
 if (!el) throw new Error("#root not found");
@@ -42,6 +45,10 @@ createRoot(el).render(
             <Route path="/" element={<App />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            {/* Public legal pages — linked from the app footer and dashboard. */}
+            <Route path="/legal/terms" element={<Terms />} />
+            <Route path="/legal/privacy" element={<Privacy />} />
+            <Route path="/legal/acceptable-use" element={<AcceptableUse />} />
             <Route
               path="/app"
               element={
