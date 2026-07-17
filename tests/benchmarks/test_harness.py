@@ -28,12 +28,12 @@ def test_builtin_case_pages_exist():
 async def test_offline_benchmark_produces_metrics(browser, tmp_path):
     report = await run_benchmark(
         case_ids=["easy"],
-        persona_ids=["power-user"],
+        persona_ids=["fluent"],
         artifact_dir=tmp_path,
         browser=browser,
     )
     assert report["mode"] == "offline"
-    assert report["personas"] == ["power-user"]
+    assert report["personas"] == ["fluent"]
     (case,) = report["cases"]
     assert case["case"] == "easy"
     (row,) = case["personas"]
@@ -73,7 +73,7 @@ async def test_scripted_success_counts_as_completion(browser, tmp_path):
 
     report = await run_benchmark(
         case_ids=["easy"],
-        persona_ids=["power-user"],
+        persona_ids=["fluent"],
         artifact_dir=tmp_path,
         agent_factory=factory,
         browser=browser,
@@ -86,13 +86,13 @@ async def test_scripted_success_counts_as_completion(browser, tmp_path):
 async def test_scoreboard_renders(browser, tmp_path):
     report = await run_benchmark(
         case_ids=["easy"],
-        persona_ids=["power-user"],
+        persona_ids=["fluent"],
         artifact_dir=tmp_path,
         browser=browser,
     )
     board = format_scoreboard(report)
     assert "[easy]" in board
-    assert "power-user" in board
+    assert "fluent" in board
 
 
 def test_unknown_case_raises():

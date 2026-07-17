@@ -238,11 +238,11 @@ def test_html_degrades_without_new_insights_keys():
 def test_known_persona_ids_get_insights_via_disk_fallback():
     # the server calls write_html_report(report, dir) with no personas kwarg;
     # ids that exist in personas/*.json are resolved from disk
-    personas = [PersonaConfig(id="grandma-72", name="Margaret, 72")]
+    personas = [PersonaConfig(id="first-timer", name="Margaret, 72")]
     report = _report(
         [
             PersonaResult(
-                persona_id="grandma-72",
+                persona_id="first-timer",
                 outcome=PersonaOutcome.STUCK,
                 failure_step=4,
             )

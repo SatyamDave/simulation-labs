@@ -1,82 +1,55 @@
 // Static persona roster: the offline/backendless fallback for the LaunchForm
 // (the live path prefers GET /personas) and the insights fallback's source of
 // per-persona perturbation knowledge. The `id`s must match personas/*.json
-// slugs on the backend (Agent 1). These eight mirror personas/*.json
-// (baselines first).
+// slugs on the backend. These five mirror the public personas/*.json roster:
+// four behavioral segments plus the Fluent baseline (baseline first). The
+// accessibility personas (low-vision, colorblind, ...) are retired to
+// personas/_advanced/ — the mechanical capabilities remain in the engine.
 
 import type { PersonaConfig } from "./types";
 
 export const PERSONA_CATALOG: PersonaConfig[] = [
   {
-    id: "power-user",
-    name: "Alex (power user)",
-    blurb: "Baseline — no impairment",
+    id: "fluent",
+    name: "Fluent",
+    blurb: "Baseline — patient, precise, fluent",
     active_perturbations: [],
     max_steps: 40,
     deadline_s: 240,
   },
   {
-    id: "ai-agent",
-    name: "Agent (headless AI)",
-    blurb: "Is your site agent-ready?",
-    active_perturbations: [],
-    max_steps: 40,
-    deadline_s: 240,
+    id: "rushed",
+    name: "Rushed",
+    blurb: "In a hurry — bails when a step isn't obvious",
+    active_perturbations: ["impatience"],
+    max_steps: 10,
+    deadline_s: 60,
   },
   {
-    id: "grandma-72",
-    name: "Margaret, 72",
-    blurb: "First-timer, presses the biggest button",
-    active_perturbations: ["low_literacy", "blur"],
-    blur_sigma: 1.6,
-    max_steps: 20,
-    deadline_s: 180,
-  },
-  {
-    id: "low-vision",
-    name: "Sam (low vision)",
-    blurb: "Can't read small grey text",
-    active_perturbations: ["blur", "downscale"],
-    blur_sigma: 3.0,
-    downscale_factor: 0.6,
-    max_steps: 30,
-    deadline_s: 150,
-  },
-  {
-    id: "colorblind",
-    name: "Jordan (deuteranopia)",
-    blurb: "Red/green colour-blind — colour-only cues vanish",
-    active_perturbations: ["cvd"],
-    cvd_type: "deutan",
-    cvd_severity: 0.9,
-    max_steps: 30,
-    deadline_s: 120,
-  },
-  {
-    id: "tremor",
-    name: "Dev (hand tremor)",
-    blurb: "Misses small tap targets",
+    id: "misclick-prone",
+    name: "Misclick-prone",
+    blurb: "Clicks land off-target, misses small controls",
     active_perturbations: ["tremor"],
     tremor_sigma_px: 14.0,
     max_steps: 30,
     deadline_s: 150,
   },
   {
-    id: "impatient-mobile",
-    name: "Priya (impatient, mobile)",
-    blurb: "Abandons after a few seconds",
-    active_perturbations: ["small_viewport", "impatience"],
-    viewport: { width: 390, height: 844 },
-    max_steps: 15,
-    deadline_s: 45,
+    id: "first-timer",
+    name: "First-timer",
+    blurb: "Reads literally, parses slowly, times out",
+    active_perturbations: ["low_literacy", "impatience"],
+    max_steps: 20,
+    deadline_s: 150,
   },
   {
-    id: "non-native",
-    name: "Luca (non-native EN)",
-    blurb: "Idiomatic labels and jargon slow him down",
-    active_perturbations: ["low_literacy", "impatience"],
-    language: "it",
+    id: "mobile-thumb",
+    name: "Mobile-thumb",
+    blurb: "Phone + thumb — small viewport, fat-finger taps",
+    active_perturbations: ["small_viewport", "tremor"],
+    tremor_sigma_px: 10.0,
+    viewport: { width: 390, height: 844 },
     max_steps: 20,
-    deadline_s: 100,
+    deadline_s: 120,
   },
 ];

@@ -1,0 +1,13 @@
+{
+  "id": "misclick-prone",
+  "name": "Misclick-prone",
+  "blurb": "Imprecise pointer — clicks land several pixels off target and miss small controls.",
+  "language": "en",
+  "blur_sigma": 0.0,
+  "downscale_factor": 1.0,
+  "tremor_sigma_px": 14.0,
+  "max_steps": 30,
+  "deadline_s": 150.0,
+  "literacy_note": "",
+  "active_perturbations": ["tremor"]
+}

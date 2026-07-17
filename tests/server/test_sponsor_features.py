@@ -30,7 +30,7 @@ from ghostpanel_contracts import (
 )
 
 RUN_ID = "run-fixture-01"
-PERSONA_ID = "grandma-72"
+PERSONA_ID = "first-timer"
 
 
 # ---------------------------------------------------------------------------
@@ -320,17 +320,17 @@ async def test_swarm_assigns_voices_and_writes_insights(tmp_path):
 
     swarm, registry = _make_browserless_swarm(tmp_path, voice_assigner=assigner)
     run_id = await swarm.start_run(
-        "http://target.test/", "sign up", ["grandma-72", "power-user"]
+        "http://target.test/", "sign up", ["first-timer", "fluent"]
     )
     record = registry.get(run_id)
     await record.task_handle
 
     # assign_voices seam was invoked exactly once with the run's personas...
-    assert seen == [["grandma-72", "power-user"]]
+    assert seen == [["first-timer", "fluent"]]
     # ...and the mapping landed on the (registry-visible) PersonaConfigs.
     assert {p.id: p.voice_id for p in record.personas} == {
-        "grandma-72": "voice-grandma-72",
-        "power-user": "voice-power-user",
+        "first-timer": "voice-first-timer",
+        "fluent": "voice-fluent",
     }
 
     # insights.json written next to report.html, matching the frozen wire format.
@@ -347,7 +347,7 @@ async def test_swarm_survives_voice_assigner_failure(tmp_path):
         raise RuntimeError("no GRADIUM_API_KEY / catalog down")
 
     swarm, registry = _make_browserless_swarm(tmp_path, voice_assigner=assigner)
-    run_id = await swarm.start_run("http://target.test/", "sign up", ["grandma-72"])
+    run_id = await swarm.start_run("http://target.test/", "sign up", ["first-timer"])
     record = registry.get(run_id)
     await record.task_handle  # must not raise
 
@@ -373,7 +373,7 @@ async def test_swarm_survives_insights_failure(tmp_path, monkeypatch):
 
     monkeypatch.setattr("ghostpanel.server.swarm.build_insights", boom)
     swarm, registry = _make_browserless_swarm(tmp_path)
-    run_id = await swarm.start_run("http://target.test/", "sign up", ["grandma-72"])
+    run_id = await swarm.start_run("http://target.test/", "sign up", ["first-timer"])
     record = registry.get(run_id)
     await record.task_handle  # must not raise
 

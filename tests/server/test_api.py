@@ -80,7 +80,7 @@ def test_post_run_then_report_and_list(client, target_url):
         json={
             "target_url": target_url,
             "task": "sign up for an account",
-            "persona_ids": ["grandma-72", "power-user"],
+            "persona_ids": ["first-timer", "fluent"],
             "authorized": True,
         },
     )
@@ -107,7 +107,7 @@ def test_websocket_replays_events(client, target_url):
         json={
             "target_url": target_url,
             "task": "sign up",
-            "persona_ids": ["power-user"],
+            "persona_ids": ["fluent"],
             "authorized": True,
         },
     )
@@ -134,7 +134,7 @@ def test_run_rejected_without_authorization(client, target_url):
     # Missing entirely -> defaults to false -> rejected.
     resp = client.post(
         "/runs",
-        json={"target_url": target_url, "task": "sign up", "persona_ids": ["power-user"]},
+        json={"target_url": target_url, "task": "sign up", "persona_ids": ["fluent"]},
     )
     assert resp.status_code == 403, resp.text
     assert "authoriz" in resp.json()["detail"].lower()
@@ -145,7 +145,7 @@ def test_run_rejected_without_authorization(client, target_url):
         json={
             "target_url": target_url,
             "task": "sign up",
-            "persona_ids": ["power-user"],
+            "persona_ids": ["fluent"],
             "authorized": False,
         },
     )
@@ -159,7 +159,7 @@ def test_run_accepted_with_authorization(client, target_url):
         json={
             "target_url": target_url,
             "task": "sign up",
-            "persona_ids": ["power-user"],
+            "persona_ids": ["fluent"],
             "authorized": True,
         },
     )
@@ -177,7 +177,7 @@ def test_get_personas_returns_full_roster(client):
     resp = client.get("/personas")
     assert resp.status_code == 200
     roster = resp.json()
-    assert isinstance(roster, list) and len(roster) >= 6
+    assert isinstance(roster, list) and len(roster) >= 5
     ids = [p["id"] for p in roster]
     assert len(ids) == len(set(ids))
     assert all("name" in p for p in roster)

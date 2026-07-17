@@ -1,0 +1,13 @@
+{
+  "id": "rushed",
+  "name": "Rushed",
+  "blurb": "In a hurry — bails the moment a step isn't obvious. Tight step and time budget.",
+  "language": "en",
+  "blur_sigma": 0.0,
+  "downscale_factor": 1.0,
+  "tremor_sigma_px": 0.0,
+  "max_steps": 10,
+  "deadline_s": 60.0,
+  "literacy_note": "You are in a hurry. If the next step is not immediately obvious, you give up rather than hunt for it.",
+  "active_perturbations": ["impatience"]
+}

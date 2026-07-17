@@ -72,7 +72,7 @@ async def test_swarm_runs_two_personas_and_caches_report(browser, tmp_path, targ
     registry = RunRegistry()
     swarm = _make_swarm(browser, hub, registry, tmp_path)
 
-    run_id = await swarm.start_run(target_url, "sign up", ["grandma-72", "power-user"])
+    run_id = await swarm.start_run(target_url, "sign up", ["first-timer", "fluent"])
     record = registry.get(run_id)
     assert record is not None
     await record.task_handle  # block until the swarm settles
@@ -108,7 +108,7 @@ async def test_swarm_survives_a_persona_error(browser, tmp_path, target_url):
     registry = RunRegistry()
 
     def agent_factory(persona, holo, task):
-        if persona.id == "power-user":
+        if persona.id == "fluent":
             raise RuntimeError("boom: simulated agent construction failure")
         return _default_agent_factory(persona, holo, task)
 
@@ -116,7 +116,7 @@ async def test_swarm_survives_a_persona_error(browser, tmp_path, target_url):
         browser, hub, registry, tmp_path, agent_factory=agent_factory
     )
 
-    run_id = await swarm.start_run(target_url, "sign up", ["grandma-72", "power-user"])
+    run_id = await swarm.start_run(target_url, "sign up", ["first-timer", "fluent"])
     record = registry.get(run_id)
     await record.task_handle  # must NOT raise despite the failing persona
 
@@ -124,9 +124,9 @@ async def test_swarm_survives_a_persona_error(browser, tmp_path, target_url):
     assert report is not None
     assert record.status == RunStatus.FINISHED
     outcomes = {r.persona_id: r.outcome for r in report.results}
-    assert outcomes["power-user"] == PersonaOutcome.ERROR
+    assert outcomes["fluent"] == PersonaOutcome.ERROR
     # The other persona ran normally (some non-error terminal outcome).
-    assert outcomes["grandma-72"] != PersonaOutcome.ERROR
+    assert outcomes["first-timer"] != PersonaOutcome.ERROR
     # ERROR personas are excluded from the completion denominator -> still valid.
     assert 0.0 <= report.completion_rate <= 1.0
     # The run still finished and broadcast a terminal event.
@@ -143,6 +143,6 @@ async def test_start_run_falls_back_to_full_roster_for_unknown_ids(
     run_id = await swarm.start_run(target_url, "sign up", ["does-not-exist"])
     record = registry.get(run_id)
     await record.task_handle
-    # Unknown ids -> full roster (8 personas exist).
+    # Unknown ids -> full roster (5 personas exist).
     assert record.report is not None
-    assert len(record.report.results) == 8
+    assert len(record.report.results) == 5

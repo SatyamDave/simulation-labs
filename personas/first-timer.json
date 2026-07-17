@@ -1,0 +1,13 @@
+{
+  "id": "first-timer",
+  "name": "First-timer",
+  "blurb": "Never used this kind of site before — reads labels literally, parses slowly, times out when unsure.",
+  "language": "en",
+  "blur_sigma": 0.0,
+  "downscale_factor": 1.0,
+  "tremor_sigma_px": 0.0,
+  "max_steps": 20,
+  "deadline_s": 150.0,
+  "literacy_note": "You have never used this kind of website before. Read every label literally, do not assume common UI conventions, and re-read the screen when you are unsure what to do next.",
+  "active_perturbations": ["low_literacy", "impatience"]
+}

@@ -1,0 +1,141 @@
+{
+  "ghostpanel_score": 5,
+  "agent_readiness": null,
+  "wcag_findings": [
+    {
+      "persona_id": "low-vision",
+      "persona_name": "Sam (low vision)",
+      "criterion": "1.4.3",
+      "name": "Contrast (Minimum)",
+      "level": "AA",
+      "standard_ref": "9.1.4.3",
+      "evidence": "Sam (low vision) (blur \u03c3=3.5) abandoned at step 3 at (640, 400) \u2014 last action: 'Clicking at (512, 320)'; reason: repeated action: Clicking at (512, 320). This trace is evidence that the flow is at risk under reduced visual acuity (maps to 1.4.3 Contrast (Minimum)), not an automated conformance verdict.",
+      "failure_step": 3
+    },
+    {
+      "persona_id": "low-vision",
+      "persona_name": "Sam (low vision)",
+      "criterion": "1.4.4",
+      "name": "Resize Text",
+      "level": "AA",
+      "standard_ref": "9.1.4.4",
+      "evidence": "Sam (low vision) (blur \u03c3=3.5) abandoned at step 3 at (640, 400) \u2014 last action: 'Clicking at (512, 320)'; reason: repeated action: Clicking at (512, 320). This trace is evidence that the flow is at risk under reduced visual acuity (maps to 1.4.4 Resize Text), not an automated conformance verdict.",
+      "failure_step": 3
+    },
+    {
+      "persona_id": "tremor",
+      "persona_name": "Dev (hand tremor)",
+      "criterion": "2.5.8",
+      "name": "Target Size (Minimum)",
+      "level": "AA",
+      "standard_ref": "9.2.5.8",
+      "evidence": "Dev (hand tremor) (tremor \u03c3=14px) abandoned at step 3 at (640, 375) \u2014 last action: 'Clicking at (512, 320)'; reason: repeated action: Clicking at (512, 320). This trace is evidence that the flow is at risk under reduced motor precision (maps to 2.5.8 Target Size (Minimum)), not an automated conformance verdict.",
+      "failure_step": 3
+    },
+    {
+      "persona_id": "tremor",
+      "persona_name": "Dev (hand tremor)",
+      "criterion": "2.4.7",
+      "name": "Focus Visible",
+      "level": "AA",
+      "standard_ref": "9.2.4.7",
+      "evidence": "Dev (hand tremor) (tremor \u03c3=14px) abandoned at step 3 at (640, 375) \u2014 last action: 'Clicking at (512, 320)'; reason: repeated action: Clicking at (512, 320). This trace is evidence that the flow is at risk under reduced motor precision (maps to 2.4.7 Focus Visible), not an automated conformance verdict.",
+      "failure_step": 3
+    }
+  ],
+  "summary": "0/3 personas completed the task; worst performer was Alex (power user) (stuck at step 3).",
+  "meta": {
+    "run_id": "b089ac6aa5a7",
+    "target_url": "file:///Users/satyamdave/Desktop/simulation-labs/fixtures/hostile_form.html",
+    "task": "Create an account and submit the sign-up form.",
+    "generated_at": "2026-07-17T17:23:11.378129+00:00",
+    "personas": 3
+  },
+  "stats": {
+    "run": {
+      "total_steps": 12,
+      "total_duration_s": 40.6,
+      "avg_latency_ms": 28,
+      "p95_latency_ms": 44,
+      "actions_by_type": {
+        "click": 12
+      },
+      "blocked_actions": 0,
+      "personas_succeeded": 0,
+      "personas_abandoned": 3,
+      "personas_errored": 0,
+      "median_steps_to_abandon": 3,
+      "fastest_success_steps": null
+    },
+    "personas": [
+      {
+        "persona_id": "low-vision",
+        "persona_name": "Sam (low vision)",
+        "outcome": "stuck",
+        "steps": 4,
+        "steps_survived": 3,
+        "duration_s": 13.5,
+        "avg_latency_ms": 40,
+        "actions_by_type": {
+          "click": 4
+        },
+        "blocked_actions": 0,
+        "max_repeated_action": 4,
+        "perturbations": [
+          "blur",
+          "downscale"
+        ]
+      },
+      {
+        "persona_id": "tremor",
+        "persona_name": "Dev (hand tremor)",
+        "outcome": "stuck",
+        "steps": 4,
+        "steps_survived": 3,
+        "duration_s": 13.5,
+        "avg_latency_ms": 22,
+        "actions_by_type": {
+          "click": 4
+        },
+        "blocked_actions": 0,
+        "max_repeated_action": 4,
+        "perturbations": [
+          "tremor"
+        ]
+      },
+      {
+        "persona_id": "power-user",
+        "persona_name": "Alex (power user)",
+        "outcome": "stuck",
+        "steps": 4,
+        "steps_survived": 3,
+        "duration_s": 13.5,
+        "avg_latency_ms": 21,
+        "actions_by_type": {
+          "click": 4
+        },
+        "blocked_actions": 0,
+        "max_repeated_action": 4,
+        "perturbations": []
+      }
+    ]
+  },
+  "survival_series": [
+    {
+      "step": 0,
+      "alive": 3
+    },
+    {
+      "step": 1,
+      "alive": 3
+    },
+    {
+      "step": 2,
+      "alive": 3
+    },
+    {
+      "step": 3,
+      "alive": 3
+    }
+  ]
+}
