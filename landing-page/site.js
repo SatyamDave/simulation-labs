@@ -147,33 +147,79 @@
     scrollspy(links, targets);
   }
 
-  /* Design-partner application form -> mailto. */
+  /* Founding-audit lead form -> FormSubmit (capture + auto-reply) -> Cal booking. */
+  var CAL_URL = "https://cal.com/satyamdave-simulation/30min";
+  var LEAD_ENDPOINT = "https://formsubmit.co/ajax/sdaveofficial@gmail.com";
+
   function applyForm() {
     var form = document.getElementById("applyForm");
     if (!form) return;
     var status = document.getElementById("applyStatus");
     var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    function say(cls, html) {
+      status.hidden = false;
+      status.className = "apply-status" + (cls ? " " + cls : "");
+      status.innerHTML = html;
+    }
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var d = new FormData(form);
       function v(k) { return String(d.get(k) || "").trim(); }
+      // Honeypot: real users never fill this hidden field.
+      if (v("_honey")) return;
       var name = v("name"), company = v("company"), email = v("email"), flow = v("flow");
       if (!re.test(email)) {
-        status.hidden = false;
-        status.className = "apply-status err";
-        status.textContent = "Please enter a valid work email so we can reach you.";
+        say("err", "Please enter a valid work email so we can reach you.");
         var el = form.querySelector('[name="email"]');
         if (el) el.focus();
         return;
       }
-      var subject = "Design partner application — " + (company || name || email);
-      var body = "Name: " + name + "\nCompany: " + company +
-        "\nWork email: " + email + "\nFlow to test: " + flow + "\n";
-      window.location.href = "mailto:satyam@agentmade.ai?subject=" +
-        encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      status.hidden = false;
-      status.className = "apply-status ok";
-      status.textContent = "Thanks — we'll be in touch about your flow shortly.";
+      var btn = form.querySelector('button[type="submit"]');
+      if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
+      say("", "Sending your request…");
+
+      var payload = {
+        name: name, company: company, email: email, flow: flow,
+        _subject: "New founding-audit request — " + (company || name || email),
+        _template: "table",
+        _captcha: "false",
+        _autoresponse:
+          "Thanks for requesting a Simulation Labs founding audit.\n\n" +
+          "We run a swarm of browser agents through one of your flows" +
+          (flow ? " (you mentioned: " + flow + ")" : "") +
+          " and hand back a report showing the exact pixel where each user segment gives up — in about a week.\n\n" +
+          "Fastest next step — grab a 30-min slot so we can scope it:\n" + CAL_URL +
+          "\n\n— Simulation Labs"
+      };
+
+      fetch(LEAD_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(payload)
+      })
+        .then(function (r) {
+          return r.json().catch(function () { return {}; })
+            .then(function (j) { return { ok: r.ok, j: j }; });
+        })
+        .then(function (res) {
+          if (!res.ok || (res.j && res.j.success === "false")) throw new Error("submit failed");
+          var rows = form.querySelectorAll(".row");
+          for (var i = 0; i < rows.length; i++) rows[i].style.display = "none";
+          if (btn) btn.style.display = "none";
+          say("ok",
+            "Request received — we'll email you shortly.<br>Fastest path: " +
+            "<a class=\"apply-cal\" href=\"" + CAL_URL + "\" target=\"_blank\" rel=\"noopener\">" +
+            "grab a 30-min slot →</a>");
+        })
+        .catch(function () {
+          if (btn) { btn.disabled = false; btn.textContent = "Request a seat"; }
+          say("err",
+            "Couldn't send that just now. Email <a href=\"mailto:sdaveofficial@gmail.com\">" +
+            "sdaveofficial@gmail.com</a> or " +
+            "<a href=\"" + CAL_URL + "\" target=\"_blank\" rel=\"noopener\">book a call directly →</a>.");
+        });
     });
   }
 
