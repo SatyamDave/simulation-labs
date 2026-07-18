@@ -103,3 +103,54 @@ def test_margin_tolerance_lets_small_drop_pass():
     # threshold = 1.0 - 0.3 = 0.7 <= 0.75 -> pass
     res = compare(current, baseline, fail_under="last-passing", margin=0.3)
     assert res.passed is True
+
+
+# ---------------------------------------------------------------------------
+# Functional verdict (E2E dimension): a broken flow fails even the first run.
+# ---------------------------------------------------------------------------
+def test_functional_fail_when_no_undegraded_probe_completes():
+    from ghostpanel.cli.regression import compare, FUNCTIONAL_FAIL
+
+    # fluent is the undegraded probe; nobody completes -> the flow is broken.
+    cur = _report([("fluent", False), ("misclick-prone", False)])
+    res = compare(cur, None, fail_under="last-passing",
+                  functional_persona_ids={"fluent"})
+    assert res.verdict == FUNCTIONAL_FAIL
+    assert res.passed is False
+    assert res.functional_ok is False
+    assert "fluent" in res.reason
+
+
+def test_functional_ok_but_behavioral_regression():
+    from ghostpanel.cli.regression import compare, BEHAVIORAL_REGRESSION
+
+    # Baseline: everyone finished. Now: fluent still finishes (flow works) but a
+    # degraded segment regressed -> behavioral regression, not functional fail.
+    base = _report([("fluent", True), ("misclick-prone", True)])
+    cur = _report([("fluent", True), ("misclick-prone", False)])
+    res = compare(cur, base, fail_under="last-passing",
+                  functional_persona_ids={"fluent"})
+    assert res.verdict == BEHAVIORAL_REGRESSION
+    assert res.passed is False
+    assert res.functional_ok is True
+
+
+def test_functional_pass_seeds_baseline_when_probe_completes():
+    from ghostpanel.cli.regression import compare, PASS
+
+    cur = _report([("fluent", True), ("misclick-prone", False)])
+    res = compare(cur, None, fail_under="last-passing",
+                  functional_persona_ids={"fluent"})
+    assert res.verdict == PASS
+    assert res.passed is True
+    assert res.functional_ok is True
+
+
+def test_functional_dimension_absent_without_probe_ids():
+    from ghostpanel.cli.regression import compare
+
+    # No probe ids supplied -> functional dimension not assessed (back-compat).
+    cur = _report([("fluent", False)])
+    res = compare(cur, None, fail_under="last-passing")
+    assert res.functional_ok is None
+    assert res.passed is True  # first run seeds baseline

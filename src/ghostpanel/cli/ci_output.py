@@ -16,7 +16,11 @@ from xml.sax.saxutils import quoteattr as _xml_quoteattr
 
 from ghostpanel_contracts import PersonaOutcome, RunReport
 
-from .regression import RegressionResult
+from .regression import (
+    BEHAVIORAL_REGRESSION,
+    FUNCTIONAL_FAIL,
+    RegressionResult,
+)
 
 # Stable marker so the GitHub Action can find & update its own PR comment
 # instead of posting a new one every run.
@@ -133,7 +137,16 @@ def summary_table(report: RunReport) -> str:
 # markdown shared pieces
 # ---------------------------------------------------------------------------
 def _verdict_line(reg: RegressionResult) -> str:
-    return "**✅ PASS**" if reg.passed else "**❌ FAIL**"
+    """Verdict badge. ``passed`` is authoritative; ``verdict`` only refines the
+    FAIL label to distinguish a broken flow (functional) from one that works but
+    leaks degraded users (behavioral)."""
+    if reg.passed:
+        return "**✅ PASS**"
+    if reg.verdict == FUNCTIONAL_FAIL:
+        return "**🛑 FUNCTIONAL FAIL** (flow broken)"
+    if reg.verdict == BEHAVIORAL_REGRESSION:
+        return "**❌ BEHAVIORAL REGRESSION**"
+    return "**❌ FAIL**"
 
 
 def _completion_delta_line(reg: RegressionResult) -> str:

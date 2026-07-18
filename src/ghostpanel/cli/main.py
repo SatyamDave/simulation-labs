@@ -290,14 +290,41 @@ def _cmd_gate(args: argparse.Namespace) -> int:
     )
 
     result = regression.compare(
-        report, baseline, fail_under=fail_under, margin=args.margin
+        report,
+        baseline,
+        fail_under=fail_under,
+        margin=args.margin,
+        functional_persona_ids=_functional_probe_ids(report),
     )
     ci_output.write_ci_outputs(report, result, out_dir)
 
     render.print_summary(report)
-    verdict = "PASS" if result.passed else "FAIL"
-    print(f"gate: {verdict} — {result.reason}")
+    if result.verdict == regression.FUNCTIONAL_FAIL:
+        label = "FUNCTIONAL FAIL"
+    elif result.verdict == regression.BEHAVIORAL_REGRESSION:
+        label = "BEHAVIORAL REGRESSION"
+    else:
+        label = "PASS"
+    print(f"gate: {label} — {result.reason}")
     return exit_codes.OK if result.passed else exit_codes.GATE_FAILED
+
+
+def _functional_probe_ids(report: RunReport) -> set[str]:
+    """The undegraded (no-perturbation) personas that ran — the functional/E2E
+    probes. Loads the roster and keeps those with no active perturbations whose
+    id appears in the report's survival curve. Empty => functional dimension not
+    assessed (e.g. a run with only degraded personas)."""
+    from ghostpanel.engine.personas import load_personas
+
+    ran = {p.persona_id for p in report.survival}
+    try:
+        roster = load_personas(None)
+    except Exception:  # noqa: BLE001 — never let probe detection break the gate
+        return set()
+    return {
+        p.id for p in roster
+        if p.id in ran and not getattr(p, "active_perturbations", None)
+    }
 
 
 def _cmd_baseline(args: argparse.Namespace) -> int:
