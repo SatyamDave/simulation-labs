@@ -1,8 +1,9 @@
 # Simulation Labs
 
-> Behavioral simulation for real user flows. We run pre-trained computer-use agents, mechanically degraded and ICP-calibrated, against a live flow and record the exact pixel where each one abandons. We simulate what users do, not what they say.
+> Behavioral tests for user flows: like unit tests, but for whether real users can finish. We run pre-trained computer-use agents, mechanically degraded and ICP-calibrated, against a live flow on every deploy and fail the build when flow-completion regresses vs the last passing run. We simulate what users do, not what they say.
 
 ## What it does
+- product: behavioral_regression_gate(flow, icp, fail_under=last-passing) — the swarm runs on every deploy and blocks the merge when completion drops
 - capability: behavioral_simulation(target_url, task, persona_ids[])
 - persona: pre-trained computer-use agent (screenshot-in / action-out); consumed, not trained
 - degradation: perception{gaussian_blur, downsample, colour_transform}; actuation{coordinate_noise sigma_px, tremor}; budget{max_steps, wall_clock_ms}; viewport{w,h}
@@ -11,6 +12,7 @@
 - coords: model emits 0..1000 normalized; denormalized to true viewport px; executed verbatim
 - output: survival_curve, abandonment_heatmap, per_persona_stats, score[0..100], video_receipts, cloned_voice_exit_interviews
 - semantics: rank-order signal / evidence-of-risk; NOT a forecast, NOT a conformance verdict
+- moat: every run compounds into a cross-site abandonment dataset that recalibrates each persona (data network effect); the gate creates deploy-time workflow lock-in
 
 ## Vs the field
 - survey_personas: words about your flow, ~11.86% fidelity (arXiv:2503.20749)
@@ -28,16 +30,16 @@
 - Holo (holo3-1-35b-a3b), Playwright, Gradium (voice), Claude (optional narration), NVIDIA NemoClaw (network policy)
 
 ## Triggers
-- on_demand_audit (one flow, manual swarm run + report) [primary, current phase]
-- ci_cd_gate (regression vs last-passing) [planned, after founding cohort]
+- ci_cd_gate (regression vs last-passing) [the product; private beta with design partners]
+- first_flow_test (one flow, manual swarm run + report) [how you engage today + join the beta]
 - mcp_skill (mid-session, called by a coding agent) [planned]
 
 ## Pricing
-- Flow Audit: $1.5-3k/flow (founding rate, Cohort 01), run by hand, full report in ~1 week
-- Reference anchor: typical agency CRO audit is $8-25k and 4-6 weeks
-- CI gate: coming (self-serve, built after the founding cohort)
+- Behavioral CI gate: design-partner/private beta now; self-serve after the founding cohort [the product]
+- First flow test: $1.5-3k/flow (founding rate), run by hand, full report in ~1 week [entry point + beta on-ramp]
+- Reference anchor: a typical agency CRO audit is $8-25k and 4-6 weeks — a one-time opinion, not a test that runs on every deploy
 - Design partners get founding-partner terms. MIT-licensed; degradation primitives open-sourced.
 
 ## Contact
-- Book a founding audit: satyam@agentmade.ai · https://cal.com/satyamdave-simulation/30min
+- Test your first flow: satyam@agentmade.ai · https://cal.com/satyamdave-simulation/30min
 - Repo: https://github.com/SatyamDave/simulation-labs
