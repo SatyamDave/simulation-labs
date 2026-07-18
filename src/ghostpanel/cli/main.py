@@ -48,11 +48,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: simulationlabs/gate@v1
-        with:
-          flow: signup
-          icp: auto
-          fail-under: last-passing
+      # The published Marketplace action `simulationlabs/gate@v1` is in private
+      # beta. Until it ships, run the gate directly from this repo — same verdict:
+      - run: pip install -e . && python -m ghostpanel.cli gate --config sim.yml --flow signup
         env:
           HAI_API_KEY: ${{ secrets.HAI_API_KEY }}
 """
@@ -252,7 +250,16 @@ def _obtain_report(args: argparse.Namespace, params: Optional[_RunParams]):
     """Return (report, run_params_or_None, exit_code_or_None). When `--from` is
     given, load an existing RunReport instead of running the swarm."""
     if getattr(args, "from_", None):
-        return _load_report(args.from_), None, None
+        loaded = _load_report(args.from_)
+        # Same guard as a live run: a report where every persona hit an infra
+        # error can't yield a trustworthy verdict — don't gate/baseline on it.
+        if preflight.usable_results(loaded) == 0:
+            print(
+                "no usable results in the loaded report: every persona hit an "
+                "infra error — cannot produce a gate verdict or baseline."
+            )
+            return None, None, exit_codes.NO_RESULTS
+        return loaded, None, None
     assert params is not None
     outcome = _run_swarm(params, progress=not args.quiet)
     if outcome.error:

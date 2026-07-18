@@ -165,20 +165,29 @@ def check_local_server_up(url: str, allow_private: bool) -> None:
 def check_model_key() -> None:
     """Fail if a live model backend is selected but its API key is missing.
 
-    Only the ``holo`` backend needs ``HAI_API_KEY``; ``selfhost``/``echo`` don't.
-    Fixture runs never call this (they use the offline FakeHoloClient)."""
+    ``holo`` needs ``HAI_API_KEY``; ``gemini`` needs ``GEMINI_API_KEY``;
+    ``selfhost``/``echo`` need none. Fixture runs never call this (offline Fake)."""
+    import os
+
     from ghostpanel.engine.models.registry import default_backend
     from ghostpanel.server.config import get_settings
 
     backend = (default_backend() or "").strip().lower()
-    if backend != "holo":
-        return  # selfhost / echo need no vendor key
-    if not get_settings().hai_api_key.strip():
-        raise PreflightError(
-            "no model API key: set HAI_API_KEY in .env for a live run "
-            "(or use --fixture for offline testing, or MODEL_BACKEND=selfhost/echo).",
-            exit_codes.MISSING_KEY,
-        )
+    if backend == "holo":
+        if not get_settings().hai_api_key.strip():
+            raise PreflightError(
+                "no model API key: set HAI_API_KEY in .env for a live run "
+                "(or use --fixture for offline testing, or MODEL_BACKEND=selfhost/echo).",
+                exit_codes.MISSING_KEY,
+            )
+    elif backend == "gemini":
+        if not os.environ.get("GEMINI_API_KEY", "").strip():
+            raise PreflightError(
+                "no model API key: MODEL_BACKEND=gemini needs GEMINI_API_KEY in .env "
+                "(create one at https://aistudio.google.com/apikey).",
+                exit_codes.MISSING_KEY,
+            )
+    # selfhost / echo need no vendor key
 
 
 # ---------------------------------------------------------------------------

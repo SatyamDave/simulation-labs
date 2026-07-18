@@ -65,6 +65,21 @@ def _completion_from_survival(report: RunReport) -> float:
     return succeeded / len(considered)
 
 
+def _completion_excluding(report: RunReport, exclude_ids: set[str]) -> float:
+    """Completion over non-ERROR personas whose id is NOT in ``exclude_ids``.
+
+    Used to compare current-vs-baseline over the SAME persona set, so an infra
+    ERROR that removes a persona from one side can't skew the delta."""
+    considered = [
+        p for p in report.survival
+        if p.outcome != PersonaOutcome.ERROR and p.persona_id not in exclude_ids
+    ]
+    if not considered:
+        return 0.0
+    succeeded = sum(1 for p in considered if p.outcome == PersonaOutcome.SUCCESS)
+    return succeeded / len(considered)
+
+
 def _completion(report: RunReport) -> float:
     """Prefer the report's own completion_rate; fall back to a recomputed value
     when the field is 0/absent (robust to reports that didn't stamp it)."""
@@ -163,12 +178,22 @@ def compare(
     probe_ids = sorted(set(functional_persona_ids)) if functional_persona_ids else []
     functional_ok: bool | None = _functional_ok(current, probe_ids) if probe_ids else None
 
+    # Personas that hit an infra ERROR in the CURRENT run. An infra failure is
+    # not a behavioral abandonment: exclude them from both the regressed list and
+    # the completion comparison so a transient timeout/429 on a baseline-completer
+    # (e.g. the probe) can't masquerade as a regression and block the merge.
+    errored_now = {
+        p.persona_id for p in current.survival if p.outcome == PersonaOutcome.ERROR
+    }
+
     # --- regressed personas: completed in baseline, not in current ---
     regressed: list[PersonaDelta] = []
     if baseline is not None:
         base_rows = _completed_by_persona(baseline)
         cur_rows = _completed_by_persona(current)
         for pid, brow in base_rows.items():
+            if pid in errored_now:
+                continue  # infra error now, not a behavioral regression
             crow = cur_rows.get(pid)
             now_completed = bool(crow.completed) if crow is not None else False
             if brow.completed and not now_completed:
@@ -234,11 +259,22 @@ def compare(
                 regressed_personas=[],
                 new_dead_zones=[],
             )
-        threshold = float(completion_baseline or 0.0) - float(margin)
-        passed = completion_now >= threshold
+        # Compare over the SAME persona set: exclude any persona that infra-ERRORed
+        # in the current run from BOTH sides, so a transient flake on a
+        # baseline-completer can't fake a drop below the bar.
+        cmp_now = (
+            _completion_excluding(current, errored_now) if errored_now
+            else completion_now
+        )
+        cmp_base = (
+            _completion_excluding(baseline, errored_now) if errored_now
+            else (completion_baseline or 0.0)
+        )
+        threshold = float(cmp_base) - float(margin)
+        passed = cmp_now >= threshold
         rel = "≥" if passed else "<"
         reason = (
-            f"completion {completion_now:.2f} {rel} last-passing bar {threshold:.2f}"
+            f"completion {cmp_now:.2f} {rel} last-passing bar {threshold:.2f}"
         )
         if not passed and regressed:
             n = len(regressed)

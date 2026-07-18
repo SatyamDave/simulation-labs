@@ -60,6 +60,10 @@ def _outcome_str(outcome: PersonaOutcome | str) -> str:
 def _threshold_display(reg: RegressionResult) -> str:
     """Human phrase for the effective bar, e.g. '80% (absolute)' or
     '75% (last-passing baseline)'."""
+    # A functional failure isn't measured against a completion bar — the flow is
+    # broken — so the 0.0 placeholder threshold must not read as a real '0%' bar.
+    if reg.verdict == FUNCTIONAL_FAIL:
+        return "n/a (functional failure — flow broken)"
     if reg.fail_under == "last-passing":
         if reg.completion_baseline is None:
             return "last-passing (no baseline yet — first run seeds it)"

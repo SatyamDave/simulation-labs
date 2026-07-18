@@ -48,6 +48,11 @@ _NAV_REWRITES = (
         "corner of the image: x=1000 is the right edge, y=1000 is the bottom edge. Never\n"
         "answer in raw pixels.",
     ),
+    (
+        "Do not output anything except the JSON object.",
+        "Do not output anything except the JSON object. Every x/y above and in your "
+        "answer is on the 0-1000 normalized grid, NOT raw pixels.",
+    ),
 )
 
 

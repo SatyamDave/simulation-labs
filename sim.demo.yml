@@ -8,10 +8,10 @@ flows:
     url: http://localhost:8137/fixtures/demo_signup.html
     task: "Sign up for Nimbus: enter a work email and a password, tick the small 'I agree to the Terms' checkbox until it is checked, then click Create account. Done when you see 'You're in!'."
     fail_under: last-passing
-    personas: [fluent, rushed, mobile-thumb, misclick-prone]
+    personas: [fluent, ai-agent, rushed, mobile-thumb, misclick-prone]
 
 icp:
-  personas: [fluent, rushed, mobile-thumb, misclick-prone]
+  personas: [fluent, ai-agent, rushed, mobile-thumb, misclick-prone]
 
 swarm:
   rpm: 5

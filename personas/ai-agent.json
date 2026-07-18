@@ -1,0 +1,13 @@
+{
+  "id": "ai-agent",
+  "name": "AI Agent",
+  "blurb": "An unattended computer-use agent — is your flow machine-navigable? A second undegraded probe: the flow is functional if EITHER baseline completes.",
+  "language": "en",
+  "blur_sigma": 0.0,
+  "downscale_factor": 1.0,
+  "tremor_sigma_px": 0.0,
+  "max_steps": 40,
+  "deadline_s": 240.0,
+  "literacy_note": "",
+  "active_perturbations": []
+}

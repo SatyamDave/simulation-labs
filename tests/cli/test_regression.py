@@ -178,3 +178,29 @@ def test_errored_probe_is_not_functional_fail():
     assert res.functional_ok is None
     assert res.verdict != "functional_fail"
     assert res.passed is True
+
+
+def test_errored_completer_not_behavioral_regression_with_baseline():
+    """An infra ERROR on a baseline-completer must not fake a BEHAVIORAL_REGRESSION."""
+    from ghostpanel.cli.regression import compare
+    from ghostpanel_contracts import PersonaOutcome, RunReport, SurvivalPoint
+
+    def rpt(fluent_outcome):
+        return RunReport(
+            run_id="r", target_url="x", task="t",
+            survival=[
+                SurvivalPoint(persona_id="fluent", persona_name="Fluent",
+                              outcome=fluent_outcome, steps_survived=5,
+                              completed=(fluent_outcome == PersonaOutcome.SUCCESS)),
+                SurvivalPoint(persona_id="misclick-prone", persona_name="Misclick-prone",
+                              outcome=PersonaOutcome.STUCK, steps_survived=3, completed=False),
+            ],
+            completion_rate=0.0,
+        )
+    baseline = rpt(PersonaOutcome.SUCCESS)   # 1/2 = 0.5
+    current = rpt(PersonaOutcome.ERROR)      # fluent flaked; product unchanged
+    res = compare(current, baseline, fail_under="last-passing",
+                  functional_persona_ids={"fluent"})
+    assert res.passed is True, f"infra flake faked a regression: {res.reason}"
+    assert res.verdict != "behavioral_regression"
+    assert all(d.persona_id != "fluent" for d in res.regressed_personas)

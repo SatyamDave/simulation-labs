@@ -478,17 +478,29 @@ def build_findings(roster: list[dict], insights: dict, vw: int, vh: int) -> list
 # ---------------------------------------------------------------------------
 def _heatmap(points: list[dict], vw: int, vh: int, width: int = 720):
     """Scale death coordinates onto a viewport-proportioned canvas. Each point
-    is a warm 'blob'; overlap naturally intensifies (classic abandonment heat)."""
+    is a warm 'blob'; overlap naturally intensifies (classic abandonment heat).
+
+    Each death is normalised by ITS OWN persona's viewport (a mobile persona ran
+    at 390x844, not the 1280x800 canvas frame), so a small-screen death lands at
+    the right relative spot instead of being squashed or clipped off-canvas.
+    Infra ERROR personas are excluded — they never abandoned, so plotting them as
+    heat would contradict the verdict and hero counts."""
     height = round(width * vh / vw)
-    sx, sy = width / vw, height / vh
     blobs = []
     for p in points:
         if p["coords"] is None:
             continue
+        if p.get("outcome") == PersonaOutcome.ERROR:
+            continue  # infra failure is not an abandonment
+        pvw = p.get("vw") or vw
+        pvh = p.get("vh") or vh
+        # fraction of this persona's own viewport -> position on the canvas
+        cx = min(max(p["coords"][0] / pvw, 0.0), 1.0) * width
+        cy = min(max(p["coords"][1] / pvh, 0.0), 1.0) * height
         blobs.append(
             {
-                "cx": round(p["coords"][0] * sx, 1),
-                "cy": round(p["coords"][1] * sy, 1),
+                "cx": round(cx, 1),
+                "cy": round(cy, 1),
                 "segment": p["segment"],
                 "label": p["who"],
             }
@@ -497,15 +509,21 @@ def _heatmap(points: list[dict], vw: int, vh: int, width: int = 720):
 
 
 def _cursor_path(trace: list[dict], vw: int, vh: int, width: int = 300):
-    """Ordered click coordinates for a persona -> a mini cursor-path SVG."""
+    """Ordered click coordinates for a persona -> a mini cursor-path SVG.
+
+    ``vw``/``vh`` are THIS persona's own viewport (a mobile persona ran at
+    390x844), so the path is placed by viewport fraction and never clipped."""
     pts = [(t["x"], t["y"], t["caption"]) for t in trace
            if t["x"] is not None and t["y"] is not None]
     if len(pts) < 1:
         return None
     height = round(width * vh / vw)
-    sx, sy = width / vw, height / vh
     scaled = [
-        {"x": round(x * sx, 1), "y": round(y * sy, 1), "n": i + 1, "caption": cap}
+        {
+            "x": round(min(max(x / vw, 0.0), 1.0) * width, 1),
+            "y": round(min(max(y / vh, 0.0), 1.0) * height, 1),
+            "n": i + 1, "caption": cap,
+        }
         for i, (x, y, cap) in enumerate(pts)
     ]
     poly = " ".join(f"{s['x']},{s['y']}" for s in scaled)
@@ -881,10 +899,17 @@ def render_deliverable(
         p["persona_id"]: p.get("perturbations", [])
         for p in (insights or {}).get("stats", {}).get("personas", [])
     }
+    # Each persona's OWN viewport (mobile ran at 390x844); default to the canvas
+    # frame when unknown, so heatmap/cursor coords place by viewport fraction.
+    resolved_personas = personas if personas is not None else _load_run_personas(report)
+    viewport_by_id = {
+        p.id: (p.viewport.width, p.viewport.height) for p in (resolved_personas or [])
+    }
     vw, vh = _VIEWPORT
     roster = _build_roster(report, perts_by_id, run_dir_path)
     for r in roster:
-        r["cursor"] = _cursor_path(r["trace"], vw, vh)
+        r["vw"], r["vh"] = viewport_by_id.get(r["persona_id"], (vw, vh))
+        r["cursor"] = _cursor_path(r["trace"], r["vw"], r["vh"])
 
     findings = build_findings(roster, insights or {}, vw, vh)
 
