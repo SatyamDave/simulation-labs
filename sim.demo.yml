@@ -6,7 +6,7 @@ version: 1
 flows:
   - name: signup
     url: http://localhost:8137/fixtures/demo_signup.html
-    task: "Create an account. Type a work email, type a password (8+ characters), then click the small checkbox to the left of 'I agree to the Terms of Service' so it becomes checked, and finally click 'Create account'. You are done only when the page shows the 'You're in!' confirmation. If an error says you must agree to the Terms, the checkbox is not checked yet — click the checkbox itself."
+    task: "Sign up for Nimbus: enter a work email and a password, tick the small 'I agree to the Terms' checkbox until it is checked, then click Create account. Done when you see 'You're in!'."
     fail_under: last-passing
     personas: [fluent, rushed, mobile-thumb, misclick-prone]
 
