@@ -9,7 +9,7 @@
   },
   "blur_sigma": 0.0,
   "downscale_factor": 1.0,
-  "tremor_sigma_px": 26.0,
+  "tremor_sigma_px": 22.0,
   "max_steps": 7,
   "deadline_s": 45.0,
   "literacy_note": "You are on a small phone screen using your thumb. Taps are imprecise, especially on small targets.",

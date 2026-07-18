@@ -16,14 +16,26 @@ imprecise click that lands beside it does nothing — exactly like a real fumble
 
 ## 2. Run the swarm
 ```bash
-set -a; . ./.env; set +a          # loads HAI_API_KEY (Holo) — or set GEMINI_API_KEY + MODEL_BACKEND=gemini
+set -a; . ./.env; set +a
+export MODEL_BACKEND=gemini                # hackathon requirement
 python -m ghostpanel.cli run --config sim.demo.yml --flow signup --out .demo
 ```
-- **Gemini (hackathon requirement):** `export MODEL_BACKEND=gemini GEMINI_API_KEY=…`
-  then run the same command. Same 0-1000 coord grid; the engine handles it.
-- Holo free tier is 5 RPM, so a 4-persona run takes ~10-15 min. Fine — you're
-  capturing `.webm` receipts, not recording live (never record live at 5 RPM;
-  the cursor looks frozen).
+**Gemini notes (verified live):**
+- Model: `gemini-3.5-flash` (pinned in `.env`; `gemini-2.5-flash` 404s for new
+  projects). Grounds the 0-1000 grid perfectly — engine handles denorm.
+- **Concurrency is capped at 2** (`GEMINI_MAX_CONCURRENCY`). The free tier drops
+  connections if all 5 personas call at once; the cap makes a full run stable.
+- **Free-tier quota:** a full 5-persona run + retries can exhaust the daily free
+  quota. If you hit `429 quota exceeded`, either (a) wait for the daily reset, or
+  (b) fund the project (Tier-1, pennies) and raise `GEMINI_RPM`/`GEMINI_MAX_CONCURRENCY`.
+- Verified working: `fluent`+`ai-agent` complete, `misclick-prone` abandons — on
+  `gemini-3.5-flash`. Saved footage: `.sim-deliverable-gemini/`.
+- Holo (`MODEL_BACKEND=holo`) is the quota-free fallback; the mechanism is
+  model-agnostic, so it produces identical footage for tuning.
+- **Run 2-3 times and keep the cleanest take** — tremor is a distribution; pick the
+  run where `misclick-prone` clears email+password and dies AT the consent checkbox.
+- Never record LIVE (steps are 5-25s; the cursor looks frozen). Capture `.webm`
+  receipts, then speed-ramp in the edit (see `VIDEO_EDIT_SCRIPT.md`).
 
 ## 3. What to verify in `.demo/<run_id>/insights.json`
 - `personas_succeeded >= 1` AND `personas_abandoned >= 1` (a **stepped** survival curve).
