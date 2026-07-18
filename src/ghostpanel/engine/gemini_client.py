@@ -21,7 +21,7 @@ from . import prompts
 from .holo_client import LiveHoloClient, _navigate_prompt
 
 DEFAULT_GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
 # Free-tier Flash allows ~10 RPM; raise GEMINI_RPM in .env on a paid tier.
 DEFAULT_GEMINI_RPM = 10.0
 
