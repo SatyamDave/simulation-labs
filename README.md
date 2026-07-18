@@ -109,5 +109,5 @@ python -m ghostpanel.benchmarks --live          # real Holo: completion rate, st
 React frontend. Verified live: real Holo drives real browsers (baseline persona completes the
 signup; impaired personas fail differentially at exact pixels), Gradium produces cloned-voice
 exit-interviews, and the full pipeline (POST → live WS grid → survival/heatmap report → video +
-audio artifacts) runs. Tests: **68 passing** (`pytest -q`). See **[DEMO_PLAYBOOK.md](DEMO_PLAYBOOK.md)**
+audio artifacts) runs. Tests: **400+ passing** (`pytest -q`). See **[DEMO_PLAYBOOK.md](DEMO_PLAYBOOK.md)**
 to run it and for the 90-second demo script. MIT licensed.

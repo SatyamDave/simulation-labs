@@ -143,6 +143,9 @@ async def test_start_run_falls_back_to_full_roster_for_unknown_ids(
     run_id = await swarm.start_run(target_url, "sign up", ["does-not-exist"])
     record = registry.get(run_id)
     await record.task_handle
-    # Unknown ids -> full roster (5 personas exist).
+    # Unknown ids -> full roster. Derive the expected count from the loader so
+    # this never drifts when the bundled persona roster changes.
+    from ghostpanel.engine.personas import load_personas
+
     assert record.report is not None
-    assert len(record.report.results) == 5
+    assert len(record.report.results) == len(load_personas(None))
