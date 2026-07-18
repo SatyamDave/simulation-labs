@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simulation Labs · Watch what your users actually do</title>
+<meta name="description" content="Five AI agents attempt one signup. Four finish. One — with a simulated hand tremor — can't tick the consent box and gives up. Watch the exact pixel where a real user quits." />
+<meta property="og:title" content="Simulation Labs · Live behavioral demo" />
+<meta property="og:description" content="Five AI agents attempt one signup. Watch the exact pixel where a real user gives up." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://simulationlabs.dev/demo/" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B0D11'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%234C8DFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg:#0B0D11; --surface:#14171D; --surface-2:#111318; --line:#242A33;
+    --text:#F3F5F8; --muted:rgba(243,245,248,.62); --dim:rgba(243,245,248,.40);
+    --accent:#4C8DFF; --accent-2:#7FA9FF; --accent-d:#2E68D8;
+    --ok:#28C840; --fail:#FF5F57; --warn:#FFB020;
+    --ui:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    background:radial-gradient(1200px 700px at 50% -10%, #12161d 0%, var(--bg) 55%) fixed;
+    color:var(--text); font-family:var(--ui); -webkit-font-smoothing:antialiased;
+    overflow-x:hidden; line-height:1.45;
+  }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 20px; }
+
+  /* ---- masthead ---- */
+  header{ padding:20px 0 8px; }
+  .brand{ display:flex; align-items:center; gap:9px; font-weight:600; letter-spacing:-.01em; font-size:1rem; }
+  .brand svg{ display:block; }
+  .brand .live{ margin-left:auto; font-family:var(--mono); font-size:.66rem; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--dim); display:flex; align-items:center; gap:7px; }
+  .brand .live i{ width:7px; height:7px; border-radius:50%; background:var(--fail); box-shadow:0 0 0 0 rgba(255,95,87,.6);
+    animation:beat 1.6s infinite; }
+  @keyframes beat{ 0%{box-shadow:0 0 0 0 rgba(255,95,87,.55)} 70%{box-shadow:0 0 0 7px rgba(255,95,87,0)} 100%{box-shadow:0 0 0 0 rgba(255,95,87,0)} }
+
+  /* ---- hero / intro ---- */
+  .hero{ text-align:center; padding:34px 0 10px; }
+  .kick{ font-family:var(--mono); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); }
+  h1{ font-size:clamp(1.9rem,5vw,3.1rem); line-height:1.05; letter-spacing:-.03em; margin:.35em 0 .3em; font-weight:650; }
+  h1 .say{ color:var(--dim); text-decoration:line-through; text-decoration-color:rgba(243,245,248,.25); }
+  h1 .do{ color:var(--accent); }
+  .sub{ color:var(--muted); max-width:60ch; margin:0 auto; font-size:1.02rem; }
+
+  /* ---- run button ---- */
+  .runbar{ display:flex; justify-content:center; gap:12px; margin:26px 0 8px; flex-wrap:wrap; }
+  .btn{ font-family:var(--ui); font-weight:600; font-size:.98rem; border:0; border-radius:11px;
+    padding:14px 26px; cursor:pointer; transition:transform .12s ease, box-shadow .2s ease, background .2s; }
+  .btn-run{ background:linear-gradient(180deg,var(--accent-2),var(--accent) 55%,var(--accent-d));
+    color:#fff; box-shadow:0 10px 30px rgba(76,141,255,.35); }
+  .btn-run:hover{ transform:translateY(-2px); box-shadow:0 16px 40px rgba(76,141,255,.5); }
+  .btn-run:active{ transform:translateY(0); }
+  .btn-run[disabled]{ opacity:.5; cursor:default; box-shadow:none; transform:none; }
+  .btn-ghost{ background:transparent; color:var(--muted); border:1px solid var(--line); }
+  .btn-ghost:hover{ color:var(--text); border-color:#3a424e; }
+
+  /* ---- stage ---- */
+  .stage-shell{ position:relative; margin:22px 0 8px; border:1px solid var(--line); border-radius:18px;
+    background:linear-gradient(180deg,#111621,#0d1119); overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.5); }
+  .stage-bar{ display:flex; align-items:center; gap:8px; padding:11px 15px; border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,.02); font-family:var(--mono); font-size:.72rem; color:var(--dim); }
+  .stage-bar .dots{ display:flex; gap:6px; }
+  .stage-bar .dots i{ width:11px; height:11px; border-radius:50%; background:#2a313b; }
+  .stage-bar .url{ margin-left:8px; color:var(--muted); }
+  .stage-bar .swarm-count{ margin-left:auto; display:flex; align-items:center; gap:8px; color:var(--muted); }
+  .stage-bar .swarm-count b{ color:var(--accent); }
+
+  .stage{ position:relative; min-height:520px; display:grid; place-items:center; padding:34px 16px; }
+  @media(max-width:640px){ .stage{ min-height:560px; } }
+
+  /* the signup card being attacked */
+  .form-card{ width:340px; max-width:92%; background:#fff; border-radius:14px; padding:24px 22px 20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45); color:#0f1222; position:relative; z-index:2;
+    transition:filter .5s ease, transform .5s ease; }
+  .form-card.dim{ filter:brightness(.5) saturate(.7); }
+  .fc-brand{ display:flex; align-items:center; gap:8px; margin-bottom:16px; font-weight:700; font-size:.98rem; }
+  .fc-brand .d{ width:20px; height:20px; border-radius:6px; background:linear-gradient(135deg,#5C98FF,#2E68D8); }
+  .fc-h{ font-size:1.15rem; font-weight:700; letter-spacing:-.01em; }
+  .fc-sub{ font-size:.78rem; color:#6b7280; margin:2px 0 16px; }
+  .fld{ margin-bottom:12px; }
+  .fld label{ display:block; font-size:.72rem; font-weight:600; color:#374151; margin-bottom:5px; }
+  .inp{ height:42px; border:1px solid #d5dae2; border-radius:9px; display:flex; align-items:center;
+    padding:0 12px; font-size:.86rem; color:#0f1222; background:#fff; transition:border-color .2s, box-shadow .2s; }
+  .inp.focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(76,141,255,.16); }
+  .inp .ph{ color:#9aa1ac; }
+  .inp .typed{ color:#0f1222; }
+  .inp .caret{ width:1.5px; height:17px; background:var(--accent); margin-left:1px; animation:blink 1s steps(1) infinite; }
+  @keyframes blink{ 50%{opacity:0} }
+  .consent{ display:flex; align-items:center; gap:10px; margin:6px 0 16px; }
+  .cbx{ width:24px; height:24px; flex:0 0 auto; border:1.6px solid #b7bfca; border-radius:6px; background:#fff;
+    display:grid; place-items:center; position:relative; transition:all .18s; }
+  .cbx.on{ background:var(--accent); border-color:var(--accent); }
+  .cbx svg{ width:15px; height:15px; opacity:0; transform:scale(.5); transition:.18s; }
+  .cbx.on svg{ opacity:1; transform:scale(1); }
+  .consent .ct{ font-size:.74rem; color:#4b5563; }
+  .consent .ct a{ color:#2E68D8; }
+  .cta-btn{ height:44px; border-radius:9px; background:var(--accent); color:#fff; font-weight:600; font-size:.9rem;
+    display:grid; place-items:center; transition:background .2s; }
+  .cbx.miss{ animation:cbxmiss .3s; }
+  @keyframes cbxmiss{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
+
+  /* success overlay on the card */
+  .fc-done{ position:absolute; inset:0; background:#fff; border-radius:14px; display:grid; place-items:center;
+    opacity:0; pointer-events:none; transition:opacity .4s; }
+  .fc-done.show{ opacity:1; }
+  .fc-done .ring{ width:54px; height:54px; border-radius:50%; background:#e7f6ec; color:#1a9c4b;
+    display:grid; place-items:center; font-size:1.7rem; margin-bottom:10px; }
+  .fc-done h3{ font-size:1.15rem; }
+
+  /* agent cursors */
+  .cursor{ position:absolute; z-index:5; width:150px; pointer-events:none; will-change:transform;
+    transition:transform 1.05s cubic-bezier(.5,.05,.2,1); }
+  .cursor .ptr{ position:relative; }
+  .cursor .ptr svg{ display:block; filter:drop-shadow(0 3px 6px rgba(0,0,0,.5)); }
+  .cursor .tag{ position:absolute; top:15px; left:14px; font-family:var(--mono); font-size:.6rem; font-weight:600;
+    white-space:nowrap; padding:2px 7px; border-radius:6px; color:#fff; letter-spacing:.02em; }
+  .cursor.tremor .ptr{ animation:shake .12s infinite; }
+  @keyframes shake{ 0%{transform:translate(0,0)} 25%{transform:translate(3px,-2px)} 50%{transform:translate(-3px,2px)}
+    75%{transform:translate(2px,3px)} 100%{transform:translate(-2px,-3px)} }
+  .cursor.click .ptr{ animation:tap .18s; }
+  @keyframes tap{ 50%{transform:scale(.8)} }
+  .ripple{ position:absolute; z-index:4; width:26px; height:26px; margin:-13px; border-radius:50%;
+    border:2px solid var(--accent); opacity:0; pointer-events:none; }
+  .ripple.go{ animation:rip .5s ease-out; }
+  .ripple.miss{ border-color:var(--fail); }
+  @keyframes rip{ 0%{opacity:.9; transform:scale(.4)} 100%{opacity:0; transform:scale(2.2)} }
+  .missx{ position:absolute; z-index:6; color:var(--fail); font-family:var(--mono); font-weight:700; font-size:1rem;
+    margin:-9px; opacity:0; pointer-events:none; text-shadow:0 2px 6px rgba(0,0,0,.6); }
+  .missx.show{ animation:misspop .5s forwards; }
+  @keyframes misspop{ 0%{opacity:0; transform:scale(2)} 30%{opacity:1; transform:scale(1)} 100%{opacity:1; transform:scale(1)} }
+
+  /* death marker */
+  .death{ position:absolute; z-index:7; pointer-events:none; opacity:0; }
+  .death.show{ opacity:1; transition:opacity .3s; }
+  .death .core{ width:16px; height:16px; margin:-8px; border-radius:50%; background:var(--fail);
+    box-shadow:0 0 0 0 rgba(255,95,87,.6); animation:beat 1.4s infinite; }
+  .death .cross{ position:absolute; left:8px; top:-9px; width:1px; height:70px; background:linear-gradient(var(--fail),transparent); }
+  .death .lbl{ position:absolute; left:16px; top:-6px; white-space:nowrap; font-family:var(--mono); font-size:.66rem;
+    color:var(--fail); background:rgba(20,10,12,.85); padding:3px 8px; border-radius:6px; border:1px solid rgba(255,95,87,.3); }
+
+  /* persona status chips (bottom of stage) */
+  .chips{ position:absolute; left:0; right:0; bottom:14px; display:flex; justify-content:center; gap:8px; flex-wrap:wrap; z-index:8; padding:0 12px; }
+  .chip{ display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:.68rem; color:var(--muted);
+    background:rgba(20,23,29,.8); border:1px solid var(--line); border-radius:20px; padding:5px 11px; backdrop-filter:blur(6px);
+    transition:all .3s; }
+  .chip .sw{ width:8px; height:8px; border-radius:50%; background:#3a424e; transition:.3s; }
+  .chip.run .sw{ background:var(--accent); animation:beat 1.2s infinite; }
+  .chip.ok{ color:#bfeccb; border-color:rgba(40,200,64,.35); } .chip.ok .sw{ background:var(--ok); }
+  .chip.dead{ color:#ffc4c1; border-color:rgba(255,95,87,.4); } .chip.dead .sw{ background:var(--fail); }
+
+  /* banners */
+  .banner{ position:absolute; z-index:9; left:50%; top:44%; transform:translate(-50%,-50%) scale(.9); text-align:center;
+    opacity:0; pointer-events:none; transition:all .45s cubic-bezier(.2,.8,.2,1); }
+  .banner.show{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .banner .big{ font-size:2.2rem; font-weight:750; letter-spacing:-.03em; }
+  .banner.gaveup .big{ color:var(--fail); text-shadow:0 4px 30px rgba(255,95,87,.4); }
+  .banner .small{ font-family:var(--mono); font-size:.8rem; color:var(--muted); margin-top:6px; }
+
+  /* ---- analytics reveal ---- */
+  .reveal{ opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in{ opacity:1; transform:none; }
+  .metrics{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);
+    border-radius:14px; overflow:hidden; margin:26px 0; }
+  @media(max-width:640px){ .metrics{ grid-template-columns:1fr; } }
+  .metric{ background:var(--surface); padding:22px 20px; }
+  .metric .n{ font-size:2.4rem; font-weight:750; letter-spacing:-.02em; line-height:1; }
+  .metric .n.blue{ color:var(--accent); } .metric .n.red{ color:var(--fail); } .metric .n.grn{ color:var(--ok); }
+  .metric .l{ font-size:.82rem; color:var(--muted); margin-top:8px; }
+
+  .panels{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:26px; }
+  @media(max-width:760px){ .panels{ grid-template-columns:1fr; } }
+  .panel{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 16px; }
+  .panel h4{ font-family:var(--mono); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:14px; }
+
+  /* heatmap mini */
+  .heat{ position:relative; height:150px; border-radius:10px; background:#0d1017; border:1px solid var(--line); overflow:hidden; }
+  .heat .grid{ position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px); background-size:24px 24px; }
+  .heat .blob{ position:absolute; width:90px; height:90px; margin:-45px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,95,87,.85), rgba(255,95,87,.25) 45%, transparent 70%);
+    opacity:0; transform:scale(.3); transition:opacity .8s, transform .8s; }
+  .heat.in .blob{ opacity:1; transform:scale(1); }
+  .heat .pin{ position:absolute; font-family:var(--mono); font-size:.6rem; color:#ffd9d6; white-space:nowrap; transform:translate(-50%,10px); }
+
+  /* survival curve */
+  .surv svg{ width:100%; height:150px; display:block; }
+  .surv .base{ stroke:var(--line); stroke-width:1; }
+  .surv .trace{ fill:none; stroke:var(--accent); stroke-width:2.5; stroke-linejoin:round;
+    stroke-dasharray:600; stroke-dashoffset:600; transition:stroke-dashoffset 1.4s ease .2s; }
+  .surv.in .trace{ stroke-dashoffset:0; }
+  .surv .drop{ fill:var(--fail); opacity:0; transition:opacity .4s 1.1s; } .surv.in .drop{ opacity:1; }
+  .surv .lbl{ font-family:var(--mono); font-size:8px; fill:var(--dim); }
+
+  /* gate terminal */
+  .term{ background:#0a0d12; border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:26px; }
+  .term-bar{ display:flex; align-items:center; gap:7px; padding:9px 13px; border-bottom:1px solid var(--line);
+    font-family:var(--mono); font-size:.68rem; color:var(--dim); }
+  .term-bar i{ width:10px; height:10px; border-radius:50%; } .term-bar .r{ background:#ff5f57 } .term-bar .y{ background:#febc2e } .term-bar .g{ background:#28c840 }
+  .term-body{ padding:16px 18px; font-family:var(--mono); font-size:.82rem; line-height:1.7; min-height:150px; }
+  .term-body .ln{ white-space:pre-wrap; opacity:0; }
+  .term-body .ln.in{ opacity:1; }
+  .term-body .c-p{ color:var(--accent-2); } .term-body .c-d{ color:var(--dim); } .term-body .c-ok{ color:var(--ok); }
+  .term-body .c-f{ color:var(--fail); font-weight:700; } .term-body .c-w{ color:var(--warn); }
+  .cursor-blink::after{ content:'▋'; color:var(--accent); animation:blink 1s steps(1) infinite; }
+
+  /* CTA */
+  .cta{ text-align:center; padding:20px 0 60px; }
+  .cta .line{ font-size:clamp(1.3rem,3.2vw,1.9rem); font-weight:650; letter-spacing:-.02em; }
+  .cta .line .do{ color:var(--accent); }
+  .cta .go{ display:inline-flex; align-items:center; gap:9px; margin-top:20px; background:var(--accent); color:#fff;
+    text-decoration:none; font-weight:600; padding:13px 24px; border-radius:11px; box-shadow:0 10px 30px rgba(76,141,255,.35);
+    transition:transform .12s, box-shadow .2s; }
+  .cta .go:hover{ transform:translateY(-2px); box-shadow:0 16px 40px rgba(76,141,255,.5); }
+  .cta .sub2{ color:var(--dim); font-family:var(--mono); font-size:.72rem; margin-top:16px; }
+
+  .foot{ border-top:1px solid var(--line); padding:20px 0; text-align:center; color:var(--dim);
+    font-family:var(--mono); font-size:.68rem; }
+  .foot a{ color:var(--muted); text-decoration:none; } .foot a:hover{ color:var(--text); }
+
+  @media(prefers-reduced-motion:reduce){ *{ animation:none!important; transition-duration:.01ms!important; } }
+</style>
+</head>
+<body>
+  <header><div class="wrap">
+    <div class="brand">
+      <svg width="26" height="16" viewBox="0 0 26 16" fill="none"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#4C8DFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Simulation Labs</span>
+      <span class="live"><i></i> live behavioral demo</span>
+    </div>
+  </div></header>
+
+  <main class="wrap">
+    <section class="hero">
+      <p class="kick">Behavioral tests, like unit tests</p>
+      <h1>They test what users <span class="say">say</span>.<br/>We test what they <span class="do">do</span>.</h1>
+      <p class="sub">Five AI agents attempt the same signup. Four finish. One — with a mechanically simulated hand tremor — can't tick the consent box and gives up. Watch the exact pixel where a real user quits.</p>
+    </section>
+
+    <div class="runbar">
+      <button class="btn btn-run" id="runBtn">▶ Run the swarm</button>
+      <button class="btn btn-ghost" id="replayBtn" style="display:none">↻ Replay</button>
+    </div>
+
+    <section class="stage-shell">
+      <div class="stage-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="url">app.nimbus.io/signup</span>
+        <span class="swarm-count"><b id="aliveN">5</b>&nbsp;<span id="aliveWord">agents</span> attempting the flow</span>
+      </div>
+      <div class="stage" id="stage">
+        <div class="form-card" id="card">
+          <div class="fc-brand"><span class="d"></span>Nimbus</div>
+          <div class="fc-h">Create your account</div>
+          <div class="fc-sub">Start your 14-day free trial. No card required.</div>
+          <div class="fld"><label>Work email</label><div class="inp" id="fEmail"><span class="ph">you@company.com</span></div></div>
+          <div class="fld"><label>Password</label><div class="inp" id="fPass"><span class="ph">At least 8 characters</span></div></div>
+          <div class="consent">
+            <div class="cbx" id="fCbx"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <span class="ct">I agree to the <a>Terms of Service</a> and <a>Privacy Policy</a>.</span>
+          </div>
+          <div class="cta-btn" id="fSubmit">Create account</div>
+          <div class="fc-done" id="fDone"><div style="text-align:center"><div class="ring">✓</div><h3>You're in!</h3></div></div>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="banner gaveup" id="banner"><div class="big">Gave up.</div><div class="small" id="bannerSub"></div></div>
+      </div>
+    </section>
+
+    <!-- analytics reveal -->
+    <section class="reveal" id="analytics">
+      <div class="metrics">
+        <div class="metric"><div class="n blue" id="mComp">0%</div><div class="l">of segments completed the signup</div></div>
+        <div class="metric"><div class="n grn" id="mScore">0</div><div class="l">Simulation Score / 100 — survival-weighted</div></div>
+        <div class="metric"><div class="n red">1</div><div class="l">segment abandoned at the consent checkbox</div></div>
+      </div>
+
+      <div class="panels">
+        <div class="panel">
+          <h4>Abandonment heatmap · where they die</h4>
+          <div class="heat" id="heat">
+            <div class="grid"></div>
+            <div class="blob" id="heatBlob"></div>
+            <div class="pin" id="heatPin">✕ (464, 494) · the 24px consent box</div>
+          </div>
+        </div>
+        <div class="panel">
+          <h4>Survival · agents still in the flow</h4>
+          <div class="surv" id="surv">
+            <svg viewBox="0 0 300 150" preserveAspectRatio="none">
+              <line class="base" x1="0" y1="120" x2="300" y2="120"/>
+              <path class="trace" d="M4,26 L150,26 L150,26 L210,26 L210,88 L296,88"/>
+              <circle class="drop" cx="210" cy="88" r="4"/>
+              <text class="lbl" x="6" y="20">5 alive</text>
+              <text class="lbl" x="296" y="104" text-anchor="end">4 survived</text>
+              <text class="lbl" x="214" y="82">misclick-prone ✕</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="term">
+        <div class="term-bar"><i class="r"></i><i class="y"></i><i class="g"></i><span style="margin-left:6px">simulationlabs/gate · CI</span></div>
+        <div class="term-body" id="term"></div>
+      </div>
+
+      <div class="cta">
+        <div class="line">Every tool tells you what users <span style="color:var(--dim)">say</span>. We film what they <span class="do">do</span>.</div>
+        <a class="go" href="https://simulationlabs.dev">See the full report & book a teardown →</a>
+        <div class="sub2">Behavioral tests, like unit tests — on every deploy. Built with Gemini 3.5.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot"><div class="wrap">
+    Simulation Labs · behavioral simulation · <a href="https://simulationlabs.dev/sample-report/">sample report</a> · <a href="https://simulationlabs.dev">simulationlabs.dev</a>
+  </div></footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var stage = document.getElementById('stage');
+  var card = document.getElementById('card');
+  var runBtn = document.getElementById('runBtn');
+  var replayBtn = document.getElementById('replayBtn');
+  var chipsEl = document.getElementById('chips');
+  var banner = document.getElementById('banner');
+  var bannerSub = document.getElementById('bannerSub');
+  var aliveN = document.getElementById('aliveN');
+
+  // Five agents. Colors + labels. misclick-prone is the star (tremor -> abandons).
+  var AGENTS = [
+    { id:'fluent',        name:'Fluent',        color:'#4C8DFF', outcome:'ok'   },
+    { id:'ai-agent',      name:'AI Agent',      color:'#22C1C3', outcome:'ok'   },
+    { id:'rushed',        name:'Rushed',        color:'#8B5CF6', outcome:'ok'   },
+    { id:'mobile-thumb',  name:'Mobile-thumb',  color:'#F59E0B', outcome:'ok'   },
+    { id:'misclick-prone',name:'Misclick-prone',color:'#FF5F57', outcome:'dead' }
+  ];
+
+  var sleep = function(ms){ return new Promise(function(r){ setTimeout(r, reduce?Math.min(ms,60):ms); }); };
+  function el(coords){ return document.getElementById(coords); }
+
+  // center of an element relative to the stage
+  function centerOf(node){
+    var s = stage.getBoundingClientRect(), r = node.getBoundingClientRect();
+    return { x: r.left - s.left + r.width/2, y: r.top - s.top + r.height/2 };
+  }
+  function pointOf(node, dx, dy){
+    var c = centerOf(node); return { x:c.x + (dx||0), y:c.y + (dy||0) };
+  }
+
+  // build cursor + chip per agent
+  var cursors = {}, chips = {};
+  function buildActors(){
+    chipsEl.innerHTML = '';
+    Object.keys(cursors).forEach(function(k){ if(cursors[k].node) cursors[k].node.remove(); });
+    cursors = {}; chips = {};
+    AGENTS.forEach(function(a, i){
+      var cur = document.createElement('div');
+      cur.className = 'cursor';
+      cur.innerHTML = '<div class="ptr"><svg viewBox="0 0 24 24" width="22" height="22">'+
+        '<path d="M3.5 2 L3.5 17 L7.4 13.3 L10.2 20 L12.7 19 L10 12.4 L15 12.4 Z" fill="'+a.color+'" stroke="#fff" stroke-width="1"/>'+
+        '</svg><span class="tag" style="background:'+a.color+'">'+a.name+'</span></div>';
+      // start off near the edges, staggered
+      var startX = [40, 300, 60, 320, 190][i];
+      var startY = [40, 60, 470, 450, 30][i];
+      cur.style.transform = 'translate('+startX+'px,'+startY+'px)';
+      cur.style.opacity = '0';
+      stage.appendChild(cur);
+      cursors[a.id] = { node:cur, x:startX, y:startY };
+
+      var chip = document.createElement('div');
+      chip.className = 'chip'; chip.id = 'chip-'+a.id;
+      chip.innerHTML = '<span class="sw"></span>'+a.name;
+      chipsEl.appendChild(chip);
+      chips[a.id] = chip;
+    });
+  }
+
+  function moveCursor(id, pt, ms){
+    var c = cursors[id]; if(!c) return Promise.resolve();
+    c.node.style.transition = 'transform '+((reduce?60:ms)/1000)+'s cubic-bezier(.5,.05,.2,1), opacity .3s';
+    c.node.style.opacity = '1';
+    c.node.style.transform = 'translate('+(pt.x-8)+'px,'+(pt.y-4)+'px)';
+    c.x = pt.x; c.y = pt.y;
+    return sleep(ms);
+  }
+  function tremorOn(id){ if(cursors[id]) cursors[id].node.classList.add('tremor'); }
+  function tremorOff(id){ if(cursors[id]) cursors[id].node.classList.remove('tremor'); }
+  function fadeCursor(id){ var c=cursors[id]; if(c){ c.node.style.transition='opacity .5s, transform 1s'; c.node.style.opacity='0'; } }
+
+  function clickFX(id, hit){
+    var c = cursors[id]; if(!c) return;
+    c.node.classList.remove('click'); void c.node.offsetWidth; c.node.classList.add('click');
+    var rip = document.createElement('div');
+    rip.className = 'ripple go'+(hit?'':' miss');
+    rip.style.left = c.x+'px'; rip.style.top = c.y+'px';
+    if(!hit) rip.style.borderColor = 'var(--fail)';
+    stage.appendChild(rip); setTimeout(function(){ rip.remove(); }, 600);
+    if(!hit){
+      var x = document.createElement('div'); x.className = 'missx show'; x.textContent = '✕';
+      x.style.left = c.x+'px'; x.style.top = c.y+'px'; stage.appendChild(x);
+      setTimeout(function(){ x.remove(); }, 1400);
+    }
+  }
+
+  function setChip(id, cls){ var ch = chips[id]; if(ch){ ch.className = 'chip '+cls; } }
+
+  function typeInto(inpId, text, focusFirst){
+    var inp = el(inpId);
+    if(focusFirst) inp.classList.add('focus');
+    inp.innerHTML = '<span class="typed"></span><span class="caret"></span>';
+    var t = inp.querySelector('.typed');
+    return new Promise(function(resolve){
+      var i = 0;
+      var iv = setInterval(function(){
+        i++; t.textContent = text.slice(0,i);
+        if(i>=text.length){ clearInterval(iv); resolve(); }
+      }, reduce?4:38);
+    });
+  }
+  function unfocus(inpId){ el(inpId).classList.remove('focus'); }
+
+  // ---- the choreographed run ----
+  var running = false;
+  async function run(){
+    if(running) return; running = true;
+    runBtn.disabled = true; runBtn.textContent = '● Swarm running…';
+    resetVisuals(); buildActors();
+    await sleep(300);
+
+    // fade agents in
+    AGENTS.forEach(function(a){ cursors[a.id].node.style.opacity='1'; setChip(a.id,'run'); });
+    await sleep(500);
+
+    var email = pointOf(el('fEmail'));
+    var pass  = pointOf(el('fPass'));
+    var cbx   = pointOf(el('fCbx'));
+    var submit= pointOf(el('fSubmit'));
+
+    // The 4 healthy agents complete (staggered, quick). We animate the "representative"
+    // fluent one on the real form; the others just resolve on their chips for legibility.
+    var healthy = ['fluent','ai-agent','rushed','mobile-thumb'];
+
+    // Fluent drives the visible form.
+    await moveCursor('fluent', email, 700);
+    clickFX('fluent', true); el('fEmail').classList.add('focus');
+    await typeInto('fEmail','founder@acme.com', true);
+    unfocus('fEmail');
+    await moveCursor('fluent', pass, 650);
+    clickFX('fluent', true);
+    await typeInto('fPass','••••••••••', true);
+    unfocus('fPass');
+    await moveCursor('fluent', cbx, 600);
+    clickFX('fluent', true);
+    el('fCbx').classList.add('on');
+    await sleep(300);
+    await moveCursor('fluent', submit, 550);
+    clickFX('fluent', true);
+    await sleep(250);
+    el('fDone').classList.add('show');
+    setChip('fluent','ok'); fadeCursor('fluent');
+    // other 3 healthy resolve shortly after, then their cursors leave the stage
+    for(var h=1; h<healthy.length; h++){
+      (function(hid, delay){ setTimeout(function(){ setChip(hid,'ok'); fadeCursor(hid); }, delay); })(healthy[h], 250*h);
+    }
+    await sleep(900);
+
+    // hide the success overlay so the tremor agent attacks the SAME form live
+    el('fDone').classList.remove('show');
+    el('fCbx').classList.remove('on');
+    el('fEmail').innerHTML = '<span class="ph">you@company.com</span>';
+    el('fPass').innerHTML = '<span class="ph">At least 8 characters</span>';
+
+    // ---- THE MONEY SHOT: misclick-prone ----
+    var mid = 'misclick-prone';
+    tremorOn(mid);
+    // clears email + password (fields are big enough)
+    await moveCursor(mid, jitter(email,10), 800);
+    clickFX(mid, true); el('fEmail').classList.add('focus');
+    await typeInto('fEmail','user@company.com', true); unfocus('fEmail');
+    await moveCursor(mid, jitter(pass,10), 650);
+    clickFX(mid, true);
+    await typeInto('fPass','••••••••••', true); unfocus('fPass');
+
+    // now the 24px checkbox — tremor makes it miss, repeatedly
+    aliveN.textContent = '1'; document.getElementById('aliveWord').textContent = 'agent';
+    for(var attempt=0; attempt<3; attempt++){
+      await moveCursor(mid, jitter(cbx, 22+attempt*4), 480);
+      clickFX(mid, false);            // MISS
+      el('fCbx').classList.add('miss'); setTimeout(function(){ el('fCbx').classList.remove('miss'); }, 300);
+      await sleep(360);
+    }
+    // one last desperate stab, then gives up
+    await moveCursor(mid, jitter(cbx, 26), 420);
+    clickFX(mid, false);
+    tremorOff(mid);
+    await sleep(300);
+
+    // death marker at the checkbox
+    var death = document.createElement('div');
+    death.className = 'death'; death.style.left = cbx.x+'px'; death.style.top = cbx.y+'px';
+    death.innerHTML = '<div class="core"></div><div class="cross"></div><div class="lbl">gave up @ (464, 494)</div>';
+    stage.appendChild(death); void death.offsetWidth; death.classList.add('show');
+    setChip(mid,'dead');
+
+    // banner
+    bannerSub.textContent = '1 of 5 segments · abandoned at the 24px consent checkbox';
+    banner.classList.add('show');
+    card.classList.add('dim');
+    await sleep(1600);
+    banner.classList.remove('show');
+
+    // ---- reveal analytics ----
+    document.getElementById('analytics').classList.add('in');
+    await sleep(250);
+    animateNumber('mComp', 0, 80, 900, '%');
+    animateNumber('mScore', 0, 88, 1100, '');
+    el('heat').classList.add('in');
+    positionHeat(cbx);
+    el('surv').classList.add('in');
+    await sleep(700);
+    typeTerminal();
+
+    runBtn.textContent = '▶ Run the swarm';
+    runBtn.disabled = false; runBtn.style.display='none';
+    replayBtn.style.display='inline-block';
+    running = false;
+  }
+
+  function jitter(pt, mag){ return { x: pt.x + (Math.random()*2-1)*mag, y: pt.y + (Math.random()*2-1)*mag }; }
+
+  var aliveCount = 5;
+  function bumpAlive(){ /* healthy resolves keep count visually at 5 until the tremor fails */ }
+
+  function positionHeat(cbx){
+    // place the blob where the checkbox sits, proportionally, inside the mini heat panel
+    var heat = el('heat'), blob = el('heatBlob'), pin = el('heatPin');
+    var fx = 0.30, fy = 0.68; // checkbox is lower-left of the card
+    blob.style.left = (fx*100)+'%'; blob.style.top = (fy*100)+'%';
+    pin.style.left = (fx*100)+'%'; pin.style.top = (fy*100+3)+'%';
+  }
+
+  function animateNumber(id, from, to, ms, suffix){
+    var node = el(id); var start = null;
+    function step(ts){ if(!start) start = ts; var p = Math.min((ts-start)/ms,1);
+      var e = 1-Math.pow(1-p,3);
+      node.textContent = Math.round(from+(to-from)*e)+suffix;
+      if(p<1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
+
+  var TERM_LINES = [
+    ['c-p','$ '],['','sim gate --flow signup --fail-under last-passing\n'],
+    ['c-d','  running behavioral swarm · 5 segments · Gemini 3.5 Flash …\n'],
+    ['c-ok','  ✓ functional: fluent + ai-agent completed → flow is healthy\n'],
+    ['c-w','  ⚠ behavioral: completion 80% < last-passing 100%\n'],
+    ['c-d','    misclick-prone abandoned @ (464,494) — the 24px consent box\n'],
+    ['c-f','\n  ❌ BEHAVIORAL REGRESSION — merge blocked (exit 1)\n'],
+    ['c-d','  → behavioral tests, like unit tests. on every deploy.\n']
+  ];
+  function typeTerminal(){
+    var term = el('term'); term.innerHTML='';
+    var li = 0;
+    function nextLine(){
+      if(li>=TERM_LINES.length){ term.classList.remove('cursor-blink'); return; }
+      var span = document.createElement('span');
+      span.className = 'ln in '+TERM_LINES[li][0];
+      term.appendChild(span);
+      var txt = TERM_LINES[li][1], ci=0;
+      var iv = setInterval(function(){
+        ci++; span.textContent = txt.slice(0,ci);
+        if(ci>=txt.length){ clearInterval(iv); li++; setTimeout(nextLine, 180); }
+      }, reduce?3:16);
+    }
+    term.classList.add('cursor-blink');
+    nextLine();
+  }
+
+  function resetVisuals(){
+    el('fDone').classList.remove('show'); el('fCbx').classList.remove('on');
+    el('fEmail').innerHTML = '<span class="ph">you@company.com</span>';
+    el('fPass').innerHTML = '<span class="ph">At least 8 characters</span>';
+    card.classList.remove('dim'); banner.classList.remove('show');
+    aliveN.textContent = '5'; var aw=document.getElementById('aliveWord'); if(aw) aw.textContent='agents';
+    document.getElementById('analytics').classList.remove('in');
+    el('heat').classList.remove('in'); el('surv').classList.remove('in');
+    el('mComp').textContent='0%'; el('mScore').textContent='0'; el('term').innerHTML='';
+    Array.prototype.forEach.call(stage.querySelectorAll('.death,.missx,.ripple'), function(n){ n.remove(); });
+  }
+
+  runBtn.addEventListener('click', run);
+  replayBtn.addEventListener('click', function(){ replayBtn.style.display='none'; runBtn.style.display='inline-block'; run(); });
+})();
+</script>
+</body>
+</html>
