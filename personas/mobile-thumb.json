@@ -1,14 +1,20 @@
 {
   "id": "mobile-thumb",
   "name": "Mobile-thumb",
-  "blurb": "On a phone, tapping with a thumb — small viewport, fat-finger taps miss small targets.",
+  "blurb": "On a phone, tapping with a thumb \u2014 small viewport, fat-finger taps miss small targets.",
   "language": "en",
-  "viewport": { "width": 390, "height": 844 },
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
   "blur_sigma": 0.0,
   "downscale_factor": 1.0,
-  "tremor_sigma_px": 10.0,
-  "max_steps": 20,
-  "deadline_s": 120.0,
+  "tremor_sigma_px": 16.0,
+  "max_steps": 14,
+  "deadline_s": 90.0,
   "literacy_note": "You are on a small phone screen using your thumb. Taps are imprecise, especially on small targets.",
-  "active_perturbations": ["small_viewport", "tremor"]
+  "active_perturbations": [
+    "small_viewport",
+    "tremor"
+  ]
 }

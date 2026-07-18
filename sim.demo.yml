@@ -1,0 +1,25 @@
+# sim.demo.yml — hackathon demo: a normal-looking signup where degraded
+# human segments fail on a 15px "agree to terms" checkbox while a fluent
+# agent completes it. Served locally over HTTP (see docs/gtm/DEMO_RUN.md).
+version: 1
+
+flows:
+  - name: signup
+    url: http://localhost:8137/fixtures/demo_signup.html
+    task: "Create an account. Type a work email, type a password (8+ characters), then click the small checkbox to the left of 'I agree to the Terms of Service' so it becomes checked, and finally click 'Create account'. You are done only when the page shows the 'You're in!' confirmation. If an error says you must agree to the Terms, the checkbox is not checked yet — click the checkbox itself."
+    fail_under: last-passing
+    personas: [fluent, rushed, mobile-thumb, misclick-prone]
+
+icp:
+  personas: [fluent, rushed, mobile-thumb, misclick-prone]
+
+swarm:
+  rpm: 5
+  max_personas: 6
+
+output:
+  dir: .demo
+
+safety:
+  allow_private: true      # localhost demo target
+  allowlist: [localhost, 127.0.0.1]
