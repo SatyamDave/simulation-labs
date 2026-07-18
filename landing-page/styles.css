@@ -1018,6 +1018,28 @@ body.tour-on .tour-ov,body.tour-on .tour-spot,body.tour-on .tour-cur,body.tour-o
 .dp2__card .apply-form .field span{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.42rem}
 .dp2__cardfine{font-family:var(--mono);font-size:.66rem;color:var(--dim);margin:14px 0 0;line-height:1.5}
 @media(max-width:600px){.dp2__cardbar{flex-wrap:wrap;gap:10px}.dp2__bars{display:none}.dp2__code{white-space:normal}}
+/* ===== THE FIELD · category comparison ===== */
+.fieldcmp{background:var(--bg-alt)}
+.fieldcmp__in{max-width:1080px;margin:0 auto;padding:88px 24px}
+.cmp{border:1px solid var(--rule);background:var(--rule);display:grid;gap:1px}
+.cmp__row{display:grid;grid-template-columns:1fr;gap:4px 18px;background:var(--surface);padding:14px 18px}
+@media(min-width:820px){.cmp__row{grid-template-columns:180px 1fr 1fr;align-items:baseline}}
+.cmp__row--head{display:none;background:var(--surface-2);padding:9px 18px}
+@media(min-width:820px){.cmp__row--head{display:grid}}
+.cmp__row--head span{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.cmp__n{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
+.cmp__row>span:not(.cmp__n){font-family:var(--ui);font-size:.9rem;line-height:1.5;color:var(--muted)}
+.cmp__miss{color:var(--dim)}
+.cmp__miss::before{content:"\2715\00a0\00a0";color:var(--fail);font-family:var(--mono);font-size:.8em}
+.cmp__win::before{content:"\2713\00a0\00a0";color:var(--ok);font-family:var(--mono);font-size:.8em}
+.cmp__row--us{box-shadow:inset 3px 0 0 0 var(--accent);background:linear-gradient(90deg,rgba(76,141,255,.08),transparent 55%),var(--surface)}
+.cmp__row--us .cmp__n{color:var(--accent)}
+.cmp__row--us>span:not(.cmp__n){color:var(--text)}
+.fieldcmp .v-foot{margin-top:26px}
+/* reference tier — real but dimmed, the anchor we beat */
+.tier--ref{opacity:.72}
+.tier--ref .tier__p{text-decoration:line-through;text-decoration-color:var(--fail);text-decoration-thickness:2px}
+.tier--ref .tier__p i{display:inline-block;text-decoration:none}
 body.tour-on .agentnarr{opacity:0}
 body.tour-on .guide{opacity:.2;pointer-events:none}
 @media(max-width:640px){.tour-cur{display:none}.tour-tip{width:calc(100vw - 24px)}}

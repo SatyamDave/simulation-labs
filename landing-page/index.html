@@ -4,13 +4,13 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Simulation Labs · Find Where Users Abandon</title>
-<meta name="description" content="Simulation Labs runs ICP-calibrated computer-use agents against your real flows to find the exact pixel where users give up. Simulate what users do, not what they say." />
+<meta name="description" content="Simulation Labs runs ICP-calibrated computer-use agents against your real flows and films the exact pixel where users give up. Evidence, not opinions — what users do, not what they say." />
 <link rel="canonical" href="https://satyamdave.github.io/simulation-labs/" />
 <meta name="robots" content="index, follow, max-image-preview:large" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://satyamdave.github.io/simulation-labs/" />
 <meta property="og:title" content="Simulation Labs · Find Where Users Abandon" />
-<meta property="og:description" content="ICP-calibrated computer-use agents run your real flows and record the exact pixel where users give up. Simulate what users do, not what they say." />
+<meta property="og:description" content="ICP-calibrated computer-use agents run your real flows and film the exact pixel where users give up. Evidence, not opinions — what users do, not what they say." />
 <meta property="og:image" content="https://satyamdave.github.io/simulation-labs/og.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
@@ -109,6 +109,49 @@
         </div>
         <p class="v-note">Illustrative. A representative say-vs-do comparison, not a recorded customer run.</p>
         <p class="v-foot">Every survey-persona tool can only show you the left. We show you the&nbsp;right.</p>
+      </div>
+    </section>
+
+    <!-- ===== THE FIELD · everyone else stops before the click ===== -->
+    <section class="fieldcmp" id="field" data-tour="The rest of the field">
+      <div class="fieldcmp__in">
+        <div class="v-head"><span class="sect__k">The rest of the field</span><h2>Everyone else stops before the click.</h2></div>
+        <div class="cmp reveal" role="table" aria-label="How Simulation Labs compares to other approaches">
+          <div class="cmp__row cmp__row--head" role="row">
+            <span role="columnheader">approach</span><span role="columnheader">what it gives you</span><span role="columnheader">what it can't</span>
+          </div>
+          <div class="cmp__row" role="row">
+            <span class="cmp__n" role="cell">Survey personas</span>
+            <span role="cell">An LLM persona answers questions about your flow.</span>
+            <span class="cmp__miss" role="cell">Words. ~11.86% fidelity to the person it stands in for.</span>
+          </div>
+          <div class="cmp__row" role="row">
+            <span class="cmp__n" role="cell">Attention heatmaps</span>
+            <span role="cell">A model predicts where eyes land on a screenshot.</span>
+            <span class="cmp__miss" role="cell">A first-glance guess. Nothing ever clicks anything.</span>
+          </div>
+          <div class="cmp__row" role="row">
+            <span class="cmp__n" role="cell">AI feedback testers</span>
+            <span role="cell">An agent browses your flow and writes up opinions.</span>
+            <span class="cmp__miss" role="cell">Feedback you can't reproduce, rank, or take into sprint planning.</span>
+          </div>
+          <div class="cmp__row" role="row">
+            <span class="cmp__n" role="cell">Behavior prediction</span>
+            <span role="cell">ML fit to your analytics forecasts where users may drop.</span>
+            <span class="cmp__miss" role="cell">Needs months of your data &mdash; to predict your past.</span>
+          </div>
+          <div class="cmp__row" role="row">
+            <span class="cmp__n" role="cell">Session analytics</span>
+            <span role="cell">Where real users actually dropped off.</span>
+            <span class="cmp__miss" role="cell">After they churned. Where &mdash; never why.</span>
+          </div>
+          <div class="cmp__row cmp__row--us" role="row">
+            <span class="cmp__n" role="cell">Behavioral swarm</span>
+            <span role="cell">Degraded agents attempt your flow under measured limits.</span>
+            <span class="cmp__win" role="cell">The exact abandonment pixel, on video, reproducible run-for-run.</span>
+          </div>
+        </div>
+        <p class="v-foot">Everything else answers &ldquo;what might be wrong?&rdquo; The report answers &ldquo;here&rsquo;s where they gave up &mdash; <span class="solid">watch</span>.&rdquo;</p>
       </div>
     </section>
 
@@ -234,7 +277,7 @@
       <div class="sect__in">
         <div class="sect__label"><span class="sect__k">The offer</span><h2>One flow. One report. About a week.</h2></div>
         <div class="sect__body">
-          <p class="prose" style="color:var(--muted);max-width:56ch;margin-bottom:1.6em">You pick one flow that matters. We tune the persona swarm to how your real segments behave, run it against your live flow, and deliver a report: the 2&ndash;3 findings that matter, the abandonment heatmap, the survival curve, and cursor-path videos of exactly where each segment gave up. Run by hand, delivered in about a week.</p>
+          <p class="prose" style="color:var(--muted);max-width:56ch;margin-bottom:1.6em">You pick one flow that matters. We tune the persona swarm to how your real segments behave, run it against your live flow, and deliver a report: the 2&ndash;3 findings that matter, the abandonment heatmap, the survival curve, and cursor-path videos of exactly where each segment gave up. Run by hand, delivered in about a week. No SDK, no analytics hookup, no waitlist &mdash; you send a URL, you get back receipts.</p>
           <div class="qa-grid reveal">
             <div class="qa-card is-primary">
               <span class="qa-k"><i aria-hidden="true"></i>Flow audit · start here</span>
@@ -272,6 +315,10 @@
             <div class="tier">
               <span class="tier__n">CI gate</span><span class="tier__p">Coming</span>
               <span class="tier__d">Self-serve behavioral tests in CI &mdash; built after the founding cohort, from what we learn.</span>
+            </div>
+            <div class="tier tier--ref">
+              <span class="tier__n">For reference: agency CRO audit</span><span class="tier__p">$8&ndash;25k<i>/engagement</i></span>
+              <span class="tier__d">Four to six weeks of heuristic review and interviews. Thorough &mdash; and priced, paced, and formatted for enterprises.</span>
             </div>
           </div>
           <p class="tiers__fine">Right now every audit is run by hand &mdash; no login, no dashboard. You email us, we run it, you get the report.</p>
@@ -362,6 +409,10 @@ coords       : model emits 0..1000 normalized; denormalized to true viewport px;
 output       : survival_curve, abandonment_heatmap, per_persona_stats, score[0..100],
                video_receipts, cloned_voice_exit_interviews
 semantics    : rank-order signal / evidence-of-risk. NOT a forecast, NOT a conformance verdict
+vs_field     : survey_personas(words, ~11.86% fidelity) · attention_heatmaps(first-glance guess)
+               · ai_feedback_testers(opinions, non-reproducible) · analytics_prediction(needs
+               customer data, models the past) · us: agents ATTEMPT the flow -> reproducible
+               abandonment_pixel + video_receipt
 stack        : Holo(holo3-1-35b-a3b) · Playwright · Gradium(voice) · Claude(optional narration)
                · NVIDIA NemoClaw(network policy)
 evidence     : prompted-persona fidelity ~11.86%  [arXiv:2503.20749]

@@ -12,6 +12,13 @@
 - output: survival_curve, abandonment_heatmap, per_persona_stats, score[0..100], video_receipts, cloned_voice_exit_interviews
 - semantics: rank-order signal / evidence-of-risk; NOT a forecast, NOT a conformance verdict
 
+## Vs the field
+- survey_personas: words about your flow, ~11.86% fidelity (arXiv:2503.20749)
+- attention_heatmaps: first-glance prediction on a screenshot; nothing clicks anything
+- ai_feedback_testers: an agent browses and opines; non-reproducible feedback
+- analytics_prediction: ML on your usage data; needs your data, models the past
+- us: mechanically degraded agents ATTEMPT the flow -> reproducible abandonment pixel + video receipt
+
 ## Evidence
 - prompted-persona fidelity ~11.86% (arXiv:2503.20749)
 - tremor sigma=14px miss-rate: 60.9%@24px, 20.5%@44px, <5%@>=62px (offline Monte-Carlo, 20k trials/cell, illustrative)
@@ -21,16 +28,16 @@
 - Holo (holo3-1-35b-a3b), Playwright, Gradium (voice), Claude (optional narration), NVIDIA NemoClaw (network policy)
 
 ## Triggers
-- ci_cd_gate (regression vs last-passing) [primary wedge: gate every deploy]
-- on_demand_audit (manual swarm run + report, for growth/product)
-- mcp_skill (mid-session, called by a coding agent) [next]
+- on_demand_audit (one flow, manual swarm run + report) [primary, current phase]
+- ci_cd_gate (regression vs last-passing) [planned, after founding cohort]
+- mcp_skill (mid-session, called by a coding agent) [planned]
 
 ## Pricing
-- Free: $0, CI gate on public repos, one flow (for open source)
-- Team: $49/seat/mo, CI gate on private repos, multiple flows, ICP tuning
-- Audit: $5-15k/run, full manual swarm run + report (growth/product)
+- Flow Audit: $1.5-3k/flow (founding rate, Cohort 01), run by hand, full report in ~1 week
+- Reference anchor: typical agency CRO audit is $8-25k and 4-6 weeks
+- CI gate: coming (self-serve, built after the founding cohort)
 - Design partners get founding-partner terms. MIT-licensed; degradation primitives open-sourced.
 
 ## Contact
-- Apply for design-partner access: satyam@agentmade.ai
+- Book a founding audit: satyam@agentmade.ai · https://cal.com/satyamdave-simulation/30min
 - Repo: https://github.com/SatyamDave/simulation-labs
