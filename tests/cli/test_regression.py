@@ -154,3 +154,27 @@ def test_functional_dimension_absent_without_probe_ids():
     res = compare(cur, None, fail_under="last-passing")
     assert res.functional_ok is None
     assert res.passed is True  # first run seeds baseline
+
+
+def test_errored_probe_is_not_functional_fail():
+    """An infra ERROR on the only probe must NOT read as 'flow broken'."""
+    from ghostpanel.cli.regression import compare
+    from ghostpanel_contracts import PersonaOutcome, RunReport, SurvivalPoint
+
+    cur = RunReport(
+        run_id="r", target_url="x", task="t",
+        survival=[
+            SurvivalPoint(persona_id="fluent", persona_name="Fluent",
+                          outcome=PersonaOutcome.ERROR, steps_survived=0, completed=False),
+            SurvivalPoint(persona_id="misclick-prone", persona_name="Misclick-prone",
+                          outcome=PersonaOutcome.STUCK, steps_survived=3, completed=False),
+        ],
+        completion_rate=0.0,
+    )
+    res = compare(cur, None, fail_under="last-passing",
+                  functional_persona_ids={"fluent"})
+    # fluent errored (infra), so functional dimension is unknown -> NOT functional_fail;
+    # falls through to first-run seeding (pass).
+    assert res.functional_ok is None
+    assert res.verdict != "functional_fail"
+    assert res.passed is True

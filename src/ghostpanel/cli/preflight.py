@@ -134,6 +134,34 @@ def check_reachable(url: str) -> None:
         ) from exc
 
 
+def check_local_server_up(url: str, allow_private: bool) -> None:
+    """For an explicitly opted-in LOOPBACK target, fail fast if nothing is
+    listening on its port.
+
+    DNS always resolves localhost/127.0.0.1, so `check_reachable` can't catch a
+    forgotten ``python -m http.server`` — every persona would then ERROR on
+    page.goto mid-run. A TCP connect is normally an SSRF vector, but here it is
+    safe: it only runs when the operator set ``allow_private: true`` AND the host
+    is loopback (the demo case), never against arbitrary/remote targets."""
+    if not allow_private:
+        return
+    parts = urlsplit(url)
+    host = parts.hostname
+    if host not in ("localhost", "127.0.0.1", "::1"):
+        return
+    port = parts.port or (443 if parts.scheme == "https" else 80)
+    try:
+        with socket.create_connection((host, port), timeout=1.5):
+            return
+    except OSError as exc:
+        raise PreflightError(
+            f"demo server not reachable on {host}:{port} — is it running? "
+            f"Start it with `python -m http.server {port}` from the repo root, "
+            f"then re-run.",
+            exit_codes.UNREACHABLE_URL,
+        ) from exc
+
+
 def check_model_key() -> None:
     """Fail if a live model backend is selected but its API key is missing.
 
@@ -172,6 +200,9 @@ def run_preflight(params: "_RunParams") -> None:
     safety.assert_url_allowed(
         params.url, allow_private=params.allow_private, allowlist=params.allowlist
     )
+    # Only after the SSRF guard has OK'd an explicitly-allowed loopback target do
+    # we probe that the demo server is actually up (safe: opted-in loopback only).
+    check_local_server_up(params.url, params.allow_private)
     check_model_key()
 
 

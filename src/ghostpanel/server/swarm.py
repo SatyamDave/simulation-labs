@@ -62,20 +62,29 @@ def _default_runner_factory(
 
 
 def _default_predicate_factory(target_url: str) -> Optional[Callable]:
-    """The bundled demo pages declare success when ``#ok`` becomes visible.
+    """The bundled demo pages declare success when a success element renders.
 
-    Applies to hostile_form.html (and the fixed variant via ``?as=``) and
-    payment_form.html — where the predicate is what stops a policy-caged
-    persona from claiming success on a payment that never left the machine."""
+    hostile_form.html (and the fixed variant via ``?as=``) and payment_form.html
+    reveal ``#ok``; demo_signup.html reveals ``#done`` ("You're in!"). The
+    predicate is page-VERIFIED success: it stops a policy-caged persona from
+    claiming a payment that never left the machine, AND — critically for the
+    signup demo — it makes the undegraded probe's completion depend on the page
+    actually reaching the confirmation, not on the model volunteering answer().
+    A persona that hallucinates answer() before the page is done does NOT pass."""
     # Match on the path OR the raw URL — the fixed-form rerun opts in via a
     # ``?as=hostile_form.html`` query suffix (http.server ignores the query).
     path = target_url.split("?", 1)[0].rstrip("/")
-    if any(c.endswith(("hostile_form.html", "payment_form.html"))
-           for c in (path, target_url.rstrip("/"))):
+    candidates = (path, target_url.rstrip("/"))
+    if any(c.endswith(("hostile_form.html", "payment_form.html")) for c in candidates):
         async def _ok(page) -> bool:  # noqa: ANN001
             return await page.locator("#ok").is_visible()
 
         return _ok
+    if any(c.endswith("demo_signup.html") for c in candidates):
+        async def _done(page) -> bool:  # noqa: ANN001
+            return await page.locator("#done").is_visible()
+
+        return _done
     return None
 
 

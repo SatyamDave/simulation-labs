@@ -331,6 +331,13 @@ def _png_size(image_png: bytes) -> tuple[int, int]:
 class LiveHoloClient:
     """Real Holo Models client (OpenAI-compatible). Satisfies HoloClient."""
 
+    # This client returns coords expressed relative to the IMAGE it was sent
+    # (0-1000 grid over the sent frame), so the agent may downscale the frame for
+    # transport and must scale the returned coords back up. Backends that return
+    # TRUE viewport pixels (Fake/Echo) leave this False so the agent sends the
+    # frame at full size and executes their coords verbatim — no double-scaling.
+    coords_relative_to_sent_image = True
+
     def __init__(
         self,
         api_key: str,

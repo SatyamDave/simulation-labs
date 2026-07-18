@@ -71,9 +71,15 @@ class HoloPersonaAgent:
 
     async def decide(self, obs: Observation, history: list[str]) -> Action:
         # 1. Degrade the screenshot (same dimensions out), then shrink the frame
-        #    for transport — fewer vision tokens, faster inference.
+        #    for transport — fewer vision tokens, faster inference. Only backends
+        #    whose coords are relative to the SENT image (Holo/Gemini) get the
+        #    downscale + later scale-back; Fake/Echo return true viewport pixels,
+        #    so we send full-size (scale=1.0) and never divide their coords.
         degraded = perceive(obs.raw_png, self.persona)
-        send_png, scale = transport_downscale(degraded, self._transport_max_w)
+        if getattr(self.holo, "coords_relative_to_sent_image", False):
+            send_png, scale = transport_downscale(degraded, self._transport_max_w)
+        else:
+            send_png, scale = degraded, 1.0
 
         # 2. Ask Holo for the next action (coords in sent-image pixels).
         # The current URL rides in the task text (navigate() has no page argument)

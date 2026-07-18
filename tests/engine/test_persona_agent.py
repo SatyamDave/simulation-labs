@@ -120,9 +120,34 @@ def test_transport_downscale_shrinks_and_reports_scale():
     assert scale2 == 1.0 and same == buf.getvalue()
 
 
-def test_decide_rescales_downscaled_coords_to_viewport(monkeypatch):
-    # Viewport 1280x800, transport cap 1024 -> scale 0.8. A click at (400, 240)
-    # in SENT-image space must come back as (500, 300) in viewport space.
+def test_decide_rescales_downscaled_coords_for_sent_image_backend(monkeypatch):
+    # Viewport 1280x800, transport cap 1024 -> scale 0.8. For a backend whose
+    # coords are relative to the SENT image (Holo/Gemini), a click at (400, 240)
+    # in sent-image space must come back as (500, 300) in viewport space.
+    from PIL import Image
+    import io
+
+    class _SentImageFake(FakeHoloClient):
+        coords_relative_to_sent_image = True
+
+    monkeypatch.setenv("HAI_IMG_MAX_W", "1024")
+    buf = io.BytesIO()
+    Image.new("RGB", (1280, 800), (230, 230, 230)).save(buf, format="PNG")
+    obs = Observation(
+        raw_png=buf.getvalue(),
+        viewport=Viewport(width=1280, height=800),
+        step_index=0,
+    )
+    fake = _SentImageFake([Action(type=ActionType.CLICK, x=400, y=240, caption="c")])
+    agent = HoloPersonaAgent(PersonaConfig(id="p", name="P"), fake, task="t")
+    act = asyncio.run(agent.decide(obs, []))
+    assert (act.x, act.y) == (500, 300)
+
+
+def test_decide_executes_true_pixel_backend_coords_verbatim(monkeypatch):
+    # FakeHoloClient/Echo return TRUE viewport pixels — the agent must NOT
+    # downscale+rescale them. A scripted click at (400, 240) executes verbatim
+    # even at the default 1280 viewport where transport downscale would fire.
     from PIL import Image
     import io
 
@@ -137,7 +162,7 @@ def test_decide_rescales_downscaled_coords_to_viewport(monkeypatch):
     fake = FakeHoloClient([Action(type=ActionType.CLICK, x=400, y=240, caption="c")])
     agent = HoloPersonaAgent(PersonaConfig(id="p", name="P"), fake, task="t")
     act = asyncio.run(agent.decide(obs, []))
-    assert (act.x, act.y) == (500, 300)
+    assert (act.x, act.y) == (400, 240)
 
 
 # ---- parser tests ----

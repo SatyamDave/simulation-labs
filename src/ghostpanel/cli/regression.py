@@ -75,13 +75,14 @@ def _completion(report: RunReport) -> float:
 
 
 def _completed_by_persona(report: RunReport) -> dict[str, "SurvivalRow"]:
-    """Map persona_id -> (completed, steps_survived, name) from the survival curve."""
+    """Map persona_id -> (completed, steps_survived, name, outcome) from survival."""
     out: dict[str, SurvivalRow] = {}
     for p in report.survival:
         out[p.persona_id] = SurvivalRow(
             name=p.persona_name or p.persona_id,
             completed=bool(p.completed),
             steps=int(p.steps_survived),
+            outcome=p.outcome,
         )
     return out
 
@@ -91,6 +92,7 @@ class SurvivalRow:
     name: str
     completed: bool
     steps: int
+    outcome: PersonaOutcome | None = None
 
 
 def _clustered_zones(report: RunReport, grid: int = _DEAD_ZONE_GRID) -> list[tuple[int, int]]:
@@ -106,17 +108,29 @@ def _clustered_zones(report: RunReport, grid: int = _DEAD_ZONE_GRID) -> list[tup
     return sorted(seen)
 
 
-def _functional_ok(current: RunReport, probe_ids: list[str]) -> bool:
-    """Did the flow work at all? True if ANY undegraded probe persona completed.
+def _functional_ok(current: RunReport, probe_ids: list[str]) -> bool | None:
+    """Did the flow work at all?
 
-    The probes are the swarm's baseline (no perturbations) agents — the closest
-    thing to a conventional E2E test. If not one of them can finish, the flow is
-    broken, not merely hard for impaired users.
+    The probes are the swarm's baseline (no-perturbation) agents — the closest
+    thing to a conventional E2E test.
+    - True  if ANY probe completed.
+    - False if at least one probe ran to a genuine NON-error verdict and none
+      completed (the flow is broken, not merely hard for impaired users).
+    - None  if every probe hit an infra ERROR (or no probe ran): we cannot judge
+      the flow — an infra failure must NOT masquerade as "flow broken" and block
+      the merge. The caller falls back to the behavioral verdict.
     """
     rows = _completed_by_persona(current)
-    return any(
-        (rows[pid].completed if pid in rows else False) for pid in probe_ids
-    )
+    saw_real_probe = False
+    for pid in probe_ids:
+        row = rows.get(pid)
+        if row is None:
+            continue
+        if row.completed:
+            return True
+        if row.outcome != PersonaOutcome.ERROR:
+            saw_real_probe = True
+    return False if saw_real_probe else None
 
 
 def compare(

@@ -317,8 +317,20 @@ def _cluster_finding(roster: list[dict], non_error: int, vw: int, vh: int):
             break
     segs = [r["segment"] for r in best]
     phrase = _seg_phrase(segs)
-    if label:
-        headline = f"{phrase} mistake “{label}” for the primary action and abandon"
+    # Only attribute the specific mistake "label" to the segments that ACTUALLY
+    # produced it — not the whole cluster. A single persona's reason must not be
+    # asserted about segments with no evidence for it (it's a receipt, not a
+    # guess). Use the labelled headline only when those segments are the cluster
+    # majority; otherwise fall back to the neutral location headline.
+    labeled = [
+        r for r in best
+        if (_clean_label(r["reason"]) or _clean_label(r["last_caption"])) == label
+    ] if label else []
+    if label and len(labeled) >= max(2, (len(best) + 1) // 2):
+        headline = (
+            f"{_seg_phrase([r['segment'] for r in labeled])} mistake “{label}” "
+            f"for the primary action and abandon"
+        )
     else:
         headline = f"{phrase} abandon at a single control in the {region} of the page"
     evidence = [
