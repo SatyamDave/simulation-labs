@@ -1,13 +1,20 @@
-# Simulation Labs — Behavioral User Simulation
+# Simulation Labs — Behavioral Tests for User Flows
 
-**See who fails your site — before your users do.** Simulation Labs runs a swarm of
-[H Company **Holo**](https://hcompany.ai/holo-models-api) computer-use agents against **any live
-website**. Each agent is a persona whose perception and actuation are *mechanically* degraded
-(blur for low vision, coordinate noise for tremor, tight budgets for impatience) — it attempts a
-real task (sign up, check out, cancel) and either completes it or **abandons at a specific pixel**.
-You get a survival curve, an abandonment heatmap over your real page, an **agent-readiness verdict**,
-video receipts, and **cloned-voice exit-interviews** ([Gradium](https://gradium.ai)) where each
-persona explains why it gave up — grounded in its actual action trace.
+**Behavioral tests, like unit tests — but for whether your users can actually finish.**
+Your CI blocks a merge when a unit test breaks; Simulation Labs blocks it when your *users*
+break. It runs a swarm of computer-use agents ([H Company **Holo**](https://hcompany.ai/holo-models-api),
+or Google Gemini via `MODEL_BACKEND=gemini`) against a live flow — checkout, signup, onboarding —
+on every deploy, and **fails the build when flow-completion regresses vs the last passing run**.
+Each agent's perception and actuation are *mechanically* degraded (coordinate noise for tremor,
+tight budgets for impatience, small viewports, blur) so it behaves like a real segment, attempts
+the task, and either completes it or **abandons at a specific, reproducible pixel**. You get a
+survival curve, an abandonment heatmap over your real page, an **agent-readiness verdict**, video
+receipts, and **cloned-voice exit-interviews** ([Gradium](https://gradium.ai)) grounded in each
+agent's actual action trace.
+
+Every run also compounds into a cross-site model of where real segments give up, so the next test
+is sharper than the last. **Today** you start with a founder-run test of one flow (the on-ramp to
+the private beta of the gate); the self-serve gate follows the founding cohort.
 
 Behavioral user research that *does*, not *says*. The internal engine/codebase is named
 `ghostpanel` (the Python package); the product/company is **Simulation Labs**.
