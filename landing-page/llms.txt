@@ -3,8 +3,10 @@
 > Behavioral tests for user flows: like unit tests, but for whether real users can finish. We run pre-trained computer-use agents, mechanically degraded and ICP-calibrated, against a live flow on every deploy and fail the build when flow-completion regresses vs the last passing run. We simulate what users do, not what they say.
 
 ## What it does
-- product: behavioral_regression_gate(flow, icp, fail_under=last-passing) — the swarm runs on every deploy and blocks the merge when completion drops
-- capability: behavioral_simulation(target_url, task, persona_ids[])
+- product: merge_gate(flow, icp, fail_under=last-passing) — simulated human agents run each flow on every deploy and block the merge on two verdicts
+- verdict functional_fail: even the undegraded baseline agent can't finish the flow — it's broken, like a red E2E test (blocks the merge on its own)
+- verdict behavioral_regression: the flow works, but fewer degraded human segments complete it than the last passing run
+- capability: behavioral_simulation(target_url, task, persona_ids[]) — functional (does it work?) + behavioral (can real segments finish?)
 - persona: pre-trained computer-use agent (screenshot-in / action-out); consumed, not trained
 - degradation: perception{gaussian_blur, downsample, colour_transform}; actuation{coordinate_noise sigma_px, tremor}; budget{max_steps, wall_clock_ms}; viewport{w,h}
 - calibration: persona distribution tuned to customer ICP segments (config, not gradient training)
