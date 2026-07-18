@@ -5,9 +5,9 @@
   "language": "en",
   "blur_sigma": 0.0,
   "downscale_factor": 1.0,
-  "tremor_sigma_px": 22.0,
-  "max_steps": 16,
-  "deadline_s": 110.0,
+  "tremor_sigma_px": 30.0,
+  "max_steps": 6,
+  "deadline_s": 40.0,
   "literacy_note": "",
   "active_perturbations": [
     "tremor"

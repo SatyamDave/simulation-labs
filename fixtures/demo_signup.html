@@ -85,6 +85,11 @@
     var form = document.getElementById('form');
     var done = document.getElementById('done');
     var err  = document.getElementById('err');
+    // ?broken=1 simulates a bad deploy: submission validates but never reveals the
+    // confirmation (a dev renamed the success node and missed a reference). Used to
+    // demo the gate deterministically catching a FUNCTIONAL regression — nobody,
+    // not even a steady-handed user, can reach "You're in!", so completion -> 0%.
+    var BROKEN = /(?:^|[?&])broken=1(?:&|$)/.test(location.search);
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var email = document.getElementById('email').value.trim();
@@ -95,6 +100,7 @@
       // The small consent box must be checked — the tremor trap.
       if (!agree) { err.textContent = 'Please agree to the Terms of Service to continue.'; return; }
       err.textContent = '';
+      if (BROKEN) { return; }   // bad deploy: silently fails to complete
       form.setAttribute('hidden', '');
       done.removeAttribute('hidden');
     });

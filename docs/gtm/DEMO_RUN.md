@@ -34,16 +34,27 @@ python -m ghostpanel.cli run --config sim.demo.yml --flow signup --out .demo
 If `fluent` fails: the flow reads as broken (the gate would say FUNCTIONAL_FAIL) —
 retune (checkbox slightly larger / clearer task) until the capable agent completes.
 
-## 4. Gate demo (the CI closing beat)
-Show the merge-blocking verdict on camera — this is the "behavioral tests, like
-unit tests" payoff:
+## 4. Gate demo (the CI closing beat) — deterministic, causal
+Show the merge-blocking verdict on camera — the "behavioral tests, like unit tests"
+payoff. The regression is CAUSAL (a simulated bad deploy), not a coin-flip:
+
 ```bash
-python -m ghostpanel.cli baseline --config sim.demo.yml --flow signup --out .demo   # seed a green baseline
-python -m ghostpanel.cli gate     --config sim.demo.yml --flow signup --out .demo   # re-run vs baseline
-# prints: gate: BEHAVIORAL REGRESSION — completion 0.50 < last-passing bar 1.00   (exit 1)
+# 1. Seed a green baseline against the good flow
+python -m ghostpanel.cli baseline --config sim.demo.yml --flow signup --out .demo
+
+# 2. Simulate a bad deploy and gate it: demo_signup.html?broken=1 makes submission
+#    silently fail, so NOBODY (not even fluent) reaches "You're in!" -> completion 0%.
+python -m ghostpanel.cli gate --url "http://localhost:8137/fixtures/demo_signup.html?broken=1" \
+  --task "Sign up for Nimbus: enter a work email and a password, tick the 'I agree to the Terms' checkbox, then click Create account. Done when you see 'You're in!'." \
+  --personas fluent,rushed,mobile-thumb,misclick-prone --config sim.demo.yml --baseline .demo/baseline.json --out .demo
+# prints: gate: FUNCTIONAL FAIL — the flow is broken: the undegraded baseline agent (fluent) could not complete it   (exit 1)
 ```
-Two verdicts to show: **FUNCTIONAL FAIL** (break the flow → even fluent can't finish)
-and **BEHAVIORAL REGRESSION** (flow works, degraded completion drops). Both block the merge.
+This is deterministic: `?broken=1` guarantees 0% completion, so the gate reliably
+prints **🛑 FUNCTIONAL FAIL** and exits non-zero — the merge is blocked on camera.
+
+To instead show **BEHAVIORAL REGRESSION** (flow works, but degraded completion dropped),
+gate a *good* rerun that scores lower than the baseline against a higher baseline —
+inherently stochastic, so prefer the `?broken=1` functional break for the recorded take.
 
 ## 5. Cut the 1-minute playcast (shot list in hackathon-win-playbook.md §7)
 Pre-render from the `.webm` receipts; speed-ramp 6-8×; hold only on the death/zoom

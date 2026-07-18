@@ -1,5 +1,5 @@
 # sim.demo.yml — hackathon demo: a normal-looking signup where degraded
-# human segments fail on a 15px "agree to terms" checkbox while a fluent
+# human segments fail on a small 24px "agree to terms" checkbox while a fluent
 # agent completes it. Served locally over HTTP (see docs/gtm/DEMO_RUN.md).
 version: 1
 
