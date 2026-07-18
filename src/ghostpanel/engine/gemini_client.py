@@ -24,6 +24,10 @@ DEFAULT_GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/open
 DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
 # Free-tier Flash allows ~10 RPM; raise GEMINI_RPM in .env on a paid tier.
 DEFAULT_GEMINI_RPM = 10.0
+# Free-tier endpoints drop connections when a 5-persona swarm opens 5 concurrent
+# vision calls at once (verified: 5 concurrent -> APIConnectionError; 2 -> clean).
+# Cap in-flight Gemini calls; raise GEMINI_MAX_CONCURRENCY on a paid tier.
+DEFAULT_GEMINI_MAX_CONCURRENCY = 2
 
 # Exact Holo wordings we rewrite -> grid wordings. If the source prompt drifts
 # and a wording disappears, we raise instead of silently sending Gemini a
@@ -93,6 +97,7 @@ class GeminiClient(LiveHoloClient):
         rpm: float = DEFAULT_GEMINI_RPM,
         limiter=None,
         max_retries: int = 4,
+        max_concurrency: int = DEFAULT_GEMINI_MAX_CONCURRENCY,
     ) -> None:
         super().__init__(
             api_key=api_key,
@@ -101,6 +106,7 @@ class GeminiClient(LiveHoloClient):
             rpm=rpm,
             limiter=limiter,
             max_retries=max_retries,
+            max_concurrency=max_concurrency,
         )
 
     def _localize_prompt(self, instruction: str) -> str:

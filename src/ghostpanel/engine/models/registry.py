@@ -28,6 +28,7 @@ from ghostpanel_contracts import HoloClient
 
 from ..gemini_client import (
     DEFAULT_GEMINI_BASE_URL,
+    DEFAULT_GEMINI_MAX_CONCURRENCY,
     DEFAULT_GEMINI_MODEL,
     DEFAULT_GEMINI_RPM,
     GeminiClient,
@@ -109,6 +110,11 @@ def build_model(name: str, settings) -> HoloClient:
             rpm = float(os.environ.get("GEMINI_RPM", "") or DEFAULT_GEMINI_RPM)
         except ValueError:
             rpm = DEFAULT_GEMINI_RPM
+        try:
+            conc = int(os.environ.get("GEMINI_MAX_CONCURRENCY", "")
+                       or DEFAULT_GEMINI_MAX_CONCURRENCY)
+        except ValueError:
+            conc = DEFAULT_GEMINI_MAX_CONCURRENCY
         return GeminiClient(
             api_key=api_key,
             base_url=os.environ.get("GEMINI_BASE_URL", "").strip()
@@ -116,6 +122,7 @@ def build_model(name: str, settings) -> HoloClient:
             model=os.environ.get("GEMINI_MODEL", "").strip()
             or DEFAULT_GEMINI_MODEL,
             rpm=rpm,
+            max_concurrency=conc,
         )
     raise ValueError(
         f"Unknown model backend {name!r}. Available: {', '.join(available())}"

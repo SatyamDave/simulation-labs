@@ -346,6 +346,7 @@ class LiveHoloClient:
         rpm: float = 10.0,
         limiter: Optional[RateLimiter] = None,
         max_retries: int = 4,
+        max_concurrency: Optional[int] = None,
     ) -> None:
         from openai import AsyncOpenAI
 
@@ -356,6 +357,13 @@ class LiveHoloClient:
         self.max_retries = max_retries
         # Share ONE limiter across personas by passing the same instance.
         self.limiter = limiter if limiter is not None else RateLimiter(rpm)
+        # Cap simultaneously in-flight requests. The RateLimiter bounds the RATE,
+        # but N personas can still each hold an open connection during a multi-
+        # second vision call; some endpoints (e.g. a free-tier quota) drop those
+        # concurrent connections. This semaphore bounds concurrency across the
+        # whole swarm since one client instance is shared by every persona.
+        # None => effectively unbounded (large cap).
+        self._sem = asyncio.Semaphore(max_concurrency if max_concurrency and max_concurrency > 0 else 1000)
         self._client = AsyncOpenAI(base_url=base_url, api_key=api_key)
 
     @classmethod
@@ -386,11 +394,12 @@ class LiveHoloClient:
         for attempt in range(self.max_retries):
             await self.limiter.acquire()
             try:
-                resp = await self._client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    temperature=0.0,
-                )
+                async with self._sem:  # bound concurrent in-flight requests
+                    resp = await self._client.chat.completions.create(
+                        model=self.model,
+                        messages=messages,
+                        temperature=0.0,
+                    )
                 return resp.choices[0].message.content or ""
             except Exception as exc:  # noqa: BLE001 - inspect for 429/rate limits
                 last_err = exc
