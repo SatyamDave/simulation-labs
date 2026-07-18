@@ -402,9 +402,17 @@ class LiveHoloClient:
         assert last_err is not None
         raise last_err
 
+    def _localize_prompt(self, instruction: str) -> str:
+        """Prompt used by ``localize``. Subclass hook (see GeminiClient)."""
+        return prompts.localization_prompt(instruction)
+
+    def _navigation_prompt(self, task: str, history: list[str]) -> str:
+        """Prompt used by ``navigate``. Subclass hook (see GeminiClient)."""
+        return _navigate_prompt(task, history)
+
     async def localize(self, image_png: bytes, instruction: str) -> tuple[int, int]:
         w, h = _png_size(image_png)
-        prompt = prompts.localization_prompt(instruction)
+        prompt = self._localize_prompt(instruction)
         text = await self._chat(image_png, prompt)
         click = parse_click(text)
         if click is None:
@@ -421,7 +429,7 @@ class LiveHoloClient:
         # navigation_prompt needs a persona for its literacy note; the agent
         # normally builds the full prompt. Here we accept task+history directly and
         # build a persona-free prompt using a minimal shim.
-        prompt = _navigate_prompt(task, history)
+        prompt = self._navigation_prompt(task, history)
         text = await self._chat(image_png, prompt)
         # normalize=True: denormalize Holo's 0-1000 coords to true pixels.
         return parse_action(text, w, h, normalize=True)

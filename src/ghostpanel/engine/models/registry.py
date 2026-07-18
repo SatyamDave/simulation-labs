@@ -14,6 +14,10 @@ Backends:
       ``HAI_BASE_URL`` at your vLLM ``/v1``. See ``docs/SELF_HOSTING.md``.
     * ``"echo"`` — a trivial, deterministic, offline backend (``EchoModelClient``)
       that proves a non-Holo vendor plugs into the same seam.
+    * ``"gemini"`` — Google Gemini via its OpenAI-compatible endpoint
+      (``GeminiClient``). Same 0-1000 coordinate grid as Holo; prompts are
+      rewritten to say so explicitly. Reads ``GEMINI_API_KEY`` / ``GEMINI_MODEL``
+      / ``GEMINI_BASE_URL`` / ``GEMINI_RPM`` from the environment.
 """
 
 from __future__ import annotations
@@ -22,6 +26,12 @@ import os
 
 from ghostpanel_contracts import HoloClient
 
+from ..gemini_client import (
+    DEFAULT_GEMINI_BASE_URL,
+    DEFAULT_GEMINI_MODEL,
+    DEFAULT_GEMINI_RPM,
+    GeminiClient,
+)
 from ..holo_client import LiveHoloClient
 from ..selfhost_client import (
     DEFAULT_SELFHOST_BASE_URL,
@@ -31,7 +41,7 @@ from ..selfhost_client import (
 from .echo import EchoModelClient
 
 # Registered backend names (kept in sync with the branches in ``build_model``).
-_BACKENDS = ("holo", "selfhost", "echo")
+_BACKENDS = ("holo", "selfhost", "echo", "gemini")
 
 
 def available() -> list[str]:
@@ -88,6 +98,25 @@ def build_model(name: str, settings) -> HoloClient:
         )
     if key == "echo":
         return EchoModelClient()
+    if key == "gemini":
+        api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        if not api_key:
+            raise ValueError(
+                "MODEL_BACKEND=gemini requires GEMINI_API_KEY in the environment "
+                "(.env). Create one at https://aistudio.google.com/apikey"
+            )
+        try:
+            rpm = float(os.environ.get("GEMINI_RPM", "") or DEFAULT_GEMINI_RPM)
+        except ValueError:
+            rpm = DEFAULT_GEMINI_RPM
+        return GeminiClient(
+            api_key=api_key,
+            base_url=os.environ.get("GEMINI_BASE_URL", "").strip()
+            or DEFAULT_GEMINI_BASE_URL,
+            model=os.environ.get("GEMINI_MODEL", "").strip()
+            or DEFAULT_GEMINI_MODEL,
+            rpm=rpm,
+        )
     raise ValueError(
         f"Unknown model backend {name!r}. Available: {', '.join(available())}"
     )
