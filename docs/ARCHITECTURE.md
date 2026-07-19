@@ -1,6 +1,6 @@
 # Ghostpanel Architecture
 
-Ghostpanel (product brand **"Simulation Labs"**) is a swarm of **behavioral synthetic users**. Every other synthetic-user research tool simulates what users *say*; Ghostpanel simulates what users *do*. It points a swarm of H-Company **Holo**-powered personas at a live website with a real goal (sign up, check out, cancel). Each persona is a Holo agent whose **perception and actuation channels are mechanically degraded** to model a real impairment — blur for low vision, coordinate noise for tremor, tight step/time budgets for impatience, colour-vision filters, small viewports. They either complete the task or abandon at a specific recorded pixel. Output: a **survival curve**, an **abandonment heatmap**, **video receipts**, and **voice exit-interviews** (Gradium cloned voices) grounded in each persona's real action trace.
+Simulation Labs is a swarm of **behavioral synthetic users**. Every other synthetic-user research tool simulates what users *say*; Simulation Labs simulates what users *do*. It points a swarm of computer-use agents at a live website with a real goal (sign up, check out, cancel). Each agent's **perception and actuation channels are mechanically degraded** to reproduce a real behavioral segment — coordinate noise for imprecise taps, tight step/time budgets for impatience, small phone viewports, constrained literal reading for a first-timer. They either complete the task or abandon at a specific recorded pixel. Output: a **completion rate**, a **survival curve**, an **abandonment heatmap**, **video receipts**, and **exit-interviews** grounded in each agent's real action trace.
 
 ---
 
@@ -43,15 +43,15 @@ PersonaAgent + HoloClient (src/ghostpanel/engine/, Agent 1)
 
 ---
 
-## The five modules (ownership map)
+## The five modules
 
-| Agent | Module | Owns | Doc |
-|---|---|---|---|
-| 1 Engine | `src/ghostpanel/engine/` | Holo client, personas, perturbations, prompts | `docs/modules/ENGINE.md` |
-| 2 Runner | `src/ghostpanel/runner/` | Playwright session loop, execute, detect, thumbnail | `docs/modules/RUNNER.md` |
-| 3 Orchestrator | `src/ghostpanel/server/` + `app.py` | FastAPI, WS hub, swarm, composition root | `docs/modules/SERVER.md` |
-| 4 Frontend | `web/` | React live grid + report + offline demo | `docs/modules/WEB.md` |
-| 5 Voice+Report | `src/ghostpanel/voice/` + `report/` | Survival/heatmap report, Gradium exit interviews | `docs/modules/VOICE_REPORT.md` |
+| Module | Path | Responsibility |
+|---|---|---|
+| Engine | `src/ghostpanel/engine/` | Model client, personas, perturbations, prompts |
+| Runner | `src/ghostpanel/runner/` | Playwright session loop, execute, detect, thumbnail |
+| Orchestrator | `src/ghostpanel/server/` + `app.py` | FastAPI, WS hub, swarm, composition root |
+| Frontend | `web/` | React live grid + report + offline demo |
+| Voice + Report | `src/ghostpanel/voice/` + `report/` | Survival/heatmap report, exit interviews |
 
 ---
 
@@ -67,7 +67,7 @@ PersonaAgent + HoloClient (src/ghostpanel/engine/, Agent 1)
 
 ## External integrations
 
-- **H-Company Holo Models API** — OpenAI-compatible (`AsyncOpenAI(base_url, api_key)`); the screenshot goes as a base64 data URI in an `image_url` part. Model `holo3-1-35b-a3b`. It is a **reasoning model** and returns coords **normalized to a 0–1000 grid** (both facts verified live — see `docs/BRANCHES.md`).
+- **H-Company Holo Models API** — OpenAI-compatible (`AsyncOpenAI(base_url, api_key)`); the screenshot goes as a base64 data URI in an `image_url` part. Model `holo3-1-35b-a3b`. It is a **reasoning model** and returns coords **normalized to a 0–1000 grid**.
 - **Gradium** — TTS (`client.tts(setup, text)` with `output_format:"wav"`), optional voice cloning, and STT for live Q&A.
 - **Anthropic (Claude)** — grounds the exit-interview script generation (`claude-sonnet-5` by default); degrades to a deterministic template without a key.
 - **NemoClaw / OpenShell** (on `repeated-bathroom`) — a network-policy cage; route Holo inference through the gateway (`NEMOCLAW_GATEWAY_URL`) and enforce a browse-only policy in the browser context.

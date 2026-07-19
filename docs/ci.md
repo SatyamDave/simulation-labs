@@ -2,7 +2,7 @@
 
 Simulation Labs is a **behavioral test suite for your real flows** — it tests what users
 *do*, not what they *say*. On every pull request it points a small swarm of behavioral
-personas (impatient-mobile, low-vision, tremor, colorblind, non-native, and more) at a live
+segments (rushed, mobile-thumb, misclick-prone, first-timer, an AI agent, and more) at a live
 flow, has each one actually attempt the task (sign up, check out, cancel), and records where
 it completes or abandons. Wire it into CI and the check **fails the moment completion
 regresses** — the same way a unit test fails when logic breaks.
@@ -88,7 +88,7 @@ flows:
     # Or set an absolute bar, e.g. 0.8 (80% of personas must finish).
     fail_under: last-passing
     # Optional: override which segments this flow sends (else uses icp.personas).
-    personas: [impatient-mobile, low-vision, tremor]
+    personas: [fluent, rushed, mobile-thumb, misclick-prone]
 
 # Which behavioral segments to send across all flows. "auto" = the full bundled roster.
 icp:
@@ -120,11 +120,12 @@ safety:
 | `safety` | `allow_private` | bool | Allow loopback/private/`file://` targets (default `false`). |
 | | `allowlist` | list | When non-empty, only these hosts (exact or suffix match) are allowed. |
 
-The bundled behavioral segments include `impatient-mobile` (Priya), `low-vision` (Sam),
-`tremor` (Dev), `colorblind` (Jordan, deuteranopia), `grandma-72` (Margaret), `non-native`,
-`power-user`, and `ai-agent`. Each is a real impairment modeled *mechanically* (blur,
-coordinate noise, tight step/time budgets, color-vision filters) so it fails the way that
-segment of your users fails.
+The bundled behavioral segments are `fluent` and `ai-agent` (undegraded controls that set the
+ceiling), `first-timer` (reads literally, infers no UI conventions), `rushed` (tight step/time
+budget), `mobile-thumb` (small phone viewport + fat-finger coordinate noise), and
+`misclick-prone` (coordinate noise on every click). Each is modeled *mechanically* — coordinate
+noise, small viewports, tight budgets, constrained reading — so it fails the way that segment
+of your real traffic fails, not by roleplay.
 
 ---
 

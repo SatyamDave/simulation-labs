@@ -138,7 +138,7 @@ Per [`docs/data-policy.md`](./data-policy.md) §2–3:
 
 Simulation Labs implements appropriate technical and organizational measures,
 including those below (see [`docs/data-policy.md`](./data-policy.md) §4 and the
-[SOC 2 readiness matrix](./soc2-readiness.md) for current maturity):
+our internal SOC 2 readiness matrix for current maturity):
 
 - **Encryption in transit:** TLS for all client↔server and server↔sub-processor
   traffic.
@@ -156,7 +156,7 @@ including those below (see [`docs/data-policy.md`](./data-policy.md) §4 and the
   addresses at enqueue.
 
 The parties acknowledge Simulation Labs is **not yet SOC 2 certified**; the
-readiness matrix ([`docs/soc2-readiness.md`](./soc2-readiness.md)) honestly
+readiness matrix honestly
 states which controls are Implemented, Partial, or Not-started.
 
 ---
@@ -184,8 +184,7 @@ affected, likely consequences, and the measures taken or proposed to address it.
 Simulation Labs will reasonably cooperate with the Customer's own notification
 obligations to supervisory authorities and data subjects. See the
 responsible-disclosure channel in [`docs/security-disclosure.md`](./security-disclosure.md)
-and the incident-response process referenced from
-[`docs/soc2-readiness.md`](./soc2-readiness.md).
+and our internal incident-response process.
 
 ---
 

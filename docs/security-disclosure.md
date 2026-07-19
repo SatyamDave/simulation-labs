@@ -85,8 +85,7 @@ artifacts (screenshots / video / audio).
   Anthropic, Stripe, our object-storage provider) — report those to the vendor;
   we will help coordinate if a Simulation Labs surface is involved.
 - Best-practice or informational findings already documented as known
-  limitations in [`docs/security-audit.md`](./security-audit.md) and
-  [`docs/deploy.md`](./deploy.md) (e.g. adopting Alembic before relying on
+  limitations in our internal security notes and deploy runbook (e.g. adopting Alembic before relying on
   Postgres, the operator's obligation to set a strong `SESSION_SECRET`).
 - Content of the target website a customer chooses to point a swarm at — that
   is the customer's own property, not ours.

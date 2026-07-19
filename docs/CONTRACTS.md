@@ -66,7 +66,7 @@ RunEvent = Annotated[
 
 ## Protocols (interfaces)
 
-All are `@runtime_checkable`, so `isinstance(obj, Proto)` works (each agent's definition-of-done check). Concrete class names/paths are frozen in `CLAUDE.md` so the composition root can import and wire them.
+All are `@runtime_checkable`, so `isinstance(obj, Proto)` works (each agent's definition-of-done check). Concrete class names and module paths are fixed so the composition root can import and wire them.
 
 | Protocol | Concrete impl | Method(s) |
 |---|---|---|

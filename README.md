@@ -154,7 +154,15 @@ Everything crossing a module boundary is a typed contract, not a dict. `sim try`
 ## Contributing
 
 Issues and PRs welcome — especially new behavioral segments, new model backends, and real-world
-flows that break the gate in interesting ways. `pip install -e ".[dev]" && pytest` to get started.
+flows that break the gate in interesting ways. Start with **[CONTRIBUTING.md](CONTRIBUTING.md)**;
+`pip install -e ".[dev]" && pytest` gets you a green suite. Security reports:
+**[SECURITY.md](SECURITY.md)**.
+
+## Work with us
+
+Want to run Simulation Labs on your own funnel, partner, or compare notes on where your users
+abandon? Open an [issue](https://github.com/SatyamDave/simulation-labs/issues) or email
+**satyam@agentmade.ai**.
 
 ## License
 
@@ -163,5 +171,5 @@ MIT. Use it, fork it, ship it.
 ---
 
 <div align="center">
-<sub>Behavioral user research that <b>does</b>, not <b>says</b>. · <a href="https://simulationlabs.dev">simulationlabs.dev</a></sub>
+<sub>Behavioral user research that <b>does</b>, not <b>says</b>. · <a href="https://simulationlabs.dev">simulationlabs.dev</a> · <a href="mailto:satyam@agentmade.ai">satyam@agentmade.ai</a></sub>
 </div>

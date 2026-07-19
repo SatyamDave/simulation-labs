@@ -41,3 +41,12 @@ ghostpanel.db
 *.db
 *.db-journal
 .sim/
+
+# Local run output & artifacts (never commit)
+.sim-try/
+.sim-deliverable/
+.sim-deliverable-gemini/
+.coverage
+
+# Internal-only docs kept out of the public repo (strategy, build scaffolding)
+.internal/
