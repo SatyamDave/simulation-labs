@@ -27,18 +27,22 @@ page, and a non-zero exit code when it regresses.
 
 ## 60-second quickstart
 
-One command. No account, no config, no signup. Bring any model key you already have.
+No account, no config, no signup. Two commands:
 
 ```bash
 pip install "git+https://github.com/SatyamDave/simulation-labs@main"
-playwright install chromium
-
-export GEMINI_API_KEY=...        # or HAI_API_KEY, or point at a self-hosted model — any key works
 sim try
 ```
 
-`sim try` spins up a real signup page, sends five behavioral agents at it, and shows you the
-result live:
+That's the whole setup. `sim try` installs the headless browser for you, serves a real signup
+page, and sends five behavioral agents at it — showing you the result live.
+
+**Need a key?** `sim try` drives real AI agents, so it needs a model key. Don't have one? Grab a
+**[free Gemini key](https://aistudio.google.com/apikey)** (no card, ~30 seconds) — `sim try`
+prompts you to paste it on first run. Prefer to set it once? `export GEMINI_API_KEY=...` (or
+`HAI_API_KEY`, or a self-hosted endpoint — any key auto-detects).
+
+A real run looks like this:
 
 ```
   Fluent          success          ✓
@@ -56,21 +60,29 @@ result live:
 The steady agents finish. The imprecise one fumbles a small checkbox and gives up — exactly
 where a slice of your real traffic does. **That gap is the thing nobody else measures.**
 
-Don't have a key? Get a [free Gemini key](https://aistudio.google.com/apikey) — the free tier
-runs `sim try` end to end.
-
 ---
 
-## Point it at your own flow
+## Point it at *any* flow
+
+The task is plain English, so the same engine tests any critical flow — not just signup.
+Point it at a URL, describe the goal, and the swarm attempts it:
 
 ```bash
-sim gate \
-  --url https://your-app.com/signup \
-  --task "create an account with email and password"
+# SaaS signup
+sim gate --url https://your-app.com/signup   --task "create an account with email and password"
+
+# Multi-step checkout
+sim gate --url https://shop.example.com/cart --task "buy the item in the cart with a test card and reach the receipt"
+
+# Onboarding wizard
+sim gate --url https://your-app.com/welcome  --task "complete onboarding: pick a plan, invite a teammate, land on the dashboard"
+
+# Dashboard config flow
+sim gate --url https://your-app.com/settings --task "create an API key and copy it"
 ```
 
-Exit code `0` if completion holds, `1` if it regressed. That's the whole contract — it drops
-straight into any CI:
+Exit code `0` if completion holds, `1` if it regressed — the whole contract, on any flow.
+It drops straight into CI:
 
 ```yaml
 # .github/workflows/simulate.yml

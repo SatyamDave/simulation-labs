@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -354,18 +355,81 @@ Bring your own — any of these works and `sim` auto-detects it:
 Then just re-run:  sim try"""
 
 
+def _resolve_try_backend() -> Optional[str]:
+    """Return the model backend for `sim try`, offering an interactive key paste
+    when none is configured and we're on a real terminal (P3). In a non-tty
+    (CI/piped) we never prompt — we print the copy/paste guidance and give up, so
+    `sim try` stays scriptable. Only `sim try` calls this; `sim gate` is untouched."""
+    from ghostpanel.engine.models.registry import detected_key_backend
+
+    backend = detected_key_backend()
+    if backend is not None:
+        return backend
+
+    # No key. Only prompt on an interactive terminal — never in CI.
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        print(_NO_KEY_MSG)
+        return None
+
+    import getpass
+
+    print("`sim try` drives real browser agents, so it needs a model API key.")
+    print("Get a FREE Google Gemini key — no card, ~30 seconds:")
+    print("  https://aistudio.google.com/apikey\n")
+    try:
+        pasted = getpass.getpass("Paste your Gemini API key (hidden), or Enter to cancel: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        pasted = ""
+    if not pasted:
+        print("\nNo key entered.\n" + _NO_KEY_MSG)
+        return None
+
+    os.environ["GEMINI_API_KEY"] = pasted
+    print("→ key accepted (this session only — add it to .env or export it to persist)\n")
+    return detected_key_backend()
+
+
+def _ensure_chromium() -> bool:
+    """Make sure Playwright's Chromium is present, installing it if missing (P2).
+    `sim try` only — `sim gate` assumes CI ran `playwright install`. Returns False
+    (with a clear one-line fix) if the browser can't be made available."""
+    try:
+        from playwright.sync_api import sync_playwright
+
+        with sync_playwright() as p:
+            exe = p.chromium.executable_path
+        if exe and os.path.exists(exe):
+            return True
+    except Exception:
+        pass  # fall through to install
+
+    print("→ Setting up the headless browser (Chromium, ~150MB, one time)…")
+    import subprocess
+
+    try:
+        subprocess.run(
+            [sys.executable, "-m", "playwright", "install", "chromium"], check=True
+        )
+        return True
+    except Exception as exc:  # noqa: BLE001
+        print(f"  couldn't auto-install Chromium ({exc}). Run this once, then re-run:")
+        print("    python -m playwright install chromium")
+        return False
+
+
 def _cmd_try(args: argparse.Namespace) -> int:
     """Zero-config proof it works: serve a bundled signup flow and run the swarm
     against it with whatever provider key you have. `sim try` and you're done."""
     from types import SimpleNamespace
 
     from ghostpanel.cli import demo_flow
-    from ghostpanel.engine.models.registry import detected_key_backend
 
-    backend = detected_key_backend()
+    backend = _resolve_try_backend()
     if backend is None:
-        print(_NO_KEY_MSG)
         return exit_codes.MISSING_KEY
+
+    if not _ensure_chromium():
+        return exit_codes.RUN_ERROR
 
     print("Simulation Labs — behavioral gate demo")
     print(f"→ backend: {backend} (auto-detected from your key)")
