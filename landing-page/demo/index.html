@@ -4,9 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Simulation Labs · Watch the gate block a bad deploy</title>
-<meta name="description" content="A developer shrinks the signup consent checkbox to match the brand. Unit tests pass. But the behavioral gate runs a swarm of AI users, catches that tremor users can no longer finish, and blocks the merge — before it ships." />
+<meta name="description" content="A developer shrinks the signup consent checkbox to match the brand. Build passes. Unit tests pass. But the behavioral gate runs a swarm of mechanically-degraded AI users, catches that tremor users can no longer finish, quantifies the lost signups, and blocks the merge — before it ships." />
 <meta property="og:title" content="Simulation Labs · Watch the gate block a bad deploy" />
-<meta property="og:description" content="Unit tests passed. The behavioral gate caught what they couldn't: real users can't finish. Merge blocked." />
+<meta property="og:description" content="Unit tests passed. The behavioral gate caught what they couldn't: real users can't finish. ~1,600 signups/mo saved. Merge blocked." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://simulationlabs.dev/demo/" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B0D11'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%234C8DFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
@@ -29,14 +29,15 @@
   .brand{ display:flex; align-items:center; gap:9px; font-weight:600; letter-spacing:-.01em; font-size:1rem; }
   .brand .live{ margin-left:auto; font-family:var(--mono); font-size:.66rem; letter-spacing:.14em; text-transform:uppercase;
     color:var(--dim); display:flex; align-items:center; gap:7px; }
-  .brand .live i{ width:7px; height:7px; border-radius:50%; background:var(--ok); box-shadow:0 0 0 0 rgba(63,185,80,.6); animation:beat 1.8s infinite; }
+  .brand .live i{ width:7px; height:7px; border-radius:50%; background:var(--ok); animation:beat 1.8s infinite; }
   @keyframes beat{ 0%{box-shadow:0 0 0 0 rgba(63,185,80,.5)} 70%{box-shadow:0 0 0 7px rgba(63,185,80,0)} 100%{box-shadow:0 0 0 0 rgba(63,185,80,0)} }
+  @keyframes beatr{ 0%{box-shadow:0 0 0 0 rgba(248,81,73,.55)} 70%{box-shadow:0 0 0 8px rgba(248,81,73,0)} 100%{box-shadow:0 0 0 0 rgba(248,81,73,0)} }
 
   .hero{ text-align:center; padding:30px 0 6px; }
   .kick{ font-family:var(--mono); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); }
   h1{ font-size:clamp(1.8rem,4.6vw,2.9rem); line-height:1.06; letter-spacing:-.03em; margin:.35em 0 .3em; font-weight:650; }
   h1 .do{ color:var(--accent); }
-  .sub{ color:var(--muted); max-width:62ch; margin:0 auto; font-size:1.02rem; }
+  .sub{ color:var(--muted); max-width:64ch; margin:0 auto; font-size:1.02rem; }
   .sub b{ color:var(--text); font-weight:600; }
 
   .runbar{ display:flex; justify-content:center; gap:12px; margin:24px 0 6px; flex-wrap:wrap; }
@@ -44,129 +45,141 @@
     transition:transform .12s ease, box-shadow .2s ease, background .2s; }
   .btn-run{ background:linear-gradient(180deg,var(--accent-2),var(--accent) 55%,var(--accent-d)); color:#fff; box-shadow:0 10px 30px rgba(76,141,255,.35); }
   .btn-run:hover{ transform:translateY(-2px); box-shadow:0 16px 40px rgba(76,141,255,.5); }
-  .btn-run:active{ transform:translateY(0); }
-  .btn-run[disabled]{ opacity:.5; cursor:default; box-shadow:none; transform:none; }
+  .btn-run:active{ transform:translateY(0); } .btn-run[disabled]{ opacity:.5; cursor:default; box-shadow:none; transform:none; }
   .btn-ghost{ background:transparent; color:var(--muted); border:1px solid var(--line); }
   .btn-ghost:hover{ color:var(--text); border-color:#3a424e; }
 
-  /* ---------- the PR panel (GitHub-style) ---------- */
-  .pr{ margin:22px 0 8px; border:1px solid var(--line); border-radius:14px; background:var(--surface); overflow:hidden;
-    box-shadow:0 30px 80px rgba(0,0,0,.5); }
+  /* PR panel */
+  .pr{ margin:22px 0 8px; border:1px solid var(--line); border-radius:14px; background:var(--surface); overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.5); }
   .pr-head{ padding:16px 18px; border-bottom:1px solid var(--line); }
-  .pr-badge{ display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.68rem; font-weight:600;
-    color:#fff; background:var(--ok); padding:3px 10px; border-radius:20px; }
+  .pr-badge{ display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.68rem; font-weight:600; color:#fff; background:var(--ok); padding:3px 10px; border-radius:20px; }
   .pr-badge.blocked{ background:var(--fail); }
-  .pr-title{ font-size:1.12rem; font-weight:650; letter-spacing:-.01em; margin:10px 0 4px; }
-  .pr-title .num{ color:var(--dim); font-weight:400; }
+  .pr-title{ font-size:1.12rem; font-weight:650; letter-spacing:-.01em; margin:10px 0 4px; } .pr-title .num{ color:var(--dim); font-weight:400; }
   .pr-meta{ font-family:var(--mono); font-size:.72rem; color:var(--dim); display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .pr-meta .who{ color:var(--muted); } .pr-meta .br{ color:var(--accent-2); }
-
   .diff{ margin:12px 0 2px; border:1px solid var(--line); border-radius:9px; overflow:hidden; font-family:var(--mono); font-size:.72rem; }
   .diff .df-h{ padding:7px 11px; background:rgba(255,255,255,.02); color:var(--dim); border-bottom:1px solid var(--line); }
   .diff .df-l{ padding:3px 11px; white-space:pre-wrap; }
   .diff .rm{ background:rgba(248,81,73,.10); color:#f7a49f; } .diff .rm::before{ content:'- '; color:var(--fail); }
   .diff .ad{ background:rgba(63,185,80,.10); color:#88d68f; } .diff .ad::before{ content:'+ '; color:var(--ok); }
-
   .checks{ border-top:1px solid var(--line); }
   .check{ display:flex; align-items:center; gap:11px; padding:12px 18px; border-bottom:1px solid var(--line); font-size:.9rem; }
   .check:last-child{ border-bottom:0; }
   .check .ico{ width:18px; height:18px; flex:0 0 auto; display:grid; place-items:center; border-radius:50%; }
-  .check .ico.ok{ background:rgba(63,185,80,.16); color:var(--ok); }
-  .check .ico.pend{ background:rgba(210,153,34,.16); color:var(--warn); }
-  .check .ico.run{ background:transparent; }
-  .check .ico.fail{ background:rgba(248,81,73,.16); color:var(--fail); }
+  .check .ico.ok{ background:rgba(63,185,80,.16); color:var(--ok); } .check .ico.pend{ background:rgba(210,153,34,.16); color:var(--warn); }
+  .check .ico.run{ background:transparent; } .check .ico.fail{ background:rgba(248,81,73,.16); color:var(--fail); }
   .check .nm{ font-weight:550; } .check .dc{ color:var(--dim); font-family:var(--mono); font-size:.76rem; margin-left:auto; }
-  .check.gate{ background:rgba(76,141,255,.04); }
-  .check.gate .nm b{ color:var(--accent); }
+  .check.gate{ background:rgba(76,141,255,.04); } .check.gate .nm b{ color:var(--accent); }
   .spinner{ width:16px; height:16px; border:2px solid var(--line-2); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
   @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* the gate expands: persona strip + swarm stage */
+  .gate-run{ max-height:0; overflow:hidden; transition:max-height .7s ease; }
+  .gate-run.open{ max-height:1400px; border-top:1px solid var(--line); }
+  .gr-head{ padding:11px 18px; font-family:var(--mono); font-size:.72rem; color:var(--muted); background:rgba(76,141,255,.05); display:flex; align-items:center; gap:9px; }
+  .gr-head b{ color:var(--accent); } .gr-head .rt{ margin-left:auto; color:var(--dim); }
+
+  /* persona strip — the mechanical-degradation capability, on display */
+  .swarm-strip{ display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--line); border-bottom:1px solid var(--line); }
+  @media(max-width:760px){ .swarm-strip{ grid-template-columns:repeat(2,1fr); } }
+  .pcard{ background:var(--surface-2); padding:12px 12px 11px; opacity:.45; transition:opacity .35s, background .35s, box-shadow .35s; position:relative; }
+  .pcard.run{ opacity:1; box-shadow:inset 0 2px 0 0 var(--accent); }
+  .pcard.ok{ opacity:1; box-shadow:inset 0 2px 0 0 var(--ok); } .pcard.dead{ opacity:1; box-shadow:inset 0 2px 0 0 var(--fail); }
+  .pcard .pn{ display:flex; align-items:center; gap:7px; font-weight:600; font-size:.82rem; }
+  .pcard .dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+  .pcard .pseg{ font-size:.68rem; color:var(--muted); margin:3px 0 7px; line-height:1.3; }
+  .pcard .deg{ font-family:var(--mono); font-size:.6rem; color:var(--dim); border:1px solid var(--line-2); border-radius:5px; padding:2px 5px; display:inline-block; }
+  .pcard .st{ position:absolute; top:11px; right:11px; font-family:var(--mono); font-size:.62rem; font-weight:700; }
+  .pcard.ok .st{ color:var(--ok); } .pcard.dead .st{ color:var(--fail); } .pcard.run .st{ color:var(--accent); }
+
+  .stage{ position:relative; min-height:460px; display:grid; place-items:center; padding:24px 16px; background:#0d1119; }
+  @media(max-width:640px){ .stage{ min-height:500px; } }
+  .form-card{ width:328px; max-width:92%; background:#fff; border-radius:14px; padding:22px 20px 18px; box-shadow:0 20px 60px rgba(0,0,0,.45); color:#0f1222; position:relative; z-index:2; transition:filter .5s ease; }
+  .form-card.dim{ filter:brightness(.5) saturate(.7); }
+  .fc-brand{ display:flex; align-items:center; gap:8px; margin-bottom:14px; font-weight:700; font-size:.95rem; }
+  .fc-brand .d{ width:19px; height:19px; border-radius:6px; background:linear-gradient(135deg,#5C98FF,#2E68D8); }
+  .fc-h{ font-size:1.1rem; font-weight:700; letter-spacing:-.01em; } .fc-sub{ font-size:.76rem; color:#6b7280; margin:2px 0 15px; }
+  .fld{ margin-bottom:11px; } .fld label{ display:block; font-size:.71rem; font-weight:600; color:#374151; margin-bottom:5px; }
+  .inp{ height:42px; border:1px solid #d5dae2; border-radius:9px; display:flex; align-items:center; padding:0 12px; font-size:.85rem; color:#0f1222; background:#fff; transition:border-color .2s, box-shadow .2s; }
+  .inp.focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(76,141,255,.16); }
+  .inp .ph{ color:#9aa1ac; } .inp .typed{ color:#0f1222; } .inp .caret{ width:1.5px; height:16px; background:var(--accent); margin-left:1px; animation:blink 1s steps(1) infinite; }
+  @keyframes blink{ 50%{opacity:0} }
+  .consent{ display:flex; align-items:center; gap:10px; margin:5px 0 15px; }
+  .cbx{ width:24px; height:24px; flex:0 0 auto; border:1.6px solid #b7bfca; border-radius:6px; background:#fff; display:grid; place-items:center; position:relative; transition:all .18s; }
+  .cbx.on{ background:var(--accent); border-color:var(--accent); }
+  .cbx svg{ width:15px; height:15px; opacity:0; transform:scale(.5); transition:.18s; } .cbx.on svg{ opacity:1; transform:scale(1); }
+  .consent .ct{ font-size:.73rem; color:#4b5563; } .consent .ct a{ color:#2E68D8; }
+  .cbx.miss{ animation:cbxmiss .3s; } @keyframes cbxmiss{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
+  .cta-btn{ height:42px; border-radius:9px; background:var(--accent); color:#fff; font-weight:600; font-size:.88rem; display:grid; place-items:center; }
+  .fc-done{ position:absolute; inset:0; background:#fff; border-radius:14px; display:grid; place-items:center; opacity:0; pointer-events:none; transition:opacity .4s; } .fc-done.show{ opacity:1; }
+  .fc-done .ring{ width:50px; height:50px; border-radius:50%; background:#e7f6ec; color:#1a9c4b; display:grid; place-items:center; font-size:1.6rem; margin-bottom:8px; } .fc-done h3{ font-size:1.1rem; }
+
+  .cursor{ position:absolute; top:0; left:0; z-index:5; width:150px; pointer-events:none; will-change:transform; transition:transform 1.05s cubic-bezier(.5,.05,.2,1); }
+  .cursor .ptr{ position:relative; } .cursor .ptr svg{ display:block; filter:drop-shadow(0 3px 6px rgba(0,0,0,.5)); }
+  .cursor .tag{ position:absolute; top:15px; left:14px; font-family:var(--mono); font-size:.6rem; font-weight:600; white-space:nowrap; padding:2px 7px; border-radius:6px; color:#fff; letter-spacing:.02em; }
+  .cursor.tagL .tag{ left:auto; right:14px; }
+  .cursor.tremor .ptr{ animation:shake .12s infinite; }
+  @keyframes shake{ 0%{transform:translate(0,0)} 25%{transform:translate(2.5px,-2px)} 50%{transform:translate(-2.5px,2px)} 75%{transform:translate(2px,2.5px)} 100%{transform:translate(-2px,-2.5px)} }
+  .cursor.click .ptr{ animation:tap .18s; } @keyframes tap{ 50%{transform:scale(.8)} }
+  .ripple{ position:absolute; z-index:4; width:26px; height:26px; margin:-13px; border-radius:50%; border:2px solid var(--accent); opacity:0; pointer-events:none; }
+  .ripple.go{ animation:rip .5s ease-out; } .ripple.miss{ border-color:var(--fail); } .ripple.ok{ border-color:var(--ok); }
+  @keyframes rip{ 0%{opacity:.9; transform:scale(.4)} 100%{opacity:0; transform:scale(2.2)} }
+  .missx{ position:absolute; z-index:6; color:var(--fail); font-family:var(--mono); font-weight:700; font-size:1rem; margin:-9px; opacity:0; pointer-events:none; text-shadow:0 2px 6px rgba(0,0,0,.6); }
+  .missx.show{ animation:misspop .5s forwards; } @keyframes misspop{ 0%{opacity:0; transform:scale(2)} 30%{opacity:1; transform:scale(1)} 100%{opacity:1} }
+  .death{ position:absolute; z-index:7; pointer-events:none; opacity:0; } .death.show{ opacity:1; transition:opacity .3s; }
+  .death .core{ width:15px; height:15px; margin:-7px; border-radius:50%; background:var(--fail); animation:beatr 1.4s infinite; }
+  .death .lbl{ position:absolute; left:14px; top:-6px; white-space:nowrap; font-family:var(--mono); font-size:.64rem; color:var(--fail); background:rgba(20,10,12,.9); padding:3px 8px; border-radius:6px; border:1px solid rgba(248,81,73,.3); }
+  .chips{ position:absolute; left:0; right:0; bottom:12px; display:flex; justify-content:center; gap:7px; flex-wrap:wrap; z-index:8; padding:0 12px; }
+  .chip{ display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.66rem; color:var(--muted); background:rgba(20,23,29,.85); border:1px solid var(--line); border-radius:20px; padding:5px 10px; backdrop-filter:blur(6px); transition:all .3s; }
+  .chip .sw{ width:7px; height:7px; border-radius:50%; background:#3a424e; transition:.3s; }
+  .chip.run .sw{ background:var(--accent); animation:beat 1.2s infinite; }
+  .chip.ok{ color:#bfeccb; border-color:rgba(63,185,80,.35); } .chip.ok .sw{ background:var(--ok); }
+  .chip.dead{ color:#ffc4c1; border-color:rgba(248,81,73,.4); } .chip.dead .sw{ background:var(--fail); }
+
+  /* PR bot comment (appears after the verdict) */
+  .botc{ margin:0 18px 16px; border:1px solid var(--line); border-radius:11px; overflow:hidden; opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; }
+  .botc.in{ opacity:1; transform:none; }
+  .botc-h{ display:flex; align-items:center; gap:9px; padding:9px 13px; background:rgba(248,81,73,.06); border-bottom:1px solid var(--line); font-size:.8rem; }
+  .botc-h .av{ width:20px; height:20px; border-radius:5px; background:linear-gradient(135deg,#4C8DFF,#2E68D8); display:grid; place-items:center; font-size:.66rem; }
+  .botc-h b{ font-weight:600; } .botc-h .t{ margin-left:auto; font-family:var(--mono); font-size:.68rem; color:var(--dim); }
+  .botc-b{ padding:12px 14px; font-size:.84rem; line-height:1.55; }
+  .botc-b .x{ color:var(--fail); font-weight:600; } .botc-b code{ font-family:var(--mono); font-size:.8rem; background:rgba(255,255,255,.05); padding:1px 5px; border-radius:4px; }
+  .botc-b .lk{ color:var(--accent); }
 
   .merge-bar{ display:flex; align-items:center; gap:12px; padding:14px 18px; background:rgba(255,255,255,.015); border-top:1px solid var(--line); }
   .merge-btn{ font-weight:600; font-size:.9rem; padding:9px 18px; border-radius:8px; background:var(--ok); color:#04140a; border:0; transition:.3s; }
   .merge-btn.blocked{ background:#2a1113; color:var(--fail); border:1px solid rgba(248,81,73,.4); cursor:not-allowed; }
   .merge-note{ font-family:var(--mono); font-size:.74rem; color:var(--dim); } .merge-note.bad{ color:#f7a49f; }
 
-  /* ---------- the swarm stage (revealed when the gate runs) ---------- */
-  .gate-run{ max-height:0; overflow:hidden; transition:max-height .6s ease; border-top:0; }
-  .gate-run.open{ max-height:720px; border-top:1px solid var(--line); }
-  .gr-head{ padding:11px 18px; font-family:var(--mono); font-size:.72rem; color:var(--muted); background:rgba(76,141,255,.05);
-    display:flex; align-items:center; gap:9px; }
-  .gr-head b{ color:var(--accent); } .gr-head .rt{ margin-left:auto; color:var(--dim); }
-
-  .stage{ position:relative; min-height:470px; display:grid; place-items:center; padding:26px 16px; background:#0d1119; }
-  @media(max-width:640px){ .stage{ min-height:520px; } }
-  .form-card{ width:330px; max-width:92%; background:#fff; border-radius:14px; padding:22px 20px 18px; box-shadow:0 20px 60px rgba(0,0,0,.45);
-    color:#0f1222; position:relative; z-index:2; transition:filter .5s ease; }
-  .form-card.dim{ filter:brightness(.5) saturate(.7); }
-  .fc-brand{ display:flex; align-items:center; gap:8px; margin-bottom:14px; font-weight:700; font-size:.95rem; }
-  .fc-brand .d{ width:19px; height:19px; border-radius:6px; background:linear-gradient(135deg,#5C98FF,#2E68D8); }
-  .fc-h{ font-size:1.1rem; font-weight:700; letter-spacing:-.01em; }
-  .fc-sub{ font-size:.76rem; color:#6b7280; margin:2px 0 15px; }
-  .fld{ margin-bottom:11px; }
-  .fld label{ display:block; font-size:.71rem; font-weight:600; color:#374151; margin-bottom:5px; }
-  .inp{ height:42px; border:1px solid #d5dae2; border-radius:9px; display:flex; align-items:center; padding:0 12px; font-size:.85rem;
-    color:#0f1222; background:#fff; transition:border-color .2s, box-shadow .2s; }
-  .inp.focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(76,141,255,.16); }
-  .inp .ph{ color:#9aa1ac; } .inp .typed{ color:#0f1222; }
-  .inp .caret{ width:1.5px; height:16px; background:var(--accent); margin-left:1px; animation:blink 1s steps(1) infinite; }
-  @keyframes blink{ 50%{opacity:0} }
-  .consent{ display:flex; align-items:center; gap:10px; margin:5px 0 15px; }
-  /* the shrunk 24px checkbox — the thing this PR changed */
-  .cbx{ width:24px; height:24px; flex:0 0 auto; border:1.6px solid #b7bfca; border-radius:6px; background:#fff; display:grid; place-items:center;
-    position:relative; transition:all .18s; }
-  .cbx.on{ background:var(--accent); border-color:var(--accent); }
-  .cbx svg{ width:15px; height:15px; opacity:0; transform:scale(.5); transition:.18s; } .cbx.on svg{ opacity:1; transform:scale(1); }
-  .consent .ct{ font-size:.73rem; color:#4b5563; } .consent .ct a{ color:#2E68D8; }
-  .cbx.miss{ animation:cbxmiss .3s; }
-  @keyframes cbxmiss{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
-  .cta-btn{ height:42px; border-radius:9px; background:var(--accent); color:#fff; font-weight:600; font-size:.88rem; display:grid; place-items:center; }
-  .fc-done{ position:absolute; inset:0; background:#fff; border-radius:14px; display:grid; place-items:center; opacity:0; pointer-events:none; transition:opacity .4s; }
-  .fc-done.show{ opacity:1; }
-  .fc-done .ring{ width:50px; height:50px; border-radius:50%; background:#e7f6ec; color:#1a9c4b; display:grid; place-items:center; font-size:1.6rem; margin-bottom:8px; }
-  .fc-done h3{ font-size:1.1rem; }
-
-  .cursor{ position:absolute; top:0; left:0; z-index:5; width:150px; pointer-events:none; will-change:transform; transition:transform 1.05s cubic-bezier(.5,.05,.2,1); }
-  .cursor .ptr{ position:relative; }
-  /* flip the name tag to the LEFT of the pointer when near the stage's right edge */
-  .cursor.tagL .tag{ left:auto; right:14px; }
-  .cursor .ptr svg{ display:block; filter:drop-shadow(0 3px 6px rgba(0,0,0,.5)); }
-  .cursor .tag{ position:absolute; top:15px; left:14px; font-family:var(--mono); font-size:.6rem; font-weight:600; white-space:nowrap;
-    padding:2px 7px; border-radius:6px; color:#fff; letter-spacing:.02em; }
-  .cursor.tremor .ptr{ animation:shake .12s infinite; }
-  @keyframes shake{ 0%{transform:translate(0,0)} 25%{transform:translate(2.5px,-2px)} 50%{transform:translate(-2.5px,2px)} 75%{transform:translate(2px,2.5px)} 100%{transform:translate(-2px,-2.5px)} }
-  .cursor.click .ptr{ animation:tap .18s; } @keyframes tap{ 50%{transform:scale(.8)} }
-  .ripple{ position:absolute; z-index:4; width:26px; height:26px; margin:-13px; border-radius:50%; border:2px solid var(--accent); opacity:0; pointer-events:none; }
-  .ripple.go{ animation:rip .5s ease-out; } .ripple.miss{ border-color:var(--fail); }
-  @keyframes rip{ 0%{opacity:.9; transform:scale(.4)} 100%{opacity:0; transform:scale(2.2)} }
-  .missx{ position:absolute; z-index:6; color:var(--fail); font-family:var(--mono); font-weight:700; font-size:1rem; margin:-9px; opacity:0; pointer-events:none; text-shadow:0 2px 6px rgba(0,0,0,.6); }
-  .missx.show{ animation:misspop .5s forwards; } @keyframes misspop{ 0%{opacity:0; transform:scale(2)} 30%{opacity:1; transform:scale(1)} 100%{opacity:1} }
-  .death{ position:absolute; z-index:7; pointer-events:none; opacity:0; } .death.show{ opacity:1; transition:opacity .3s; }
-  .death .core{ width:15px; height:15px; margin:-7px; border-radius:50%; background:var(--fail); animation:beatr 1.4s infinite; }
-  @keyframes beatr{ 0%{box-shadow:0 0 0 0 rgba(248,81,73,.55)} 70%{box-shadow:0 0 0 8px rgba(248,81,73,0)} 100%{box-shadow:0 0 0 0 rgba(248,81,73,0)} }
-  .death .lbl{ position:absolute; left:14px; top:-6px; white-space:nowrap; font-family:var(--mono); font-size:.64rem; color:var(--fail);
-    background:rgba(20,10,12,.9); padding:3px 8px; border-radius:6px; border:1px solid rgba(248,81,73,.3); }
-
-  .chips{ position:absolute; left:0; right:0; bottom:12px; display:flex; justify-content:center; gap:7px; flex-wrap:wrap; z-index:8; padding:0 12px; }
-  .chip{ display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.66rem; color:var(--muted); background:rgba(20,23,29,.85);
-    border:1px solid var(--line); border-radius:20px; padding:5px 10px; backdrop-filter:blur(6px); transition:all .3s; }
-  .chip .sw{ width:7px; height:7px; border-radius:50%; background:#3a424e; transition:.3s; }
-  .chip.run .sw{ background:var(--accent); animation:beat 1.2s infinite; }
-  .chip.ok{ color:#bfeccb; border-color:rgba(63,185,80,.35); } .chip.ok .sw{ background:var(--ok); }
-  .chip.dead{ color:#ffc4c1; border-color:rgba(248,81,73,.4); } .chip.dead .sw{ background:var(--fail); }
-
-  /* ---------- analytics receipts ---------- */
-  .reveal{ opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
-  .reveal.in{ opacity:1; transform:none; }
-  .rr-lead{ text-align:center; margin:30px 0 18px; }
+  /* receipts */
+  .reveal{ opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); } .reveal.in{ opacity:1; transform:none; }
+  .rr-lead{ text-align:center; margin:30px 0 16px; }
   .rr-lead .k{ font-family:var(--mono); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fail); }
   .rr-lead h2{ font-size:clamp(1.3rem,3vw,1.8rem); font-weight:650; letter-spacing:-.02em; margin-top:6px; }
-  .metrics{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin:16px 0 22px; }
+
+  /* business impact — the loss-aversion punch */
+  .impact{ border:1px solid rgba(248,81,73,.3); background:linear-gradient(180deg,rgba(248,81,73,.09),rgba(248,81,73,.03)); border-radius:14px; padding:22px 22px; text-align:center; margin-bottom:16px; }
+  .impact .big{ font-size:clamp(1.5rem,4vw,2.3rem); font-weight:750; letter-spacing:-.02em; color:#ffb4b0; }
+  .impact .big b{ color:var(--fail); } .impact .cap{ color:var(--muted); font-size:.92rem; margin-top:8px; }
+  .impact .fine{ font-family:var(--mono); font-size:.66rem; color:var(--dim); margin-top:8px; }
+
+  .metrics{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin:0 0 16px; }
   @media(max-width:640px){ .metrics{ grid-template-columns:1fr; } }
-  .metric{ background:var(--surface); padding:20px 18px; }
-  .metric .n{ font-size:2.2rem; font-weight:750; letter-spacing:-.02em; line-height:1; }
-  .metric .n.red{ color:var(--fail); } .metric .n.blue{ color:var(--accent); } .metric .n small{ font-size:1rem; color:var(--dim); font-weight:500; }
+  .metric{ background:var(--surface); padding:18px 18px; }
+  .metric .n{ font-size:2rem; font-weight:750; letter-spacing:-.02em; line-height:1; } .metric .n.red{ color:var(--fail); } .metric .n.blue{ color:var(--accent); } .metric .n small{ font-size:.95rem; color:var(--dim); font-weight:500; }
   .metric .l{ font-size:.8rem; color:var(--muted); margin-top:8px; }
-  .panels{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px; }
+
+  /* per-persona results grid */
+  .grid-t{ border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:16px; }
+  .gt-row{ display:grid; grid-template-columns:1.3fr 1.4fr .9fr 1fr; gap:10px; padding:11px 16px; border-bottom:1px solid var(--line); font-size:.82rem; align-items:center; }
+  .gt-row:last-child{ border-bottom:0; } .gt-row.h{ background:rgba(255,255,255,.02); font-family:var(--mono); font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+  .gt-row .pn2{ display:flex; align-items:center; gap:8px; font-weight:600; } .gt-row .dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+  .gt-row .deg2{ font-family:var(--mono); font-size:.72rem; color:var(--muted); }
+  .gt-row .oc{ font-family:var(--mono); font-size:.74rem; font-weight:700; } .gt-row .oc.ok{ color:var(--ok); } .gt-row .oc.bad{ color:var(--fail); }
+  .gt-row .dp{ font-family:var(--mono); font-size:.72rem; color:var(--dim); }
+  @media(max-width:640px){ .gt-row{ grid-template-columns:1fr 1fr; row-gap:4px; } .gt-row .deg2,.gt-row.h .g3,.gt-row.h .g4{ display:none; } }
+
+  .panels{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
   @media(max-width:760px){ .panels{ grid-template-columns:1fr; } }
   .panel{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 16px 14px; }
   .panel h4{ font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:12px; }
@@ -177,32 +190,41 @@
   .heat .pin{ position:absolute; font-family:var(--mono); font-size:.6rem; color:#ffd9d6; white-space:nowrap; transform:translate(-50%,10px); }
   .surv svg{ width:100%; height:146px; display:block; }
   .surv .base{ stroke:var(--line); stroke-width:1; }
-  .surv .trace{ fill:none; stroke:var(--accent); stroke-width:2.5; stroke-linejoin:round; stroke-dasharray:600; stroke-dashoffset:600; transition:stroke-dashoffset 1.4s ease .2s; }
-  .surv.in .trace{ stroke-dashoffset:0; }
-  .surv .drop{ fill:var(--fail); opacity:0; transition:opacity .4s 1.1s; } .surv.in .drop{ opacity:1; }
-  .surv .lbl{ font-family:var(--mono); font-size:8px; fill:var(--dim); }
-  .term{ background:#0a0d12; border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:22px; }
+  .surv .trace{ fill:none; stroke:var(--accent); stroke-width:2.5; stroke-linejoin:round; stroke-dasharray:600; stroke-dashoffset:600; transition:stroke-dashoffset 1.4s ease .2s; } .surv.in .trace{ stroke-dashoffset:0; }
+  .surv .drop{ fill:var(--fail); opacity:0; transition:opacity .4s 1.1s; } .surv.in .drop{ opacity:1; } .surv .lbl{ font-family:var(--mono); font-size:8px; fill:var(--dim); }
+
+  /* cloned-voice exit-interview */
+  .voice{ border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px 18px; margin-bottom:16px; display:flex; gap:15px; align-items:center; }
+  .voice .play{ width:44px; height:44px; flex:0 0 auto; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; font-size:1.1rem; box-shadow:0 6px 18px rgba(76,141,255,.4); }
+  .voice .vb{ min-width:0; flex:1; }
+  .voice .wave{ display:flex; align-items:center; gap:2px; height:26px; margin-bottom:9px; }
+  .voice .wave i{ width:3px; border-radius:2px; background:var(--accent-2); opacity:.4; height:20%; }
+  .voice.play-on .wave i{ animation:wv 1s ease-in-out infinite; }
+  @keyframes wv{ 0%,100%{ transform:scaleY(.3) } 50%{ transform:scaleY(1) } }
+  .voice .q{ font-size:.92rem; color:var(--text); font-style:italic; line-height:1.45; } .voice .q b{ font-style:normal; }
+  .voice .who{ font-family:var(--mono); font-size:.66rem; color:var(--dim); margin-top:6px; }
+
+  .term{ background:#0a0d12; border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:16px; }
   .term-bar{ display:flex; align-items:center; gap:7px; padding:9px 13px; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:.68rem; color:var(--dim); }
   .term-bar i{ width:10px; height:10px; border-radius:50%; } .term-bar .r{ background:#ff5f57 } .term-bar .y{ background:#febc2e } .term-bar .g{ background:#28c840 }
   .term-body{ padding:15px 17px; font-family:var(--mono); font-size:.8rem; line-height:1.7; min-height:150px; }
   .term-body .ln{ white-space:pre-wrap; opacity:0; } .term-body .ln.in{ opacity:1; }
-  .term-body .c-p{ color:var(--accent-2); } .term-body .c-d{ color:var(--dim); } .term-body .c-ok{ color:var(--ok); }
-  .term-body .c-f{ color:var(--fail); font-weight:700; } .term-body .c-w{ color:var(--warn); }
+  .term-body .c-p{ color:var(--accent-2); } .term-body .c-d{ color:var(--dim); } .term-body .c-ok{ color:var(--ok); } .term-body .c-f{ color:var(--fail); font-weight:700; } .term-body .c-w{ color:var(--warn); }
   .cursor-blink::after{ content:'▋'; color:var(--accent); animation:blink 1s steps(1) infinite; }
 
+  /* trend sparkline */
+  .trend{ border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px 18px; margin-bottom:22px; }
+  .trend h4{ font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; }
+  .trend svg{ width:100%; height:66px; display:block; }
+  .trend .tl{ fill:none; stroke:var(--ok); stroke-width:2; } .trend .td{ fill:var(--fail); } .trend .txt{ font-family:var(--mono); font-size:8px; fill:var(--dim); }
+
   .cta{ text-align:center; padding:14px 0 56px; }
-  .cta .line{ font-size:clamp(1.25rem,3vw,1.75rem); font-weight:650; letter-spacing:-.02em; }
-  .cta .line .do{ color:var(--accent); }
+  .cta .line{ font-size:clamp(1.25rem,3vw,1.75rem); font-weight:650; letter-spacing:-.02em; } .cta .line .do{ color:var(--accent); }
   .cta .go{ display:inline-flex; align-items:center; gap:9px; margin-top:18px; background:var(--accent); color:#fff; text-decoration:none; font-weight:600; padding:13px 24px; border-radius:11px; box-shadow:0 10px 30px rgba(76,141,255,.35); transition:transform .12s, box-shadow .2s; }
   .cta .go:hover{ transform:translateY(-2px); box-shadow:0 16px 40px rgba(76,141,255,.5); }
   .cta .sub2{ color:var(--dim); font-family:var(--mono); font-size:.72rem; margin-top:16px; }
-  .foot{ border-top:1px solid var(--line); padding:20px 0; text-align:center; color:var(--dim); font-family:var(--mono); font-size:.68rem; }
-  .foot a{ color:var(--muted); text-decoration:none; } .foot a:hover{ color:var(--text); }
-  @media(prefers-reduced-motion:reduce){
-    *{ animation:none!important; transition-duration:.01ms!important; }
-    /* keep the money-shot legible without motion: misses + death stay visible */
-    .ripple.go{ opacity:.85; } .missx.show{ opacity:1; } .death .core{ box-shadow:0 0 0 5px rgba(248,81,73,.25); }
-  }
+  .foot{ border-top:1px solid var(--line); padding:20px 0; text-align:center; color:var(--dim); font-family:var(--mono); font-size:.68rem; } .foot a{ color:var(--muted); text-decoration:none; } .foot a:hover{ color:var(--text); }
+  @media(prefers-reduced-motion:reduce){ *{ animation:none!important; transition-duration:.01ms!important; } .ripple.go{ opacity:.85; } .missx.show{ opacity:1; } .death .core{ box-shadow:0 0 0 5px rgba(248,81,73,.25); } }
 </style>
 </head>
 <body>
@@ -218,7 +240,7 @@
     <section class="hero">
       <p class="kick">Behavioral tests, like unit tests</p>
       <h1>Watch the gate block a bad deploy.</h1>
-      <p class="sub">A developer shrank the signup consent checkbox to match the brand. <b>Build passes. Unit tests pass.</b> But the behavioral gate runs a swarm of AI users on the PR — and catches that people with a hand tremor can no longer finish. It blocks the merge before it ships.</p>
+      <p class="sub">A developer shrank the signup consent checkbox to match the brand. <b>Build passes. Unit tests pass.</b> Then the behavioral gate runs a swarm of mechanically-degraded AI users on the PR — and catches that people with a hand tremor can no longer finish. It counts the signups you'd lose, and blocks the merge before it ships.</p>
     </section>
 
     <div class="runbar">
@@ -226,7 +248,6 @@
       <button class="btn btn-ghost" id="replayBtn" style="display:none">↻ Replay</button>
     </div>
 
-    <!-- the PR -->
     <section class="pr">
       <div class="pr-head">
         <span class="pr-badge" id="prBadge">● Open</span>
@@ -238,7 +259,6 @@
           <div class="df-l ad">.consent input { width: 24px; height: 24px; }</div>
         </div>
       </div>
-
       <div class="checks">
         <div class="check"><span class="ico ok">✓</span><span class="nm">Build</span><span class="dc">passed in 41s</span></div>
         <div class="check"><span class="ico ok">✓</span><span class="nm">Unit tests</span><span class="dc">142 passed</span></div>
@@ -249,10 +269,9 @@
         </div>
       </div>
 
-      <!-- the gate expands to show the swarm running -->
       <div class="gate-run" id="gateRun">
-        <div class="gr-head"><span class="spinner" id="grSpin"></span><span><b>behavioral-gate</b> · running the swarm on this PR</span>
-          <span class="rt" id="grCount">5 agents · Gemini 3.5</span></div>
+        <div class="gr-head"><span class="spinner" id="grSpin"></span><span><b>behavioral-gate</b> · running the swarm on this PR</span><span class="rt" id="grCount">5 agents · Gemini 3.5</span></div>
+        <div class="swarm-strip" id="strip"></div>
         <div class="stage" id="stage">
           <div class="form-card" id="card">
             <div class="fc-brand"><span class="d"></span>Nimbus</div>
@@ -271,6 +290,16 @@
         </div>
       </div>
 
+      <!-- PR bot comment (post-verdict) -->
+      <div class="botc" id="botc">
+        <div class="botc-h"><span class="av">🤖</span><b>simulationlabs</b><span>bot commented</span><span class="t">just now</span></div>
+        <div class="botc-b">
+          <span class="x">❌ Behavioral regression on <code>signup</code>.</span> Completion dropped <b>100% → 80%</b> vs the last passing run.
+          <b>Misclick-prone</b> users can't tick the new 24px consent box and abandon at <code>(464, 494)</code>.
+          <span class="lk">▸ full report · video receipts · exit interview</span>
+        </div>
+      </div>
+
       <div class="merge-bar">
         <button class="merge-btn" id="mergeBtn">Merge pull request</button>
         <span class="merge-note" id="mergeNote">All checks are pending…</span>
@@ -279,36 +308,61 @@
 
     <!-- receipts -->
     <section class="reveal" id="analytics">
-      <div class="rr-lead">
-        <span class="k">Why the gate blocked it</span>
-        <h2>Unit tests can't see this. The swarm can.</h2>
+      <div class="rr-lead"><span class="k">Why the gate blocked it</span><h2>Green build. Passing tests. Users who can't finish.</h2></div>
+
+      <div class="impact">
+        <div class="big">This ships to ~8,000 signups/mo. You'd silently lose <b id="lost">~1,600</b> of them — <b id="revLost">every month</b>.</div>
+        <div class="cap">A 20-point completion drop on a flow that already passed every unit test. No error, no alert — just fewer accounts.</div>
+        <div class="fine">illustrative · scaled to a typical mid-market signup funnel</div>
       </div>
+
       <div class="metrics">
-        <div class="metric"><div class="n red">100<small>%</small> <small>→</small> 80<small>%</small></div><div class="l">signup completion vs the last passing run</div></div>
+        <div class="metric"><div class="n red" id="mComp">100<small>%</small> <small>→</small> 80<small>%</small></div><div class="l">signup completion vs the last passing run</div></div>
         <div class="metric"><div class="n red">1 / 5</div><div class="l">agents regressed — Misclick-prone can't tick the 24px box</div></div>
         <div class="metric"><div class="n blue">(464, 494)</div><div class="l">the exact pixel where they give up — on video</div></div>
       </div>
+
+      <div class="grid-t" id="gridT">
+        <div class="gt-row h"><span>agent</span><span class="deg2">mechanical degradation</span><span class="g3">outcome</span><span class="g4">gave up at</span></div>
+      </div>
+
       <div class="panels">
-        <div class="panel">
-          <h4>Abandonment heatmap · where they die</h4>
+        <div class="panel"><h4>Abandonment heatmap · where they die</h4>
           <div class="heat" id="heat"><div class="grid"></div><div class="blob" id="heatBlob"></div><div class="pin" id="heatPin">✕ (464, 494) · the shrunk consent box</div></div>
         </div>
-        <div class="panel">
-          <h4>Survival · agents still in the flow</h4>
+        <div class="panel"><h4>Survival · agents still in the flow</h4>
           <div class="surv" id="surv"><svg viewBox="0 0 300 150" preserveAspectRatio="none">
             <line class="base" x1="0" y1="120" x2="300" y2="120"/>
             <path class="trace" d="M4,26 L150,26 L210,26 L210,88 L296,88"/>
             <circle class="drop" cx="210" cy="88" r="4"/>
-            <text class="lbl" x="6" y="20">5 alive</text>
-            <text class="lbl" x="296" y="104" text-anchor="end">4 survived</text>
-            <text class="lbl" x="214" y="82">misclick-prone ✕</text>
+            <text class="lbl" x="6" y="20">5 alive</text><text class="lbl" x="296" y="104" text-anchor="end">4 survived</text><text class="lbl" x="214" y="82">misclick-prone ✕</text>
           </svg></div>
         </div>
       </div>
+
+      <div class="voice" id="voice">
+        <div class="play">▶</div>
+        <div class="vb">
+          <div class="wave" id="wave"></div>
+          <div class="q">“I kept jabbing at that little agree box and my hand just wouldn't land on it. After the fourth try I figured the page was broken, so I <b>bailed</b>.”</div>
+          <div class="who">cloned-voice exit interview · Misclick-prone · grounded in its real action trace · Gradium</div>
+        </div>
+      </div>
+
       <div class="term">
         <div class="term-bar"><i class="r"></i><i class="y"></i><i class="g"></i><span style="margin-left:6px">.github/workflows/simulate.yml</span></div>
         <div class="term-body" id="term"></div>
       </div>
+
+      <div class="trend">
+        <h4>Signup completion · your last 6 deploys</h4>
+        <svg viewBox="0 0 300 66" preserveAspectRatio="none">
+          <polyline class="tl" points="6,14 54,12 102,15 150,11 198,13 246,44"/>
+          <circle class="td" cx="246" cy="44" r="4"/>
+          <text class="txt" x="6" y="10">100%</text><text class="txt" x="250" y="42">80% · this PR</text>
+        </svg>
+      </div>
+
       <div class="cta">
         <div class="line">Ship the bug, or block the merge. Only one tool tells you what users actually <span class="do">do</span>.</div>
         <a class="go" href="https://simulationlabs.dev">See the full report & book a teardown →</a>
@@ -326,28 +380,35 @@
   "use strict";
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   var $ = function(id){ return document.getElementById(id); };
-  var stage=$('stage'), card=$('card'), runBtn=$('runBtn'), replayBtn=$('replayBtn'), chipsEl=$('chips');
+  var stage=$('stage'), card=$('card'), runBtn=$('runBtn'), replayBtn=$('replayBtn'), chipsEl=$('chips'), stripEl=$('strip');
   var running=false, timers=[], gen=0;
   function T(fn,ms){ var t=setTimeout(fn, reduce?Math.min(ms,50):ms); timers.push(t); return t; }
   function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
   var sleep=function(ms){ return new Promise(function(r){ T(r,ms); }); };
-  // Keep the live action in view — the PR panel is tall, so the stage sits below
-  // the fold on most viewports. Scroll it to center on every device when the
-  // swarm runs (respect reduced-motion by jumping instead of smooth-scrolling).
   function scrollTo(node){ if(node && node.scrollIntoView) node.scrollIntoView({behavior: reduce?'auto':'smooth', block:'center'}); }
 
   var AGENTS=[
-    {id:'fluent',name:'Fluent',color:'#4C8DFF'},
-    {id:'ai-agent',name:'AI Agent',color:'#22C1C3'},
-    {id:'rushed',name:'Rushed',color:'#8B5CF6'},
-    {id:'mobile-thumb',name:'Mobile-thumb',color:'#D29922'},
-    {id:'misclick-prone',name:'Misclick-prone',color:'#F85149'}
+    {id:'fluent',name:'Fluent',color:'#4C8DFF',seg:'Confident, precise user — the control',deg:'no degradation',oc:'ok',dp:'—'},
+    {id:'ai-agent',name:'AI Agent',color:'#22C1C3',seg:'Unattended bot — is it machine-navigable?',deg:'headless',oc:'ok',dp:'—'},
+    {id:'rushed',name:'Rushed',color:'#8B5CF6',seg:'In a hurry; bails if it is not obvious',deg:'patience 10 steps',oc:'ok',dp:'—'},
+    {id:'mobile-thumb',name:'Mobile-thumb',color:'#D29922',seg:'Thumb on a 390px screen',deg:'viewport 390px · σ22px',oc:'ok',dp:'—'},
+    {id:'misclick-prone',name:'Misclick-prone',color:'#F85149',seg:'Imprecise taps; small targets punish it',deg:'tremor σ24px · patience 6',oc:'bad',dp:'(464, 494)'}
   ];
-  var cursors={}, chips={};
+  var cursors={}, chips={}, pcards={};
 
-  function centerOf(node){ var s=stage.getBoundingClientRect(), r=node.getBoundingClientRect();
-    return { x:r.left-s.left+r.width/2, y:r.top-s.top+r.height/2 }; }
+  function centerOf(node){ var s=stage.getBoundingClientRect(), r=node.getBoundingClientRect(); return { x:r.left-s.left+r.width/2, y:r.top-s.top+r.height/2 }; }
   function jitter(pt,m){ return { x:pt.x+(Math.random()*2-1)*m, y:pt.y+(Math.random()*2-1)*m }; }
+
+  function buildStrip(){
+    stripEl.innerHTML=''; pcards={};
+    AGENTS.forEach(function(a){
+      var c=document.createElement('div'); c.className='pcard'; c.id='pc-'+a.id;
+      c.innerHTML='<div class="pn"><span class="dot" style="background:'+a.color+'"></span>'+a.name+'</div>'+
+        '<div class="pseg">'+a.seg+'</div><span class="deg">'+a.deg+'</span><span class="st"></span>';
+      stripEl.appendChild(c); pcards[a.id]=c;
+    });
+  }
+  function setCard(id,cls,label){ var c=pcards[id]; if(c){ c.className='pcard '+cls; var s=c.querySelector('.st'); if(s) s.textContent=label||''; } }
 
   function buildActors(){
     chipsEl.innerHTML='';
@@ -356,108 +417,112 @@
     AGENTS.forEach(function(a,i){
       var c=document.createElement('div'); c.className='cursor';
       c.innerHTML='<div class="ptr"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M3.5 2 L3.5 17 L7.4 13.3 L10.2 20 L12.7 19 L10 12.4 L15 12.4 Z" fill="'+a.color+'" stroke="#fff" stroke-width="1"/></svg><span class="tag" style="background:'+a.color+'">'+a.name+'</span></div>';
-      var sx=[36,300,50,320,180][i], sy=[30,44,420,400,20][i];
+      var sx=[36,300,50,320,180][i], sy=[26,40,410,392,18][i];
       c.style.transform='translate('+sx+'px,'+sy+'px)'; c.style.opacity='0';
       stage.appendChild(c); cursors[a.id]={node:c,x:sx,y:sy};
-      var ch=document.createElement('div'); ch.className='chip'; ch.innerHTML='<span class="sw"></span>'+a.name;
-      chipsEl.appendChild(ch); chips[a.id]=ch;
+      var ch=document.createElement('div'); ch.className='chip'; ch.innerHTML='<span class="sw"></span>'+a.name; chipsEl.appendChild(ch); chips[a.id]=ch;
     });
   }
   function moveCursor(id,pt,ms){ var c=cursors[id]; if(!c) return Promise.resolve();
     c.node.style.transition='transform '+((reduce?50:ms)/1000)+'s cubic-bezier(.5,.05,.2,1), opacity .3s';
     c.node.style.opacity='1'; c.node.style.transform='translate('+(pt.x-8)+'px,'+(pt.y-4)+'px)'; c.x=pt.x; c.y=pt.y;
-    c.node.classList.toggle('tagL', pt.x > stage.clientWidth - 116);   // flip tag left near right edge
-    return sleep(ms); }
+    c.node.classList.toggle('tagL', pt.x > stage.clientWidth - 116); return sleep(ms); }
   function tremorOn(id){ if(cursors[id]) cursors[id].node.classList.add('tremor'); }
   function tremorOff(id){ if(cursors[id]) cursors[id].node.classList.remove('tremor'); }
   function fadeCursor(id){ var c=cursors[id]; if(c){ c.node.style.transition='opacity .5s, transform 1s'; c.node.style.opacity='0'; } }
   function setChip(id,cls){ if(chips[id]) chips[id].className='chip '+cls; }
-  function clickFX(id,hit){ var c=cursors[id]; if(!c) return;
+  function clickFX(id,kind){ var c=cursors[id]; if(!c) return; var hit=(kind!=='miss');
     c.node.classList.remove('click'); void c.node.offsetWidth; c.node.classList.add('click');
-    var r=document.createElement('div'); r.className='ripple go'+(hit?'':' miss'); r.style.left=c.x+'px'; r.style.top=c.y+'px';
+    var r=document.createElement('div'); r.className='ripple go '+(kind||''); r.style.left=c.x+'px'; r.style.top=c.y+'px';
     stage.appendChild(r); T(function(){ r.remove(); },600);
-    if(!hit){ var x=document.createElement('div'); x.className='missx show'; x.textContent='✕'; x.style.left=c.x+'px'; x.style.top=c.y+'px';
-      stage.appendChild(x); T(function(){ x.remove(); },1400); } }
-  function typeInto(inpId,text){ var inp=$(inpId); inp.classList.add('focus');
-    inp.innerHTML='<span class="typed"></span><span class="caret"></span>'; var t=inp.querySelector('.typed');
-    return new Promise(function(res){ var i=0; var iv=setInterval(function(){ i++; t.textContent=text.slice(0,i);
-      if(i>=text.length){ clearInterval(iv); res(); } }, reduce?4:36); timers.push(iv); }); }
+    if(kind==='miss'){ var x=document.createElement('div'); x.className='missx show'; x.textContent='✕'; x.style.left=c.x+'px'; x.style.top=c.y+'px'; stage.appendChild(x); T(function(){ x.remove(); },1400); } }
+  function typeInto(inpId,text){ var inp=$(inpId); inp.classList.add('focus'); inp.innerHTML='<span class="typed"></span><span class="caret"></span>'; var t=inp.querySelector('.typed');
+    return new Promise(function(res){ var i=0; var iv=setInterval(function(){ i++; t.textContent=text.slice(0,i); if(i>=text.length){ clearInterval(iv); res(); } }, reduce?4:34); timers.push(iv); }); }
   function unfocus(inpId){ $(inpId).classList.remove('focus'); }
   function resetField(id,ph){ $(id).innerHTML='<span class="ph">'+ph+'</span>'; $(id).classList.remove('focus'); }
+  function animNum(id,to,ms,prefix){ var node=$(id), start=null; function step(ts){ if(!start)start=ts; var p=Math.min((ts-start)/ms,1); var e=1-Math.pow(1-p,3); node.textContent=(prefix||'')+Math.round(to*e).toLocaleString(); if(p<1) requestAnimationFrame(step); } requestAnimationFrame(step); }
 
   async function run(){
-    if(running) return; running=true;
-    var myGen = ++gen;                       // any prior run's orphaned callbacks become no-ops
-    var alive = function(){ return myGen===gen; };
+    if(running) return; running=true; var myGen=++gen; var alive=function(){ return myGen===gen; };
     runBtn.disabled=true; runBtn.textContent='● Gate running…';
-    resetAll(); await sleep(250); if(!alive()) return;
+    resetAll(); await sleep(220); if(!alive()) return;
 
-    // gate check goes from pending -> running
     $('gateIco').className='ico run'; $('gateIco').innerHTML='<span class="spinner"></span>';
-    $('gateDc').textContent='running the swarm…';
-    $('mergeNote').textContent='behavioral-gate is running…'; $('mergeNote').className='merge-note';
-    $('gateRun').classList.add('open');
+    $('gateDc').textContent='running the swarm…'; $('mergeNote').textContent='behavioral-gate is running…'; $('mergeNote').className='merge-note';
+    $('gateRun').classList.add('open'); buildStrip(); scrollTo($('gateRun'));
+    await sleep(650); if(!alive()) return;
+
+    // Act 1 — meet the swarm (the mechanical-degradation capability, on display)
+    AGENTS.forEach(function(a,i){ T(function(){ setCard(a.id,'run','running'); }, 140*i); });
+    await sleep(1400); if(!alive()) return;
+
     buildActors();
-    await sleep(500); if(!alive()) return;
-    scrollTo($('gateRun'));
     AGENTS.forEach(function(a){ cursors[a.id].node.style.opacity='1'; setChip(a.id,'run'); });
-    await sleep(400);
-    // only 'fluent' visibly drives the form — fade the other 3 quickly so they don't sit frozen
-    ['ai-agent','rushed','mobile-thumb'].forEach(function(hid,i){ T(function(){ fadeCursor(hid); }, 200+120*i); });
+    await sleep(350);
 
-    var email=centerOf($('fEmail')), pass=centerOf($('fPass')), cbx=centerOf($('fCbx')), submit=centerOf($('cta-btnEl')||$('fCbx'));
-    var submitPt=centerOf(card.querySelector('.cta-btn'));
+    var email=centerOf($('fEmail')), pass=centerOf($('fPass')), cbx=centerOf($('fCbx')), submitPt=centerOf(card.querySelector('.cta-btn'));
 
-    // Fluent drives the visible form and completes.
-    await moveCursor('fluent',email,650); clickFX('fluent',true); await typeInto('fEmail','founder@acme.com'); unfocus('fEmail');
-    await moveCursor('fluent',pass,600); clickFX('fluent',true); await typeInto('fPass','••••••••••'); unfocus('fPass');
-    await moveCursor('fluent',cbx,560); clickFX('fluent',true); $('fCbx').classList.add('on'); await sleep(260);
-    await moveCursor('fluent',submitPt,520); clickFX('fluent',true); await sleep(220);
-    $('fDone').classList.add('show'); setChip('fluent','ok'); fadeCursor('fluent');
+    // Act 2 — the control completes the flow
+    await moveCursor('fluent',email,620); clickFX('fluent','go'); await typeInto('fEmail','founder@acme.com'); unfocus('fEmail'); if(!alive()) return;
+    await moveCursor('fluent',pass,560); clickFX('fluent','go'); await typeInto('fPass','••••••••••'); unfocus('fPass');
+    await moveCursor('fluent',cbx,520); clickFX('fluent','ok'); $('fCbx').classList.add('on'); await sleep(240);
+    await moveCursor('fluent',submitPt,480); clickFX('fluent','ok'); await sleep(200);
+    $('fDone').classList.add('show'); setChip('fluent','ok'); setCard('fluent','ok','✓ done'); fadeCursor('fluent');
+    await sleep(700); if(!alive()) return;
+
+    // Act 3 — the other three healthy segments each get a quick success beat, then clear
     var healthy=['ai-agent','rushed','mobile-thumb'];
-    healthy.forEach(function(hid,i){ T(function(){ setChip(hid,'ok'); fadeCursor(hid); }, 260*(i+1)); });
-    await sleep(950);
+    for(var hi=0; hi<healthy.length; hi++){ var hid=healthy[hi];
+      await moveCursor(hid, jitter(cbx,14), 380); clickFX(hid,'ok'); setChip(hid,'ok'); setCard(hid,'ok','✓ done'); fadeCursor(hid); await sleep(180); }
+    await sleep(300); if(!alive()) return;
 
-    // reset the form; the tremor agent attacks the SAME (now smaller) checkbox
-    $('fDone').classList.remove('show'); $('fCbx').classList.remove('on');
-    resetField('fEmail','you@company.com'); resetField('fPass','At least 8 characters');
+    // reset the form; the tremor agent attacks the same (now smaller) checkbox
+    $('fDone').classList.remove('show'); $('fCbx').classList.remove('on'); resetField('fEmail','you@company.com'); resetField('fPass','At least 8 characters');
     $('grCount').textContent='1 agent left · Misclick-prone';
 
-    if(!alive()) return;
-    var mid='misclick-prone'; tremorOn(mid); scrollTo($('stage'));
-    await moveCursor(mid,jitter(email,9),760); clickFX(mid,true); await typeInto('fEmail','user@company.com'); unfocus('fEmail');
-    await moveCursor(mid,jitter(pass,9),620); clickFX(mid,true); await typeInto('fPass','••••••••••'); unfocus('fPass');
-    for(var k=0;k<3;k++){ await moveCursor(mid,jitter(cbx,20+k*4),470); clickFX(mid,false);
-      $('fCbx').classList.add('miss'); T(function(){ $('fCbx').classList.remove('miss'); },300); await sleep(340); }
-    await moveCursor(mid,jitter(cbx,24),420); clickFX(mid,false); tremorOff(mid); await sleep(280);
-
+    // Act 4 — THE MONEY SHOT
+    var mid='misclick-prone'; tremorOn(mid); setCard(mid,'run','trembling'); scrollTo($('stage'));
+    await moveCursor(mid,jitter(email,9),720); clickFX(mid,'go'); await typeInto('fEmail','user@company.com'); unfocus('fEmail'); if(!alive()) return;
+    await moveCursor(mid,jitter(pass,9),600); clickFX(mid,'go'); await typeInto('fPass','••••••••••'); unfocus('fPass');
+    for(var k=0;k<4;k++){ await moveCursor(mid,jitter(cbx,20+k*4),440); clickFX(mid,'miss'); $('fCbx').classList.add('miss'); T(function(){ $('fCbx').classList.remove('miss'); },300); await sleep(330); if(!alive()) return; }
+    tremorOff(mid); await sleep(260);
     var death=document.createElement('div'); death.className='death'; death.style.left=cbx.x+'px'; death.style.top=cbx.y+'px';
-    death.innerHTML='<div class="core"></div><div class="lbl">gave up @ (464, 494)</div>';
-    stage.appendChild(death); void death.offsetWidth; death.classList.add('show');
-    setChip(mid,'dead'); card.classList.add('dim');
+    death.innerHTML='<div class="core"></div><div class="lbl">gave up @ (464, 494)</div>'; stage.appendChild(death); void death.offsetWidth; death.classList.add('show');
+    setChip(mid,'dead'); setCard(mid,'dead','✕ gave up'); card.classList.add('dim');
     await sleep(1200); if(!alive()) return;
 
-    // ---- the gate verdict: block the merge ----
-    $('grSpin').style.display='none';
-    $('gateIco').className='ico fail'; $('gateIco').innerHTML='✕';
-    $('gateDc').textContent='regression · 100% → 80%';
-    $('gateCheck').querySelector('.nm').innerHTML='<b>simulationlabs / behavioral-gate</b> — failed';
+    // Act 5 — the verdict: block the merge + bot comment
+    $('grSpin').style.display='none'; $('gateIco').className='ico fail'; $('gateIco').innerHTML='✕';
+    $('gateDc').textContent='regression · 100% → 80%'; $('gateCheck').querySelector('.nm').innerHTML='<b>simulationlabs / behavioral-gate</b> — failed';
     $('prBadge').className='pr-badge blocked'; $('prBadge').textContent='● Changes requested';
     var mb=$('mergeBtn'); mb.className='merge-btn blocked'; mb.textContent='⛔ Merge blocked';
     $('mergeNote').className='merge-note bad'; $('mergeNote').textContent='behavioral-gate failed — signup completion dropped 100% → 80%';
-    scrollTo(mb.closest('.merge-bar'));      // show the merge get blocked
-    await sleep(1300); if(!alive()) return;
+    $('botc').classList.add('in'); scrollTo($('botc'));
+    await sleep(1600); if(!alive()) return;
 
-    // receipts
-    $('analytics').classList.add('in'); scrollTo($('analytics')); await sleep(200);
-    $('heat').classList.add('in'); positionHeat();
-    $('surv').classList.add('in');
-    await sleep(600); typeTerminal();
+    // Act 6 — the receipts
+    $('analytics').classList.add('in'); scrollTo($('analytics')); await sleep(250);
+    animNum('lost',1600,1100,'~');
+    fillGrid();
+    $('heat').classList.add('in'); positionHeat(); $('surv').classList.add('in');
+    T(function(){ $('voice').classList.add('play-on'); }, 400);
+    await sleep(700); if(!alive()) return; typeTerminal();
 
-    runBtn.style.display='none'; replayBtn.style.display='inline-block'; runBtn.disabled=false; runBtn.textContent='▶ Run the behavioral gate';
-    running=false;
+    runBtn.style.display='none'; replayBtn.style.display='inline-block'; runBtn.disabled=false; runBtn.textContent='▶ Run the behavioral gate'; running=false;
   }
 
+  function fillGrid(){
+    var g=$('gridT');
+    Array.prototype.slice.call(g.querySelectorAll('.gt-row:not(.h)')).forEach(function(n){ n.remove(); });
+    AGENTS.forEach(function(a,i){ T(function(){
+      var row=document.createElement('div'); row.className='gt-row';
+      row.innerHTML='<span class="pn2"><span class="dot" style="background:'+a.color+'"></span>'+a.name+'</span>'+
+        '<span class="deg2">'+a.deg+'</span>'+
+        '<span class="oc '+(a.oc==='ok'?'ok':'bad')+' g3">'+(a.oc==='ok'?'✓ completed':'✕ gave up')+'</span>'+
+        '<span class="dp g4">'+a.dp+'</span>';
+      g.appendChild(row);
+    }, 120*i); });
+  }
   function positionHeat(){ var b=$('heatBlob'), p=$('heatPin'); b.style.left='30%'; b.style.top='68%'; p.style.left='30%'; p.style.top='71%'; }
 
   var TERM=[
@@ -473,25 +538,27 @@
   function typeTerminal(){ var term=$('term'); term.innerHTML=''; var li=0; var myGen=gen;
     function nextLine(){ if(myGen!==gen) return; if(li>=TERM.length){ term.classList.remove('cursor-blink'); return; }
       var s=document.createElement('span'); s.className='ln in '+TERM[li][0]; term.appendChild(s);
-      var txt=TERM[li][1], ci=0; var iv=setInterval(function(){ if(myGen!==gen){ clearInterval(iv); return; }
-        ci++; s.textContent=txt.slice(0,ci);
-        if(ci>=txt.length){ clearInterval(iv); li++; T(nextLine,70); } }, reduce?2:7); timers.push(iv); }
+      var txt=TERM[li][1], ci=0; var iv=setInterval(function(){ if(myGen!==gen){ clearInterval(iv); return; } ci++; s.textContent=txt.slice(0,ci);
+        if(ci>=txt.length){ clearInterval(iv); li++; T(nextLine,60); } }, reduce?2:6); timers.push(iv); }
     term.classList.add('cursor-blink'); nextLine(); }
 
   function resetAll(){
     clearTimers();
     $('gateIco').className='ico pend'; $('gateIco').innerHTML='●'; $('gateDc').textContent='not started';
     $('gateCheck').querySelector('.nm').innerHTML='<b>simulationlabs / behavioral-gate</b>';
-    $('gateRun').classList.remove('open'); $('grSpin').style.display='';
-    $('grCount').textContent='5 agents · Gemini 3.5';
-    $('prBadge').className='pr-badge'; $('prBadge').textContent='● Open';
+    $('gateRun').classList.remove('open'); $('grSpin').style.display=''; $('grCount').textContent='5 agents · Gemini 3.5';
+    $('strip').innerHTML=''; $('prBadge').className='pr-badge'; $('prBadge').textContent='● Open';
     var mb=$('mergeBtn'); mb.className='merge-btn'; mb.textContent='Merge pull request';
-    $('mergeNote').className='merge-note'; $('mergeNote').textContent='All checks are pending…';
-    $('fDone').classList.remove('show'); $('fCbx').classList.remove('on');
-    resetField('fEmail','you@company.com'); resetField('fPass','At least 8 characters'); card.classList.remove('dim');
-    $('analytics').classList.remove('in'); $('heat').classList.remove('in'); $('surv').classList.remove('in'); $('term').innerHTML='';
+    $('mergeNote').className='merge-note'; $('mergeNote').textContent='All checks are pending…'; $('botc').classList.remove('in');
+    $('fDone').classList.remove('show'); $('fCbx').classList.remove('on'); resetField('fEmail','you@company.com'); resetField('fPass','At least 8 characters'); card.classList.remove('dim');
+    $('analytics').classList.remove('in'); $('heat').classList.remove('in'); $('surv').classList.remove('in'); $('voice').classList.remove('play-on'); $('term').innerHTML='';
+    $('mComp').innerHTML='100<small>%</small> <small>→</small> 80<small>%</small>'; $('lost').textContent='~1,600';
     Array.prototype.forEach.call(stage.querySelectorAll('.death,.missx,.ripple'), function(n){ n.remove(); });
+    Array.prototype.slice.call($('gridT').querySelectorAll('.gt-row:not(.h)')).forEach(function(n){ n.remove(); });
   }
+
+  // build the voice waveform bars once
+  (function(){ var w=$('wave'); for(var i=0;i<44;i++){ var b=document.createElement('i'); b.style.height=(15+Math.round(Math.abs(Math.sin(i*0.7))*70))+'%'; b.style.animationDelay=(i*0.03)+'s'; w.appendChild(b); } })();
 
   runBtn.addEventListener('click', run);
   replayBtn.addEventListener('click', function(){ replayBtn.style.display='none'; runBtn.style.display='inline-block'; run(); });
