@@ -42,10 +42,12 @@ ghostpanel.db
 *.db-journal
 .sim/
 
-# Local run output & artifacts (never commit)
-.sim-try/
-.sim-deliverable/
-.sim-deliverable-gemini/
+# Local run output & artifacts (never commit).
+# Every `sim` run writes to a .sim-<name>/ dir (.sim-try, .sim-demo, .sim-live,
+# .sim-seg, .sim-deliverable*, …) and may leave a .sim-<name>.log — ignore the
+# whole family so generated receipts never get committed again.
+.sim-*/
+.sim-*.log
 .coverage
 
 # Internal-only docs kept out of the public repo (strategy, build scaffolding)
