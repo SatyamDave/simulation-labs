@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Simulation Labs · Watch the gate block a bad deploy</title>
-<meta name="description" content="A developer shrinks the signup consent checkbox to match the brand. Build passes. Unit tests pass. But the behavioral gate runs a swarm of mechanically-degraded AI users, catches that tremor users can no longer finish, quantifies the lost signups, and blocks the merge — before it ships." />
+<title>Simulation Labs · The behavioral gate — a 2-minute tour</title>
+<meta name="description" content="From the problem, to wiring it into CI, to how the mechanically-degraded swarm works, to watching it block a real bad deploy. A full guided tour of the behavioral gate." />
 <meta property="og:title" content="Simulation Labs · Watch the gate block a bad deploy" />
-<meta property="og:description" content="Unit tests passed. The behavioral gate caught what they couldn't: real users can't finish. ~1,600 signups/mo saved. Merge blocked." />
+<meta property="og:description" content="Unit tests passed. The behavioral gate caught what they couldn't: real users can't finish. Merge blocked." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://simulationlabs.dev/demo/" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B0D11'/%3E%3Cpath d='M3 17 H12 L15 8 L18 24 L20 17 H29' fill='none' stroke='%234C8DFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
@@ -20,548 +20,560 @@
     --mono:ui-monospace,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;
   }
   *{ box-sizing:border-box; margin:0; padding:0; }
-  html,body{ height:100%; }
-  body{ background:radial-gradient(1200px 700px at 50% -10%, #12161d 0%, var(--bg) 55%) fixed;
-    color:var(--text); font-family:var(--ui); -webkit-font-smoothing:antialiased; overflow-x:hidden; line-height:1.45; }
-  .wrap{ max-width:1020px; margin:0 auto; padding:0 20px; }
-
-  header{ padding:20px 0 8px; }
-  .brand{ display:flex; align-items:center; gap:9px; font-weight:600; letter-spacing:-.01em; font-size:1rem; }
-  .brand .live{ margin-left:auto; font-family:var(--mono); font-size:.66rem; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--dim); display:flex; align-items:center; gap:7px; }
-  .brand .live i{ width:7px; height:7px; border-radius:50%; background:var(--ok); animation:beat 1.8s infinite; }
+  html{ scroll-behavior:smooth; } html,body{ height:100%; }
+  body{ background:radial-gradient(1200px 800px at 50% -8%, #12161d 0%, var(--bg) 55%) fixed;
+    color:var(--text); font-family:var(--ui); -webkit-font-smoothing:antialiased; overflow-x:hidden; line-height:1.5; }
+  .wrap{ max-width:1000px; margin:0 auto; padding:0 20px; }
+  b{ font-weight:600; } .a{ color:var(--accent); } .r{ color:var(--fail); } .g{ color:var(--ok); } .mut{ color:var(--muted); }
   @keyframes beat{ 0%{box-shadow:0 0 0 0 rgba(63,185,80,.5)} 70%{box-shadow:0 0 0 7px rgba(63,185,80,0)} 100%{box-shadow:0 0 0 0 rgba(63,185,80,0)} }
   @keyframes beatr{ 0%{box-shadow:0 0 0 0 rgba(248,81,73,.55)} 70%{box-shadow:0 0 0 8px rgba(248,81,73,0)} 100%{box-shadow:0 0 0 0 rgba(248,81,73,0)} }
+  @keyframes spin{ to{ transform:rotate(360deg); } } @keyframes blink{ 50%{opacity:0} }
 
-  .hero{ text-align:center; padding:30px 0 6px; }
-  .kick{ font-family:var(--mono); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); }
-  h1{ font-size:clamp(1.8rem,4.6vw,2.9rem); line-height:1.06; letter-spacing:-.03em; margin:.35em 0 .3em; font-weight:650; }
-  h1 .do{ color:var(--accent); }
-  .sub{ color:var(--muted); max-width:64ch; margin:0 auto; font-size:1.02rem; }
-  .sub b{ color:var(--text); font-weight:600; }
+  /* ---------- sticky chapter rail ---------- */
+  .rail{ position:sticky; top:0; z-index:40; background:rgba(11,13,17,.82); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+  .rail-in{ max-width:1000px; margin:0 auto; padding:10px 20px; display:flex; align-items:center; gap:14px; }
+  .rail .brand{ display:flex; align-items:center; gap:8px; font-weight:600; font-size:.92rem; flex:0 0 auto; }
+  .rail .steps{ display:flex; gap:6px; flex:1; min-width:0; overflow-x:auto; scrollbar-width:none; }
+  .rail .steps::-webkit-scrollbar{ display:none; }
+  .rail .step{ display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:.66rem; color:var(--dim);
+    border:1px solid var(--line); border-radius:20px; padding:4px 11px; white-space:nowrap; cursor:pointer; transition:.25s; }
+  .rail .step .no{ width:16px; height:16px; border-radius:50%; background:var(--line-2); color:var(--muted); display:grid; place-items:center; font-size:.6rem; }
+  .rail .step.on{ color:var(--text); border-color:var(--accent); background:rgba(76,141,255,.1); }
+  .rail .step.on .no{ background:var(--accent); color:#fff; }
+  .rail .step.done .no{ background:var(--ok); color:#04140a; }
+  .rail .time{ flex:0 0 auto; font-family:var(--mono); font-size:.66rem; color:var(--dim); }
+  @media(max-width:720px){ .rail .brand span{ display:none; } .rail .step .label{ display:none; } .rail .step{ padding:4px 6px; } }
 
-  .runbar{ display:flex; justify-content:center; gap:12px; margin:24px 0 6px; flex-wrap:wrap; }
-  .btn{ font-family:var(--ui); font-weight:600; font-size:.98rem; border:0; border-radius:11px; padding:14px 26px; cursor:pointer;
-    transition:transform .12s ease, box-shadow .2s ease, background .2s; }
-  .btn-run{ background:linear-gradient(180deg,var(--accent-2),var(--accent) 55%,var(--accent-d)); color:#fff; box-shadow:0 10px 30px rgba(76,141,255,.35); }
-  .btn-run:hover{ transform:translateY(-2px); box-shadow:0 16px 40px rgba(76,141,255,.5); }
-  .btn-run:active{ transform:translateY(0); } .btn-run[disabled]{ opacity:.5; cursor:default; box-shadow:none; transform:none; }
-  .btn-ghost{ background:transparent; color:var(--muted); border:1px solid var(--line); }
-  .btn-ghost:hover{ color:var(--text); border-color:#3a424e; }
+  /* ---------- chapter section ---------- */
+  .chapter{ min-height:82vh; display:flex; flex-direction:column; justify-content:center; padding:52px 0 40px; opacity:.28; transition:opacity .5s; }
+  .chapter.active{ opacity:1; }
+  .ch-tag{ font-family:var(--mono); font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); }
+  .ch-tag .n{ color:var(--dim); }
+  .ch-h{ font-size:clamp(1.7rem,4.4vw,2.7rem); line-height:1.08; letter-spacing:-.03em; font-weight:650; margin:.3em 0 .35em; }
+  .ch-h .a{ color:var(--accent); } .ch-h .r{ color:var(--fail); }
+  .ch-sub{ color:var(--muted); max-width:64ch; font-size:1.05rem; }
+  .caption{ min-height:1.5em; margin-top:16px; font-size:1.02rem; color:var(--accent-2); opacity:0; transition:opacity .4s; } .caption.in{ opacity:1; }
 
-  /* PR panel */
-  .pr{ margin:22px 0 8px; border:1px solid var(--line); border-radius:14px; background:var(--surface); overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.5); }
-  .pr-head{ padding:16px 18px; border-bottom:1px solid var(--line); }
-  .pr-badge{ display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.68rem; font-weight:600; color:#fff; background:var(--ok); padding:3px 10px; border-radius:20px; }
-  .pr-badge.blocked{ background:var(--fail); }
-  .pr-title{ font-size:1.12rem; font-weight:650; letter-spacing:-.01em; margin:10px 0 4px; } .pr-title .num{ color:var(--dim); font-weight:400; }
-  .pr-meta{ font-family:var(--mono); font-size:.72rem; color:var(--dim); display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  .pr-meta .who{ color:var(--muted); } .pr-meta .br{ color:var(--accent-2); }
-  .diff{ margin:12px 0 2px; border:1px solid var(--line); border-radius:9px; overflow:hidden; font-family:var(--mono); font-size:.72rem; }
-  .diff .df-h{ padding:7px 11px; background:rgba(255,255,255,.02); color:var(--dim); border-bottom:1px solid var(--line); }
-  .diff .df-l{ padding:3px 11px; white-space:pre-wrap; }
-  .diff .rm{ background:rgba(248,81,73,.10); color:#f7a49f; } .diff .rm::before{ content:'- '; color:var(--fail); }
-  .diff .ad{ background:rgba(63,185,80,.10); color:#88d68f; } .diff .ad::before{ content:'+ '; color:var(--ok); }
-  .checks{ border-top:1px solid var(--line); }
-  .check{ display:flex; align-items:center; gap:11px; padding:12px 18px; border-bottom:1px solid var(--line); font-size:.9rem; }
-  .check:last-child{ border-bottom:0; }
-  .check .ico{ width:18px; height:18px; flex:0 0 auto; display:grid; place-items:center; border-radius:50%; }
-  .check .ico.ok{ background:rgba(63,185,80,.16); color:var(--ok); } .check .ico.pend{ background:rgba(210,153,34,.16); color:var(--warn); }
-  .check .ico.run{ background:transparent; } .check .ico.fail{ background:rgba(248,81,73,.16); color:var(--fail); }
-  .check .nm{ font-weight:550; } .check .dc{ color:var(--dim); font-family:var(--mono); font-size:.76rem; margin-left:auto; }
-  .check.gate{ background:rgba(76,141,255,.04); } .check.gate .nm b{ color:var(--accent); }
-  .spinner{ width:16px; height:16px; border:2px solid var(--line-2); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
-  @keyframes spin{ to{ transform:rotate(360deg); } }
+  /* ---------- Ch1 · the problem split ---------- */
+  .split{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:26px; }
+  @media(max-width:720px){ .split{ grid-template-columns:1fr; } }
+  .sp-card{ border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:18px; }
+  .sp-card.green{ border-color:rgba(63,185,80,.3); } .sp-card.redd{ border-color:rgba(248,81,73,.3); }
+  .sp-card h4{ font-family:var(--mono); font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-bottom:12px; }
+  .sp-line{ display:flex; align-items:center; gap:9px; font-family:var(--mono); font-size:.82rem; padding:5px 0; }
+  .sp-line .i{ width:16px; height:16px; border-radius:50%; display:grid; place-items:center; font-size:.62rem; }
+  .sp-line .i.ok{ background:rgba(63,185,80,.16); color:var(--ok); } .sp-line .i.bad{ background:rgba(248,81,73,.16); color:var(--fail); }
+  .bignum{ font-size:clamp(2rem,6vw,3.4rem); font-weight:750; letter-spacing:-.03em; color:var(--fail); }
+  .bignum small{ font-size:1rem; color:var(--dim); }
 
-  /* the gate expands: persona strip + swarm stage */
-  .gate-run{ max-height:0; overflow:hidden; transition:max-height .7s ease; }
-  .gate-run.open{ max-height:1400px; border-top:1px solid var(--line); }
-  .gr-head{ padding:11px 18px; font-family:var(--mono); font-size:.72rem; color:var(--muted); background:rgba(76,141,255,.05); display:flex; align-items:center; gap:9px; }
-  .gr-head b{ color:var(--accent); } .gr-head .rt{ margin-left:auto; color:var(--dim); }
+  /* ---------- Ch2 · setup / terminal + files ---------- */
+  .term{ background:#0a0d12; border:1px solid var(--line); border-radius:13px; overflow:hidden; }
+  .term-bar{ display:flex; align-items:center; gap:7px; padding:9px 13px; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:.68rem; color:var(--dim); }
+  .term-bar i{ width:10px; height:10px; border-radius:50%; } .term-bar .rd{ background:#ff5f57 } .term-bar .yl{ background:#febc2e } .term-bar .gr{ background:#28c840 }
+  .term-body{ padding:14px 16px; font-family:var(--mono); font-size:.82rem; line-height:1.75; min-height:60px; }
+  .term-body .ln{ white-space:pre-wrap; opacity:0; } .term-body .ln.in{ opacity:1; }
+  .c-p{ color:var(--accent-2); } .c-d{ color:var(--dim); } .c-ok{ color:var(--ok); } .c-f{ color:var(--fail); font-weight:700; } .c-w{ color:var(--warn); } .c-s{ color:var(--teal); } .c-k{ color:#c792ea; }
+  .cursor-blink::after{ content:'▋'; color:var(--accent); animation:blink 1s steps(1) infinite; }
+  .files{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; }
+  @media(max-width:720px){ .files{ grid-template-columns:1fr; } }
+  .filecard{ border:1px solid var(--line); border-radius:13px; overflow:hidden; background:var(--surface-2); opacity:0; transform:translateY(10px); transition:.5s; }
+  .filecard.in{ opacity:1; transform:none; }
+  .filecard .fh{ padding:8px 13px; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:.7rem; color:var(--muted); background:rgba(255,255,255,.02); }
+  .filecard pre{ padding:13px 15px; font-family:var(--mono); font-size:.76rem; line-height:1.7; white-space:pre-wrap; color:#c9d2de; }
 
-  /* persona strip — the mechanical-degradation capability, on display */
-  .swarm-strip{ display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--line); border-bottom:1px solid var(--line); }
+  /* ---------- Ch3 · how it works ---------- */
+  .mech{ display:grid; grid-template-columns:1.05fr .95fr; gap:20px; margin-top:24px; align-items:center; }
+  @media(max-width:760px){ .mech{ grid-template-columns:1fr; } }
+  .mech-viz{ border:1px solid var(--line); border-radius:14px; background:#0d1119; padding:18px; }
+  .mech-shot{ position:relative; height:200px; border-radius:10px; overflow:hidden; background:#fff; }
+  .mech-shot .frame{ position:absolute; inset:0; padding:16px; color:#0f1222; transition:filter .6s; }
+  .mech-shot.degraded .frame{ filter:blur(2.2px) saturate(.7); }
+  .mech-shot .mh{ font-weight:700; font-size:.9rem; } .mech-shot .ms{ font-size:.66rem; color:#6b7280; margin:1px 0 12px; }
+  .mech-shot .mrow{ height:30px; border:1px solid #d5dae2; border-radius:7px; margin-bottom:9px; }
+  .mech-shot .mcbx{ width:22px; height:22px; border:1.5px solid #b7bfca; border-radius:5px; display:inline-block; vertical-align:middle; margin-right:8px; }
+  .mech-shot .mbtn{ height:30px; border-radius:7px; background:var(--accent); }
+  .mech-shot .mcur{ position:absolute; width:18px; height:18px; z-index:3; transition:transform .5s; }
+  .mech-shot .mcur.tremor{ animation:shake .12s infinite; }
+  .mech-shot .badge{ position:absolute; left:10px; bottom:10px; font-family:var(--mono); font-size:.6rem; color:#fff; background:rgba(11,13,17,.8); padding:3px 8px; border-radius:6px; z-index:4; }
+  .mech-steps{ display:flex; flex-direction:column; gap:10px; }
+  .ms-item{ display:flex; gap:12px; padding:11px 13px; border:1px solid var(--line); border-radius:11px; background:var(--surface); opacity:.4; transition:.35s; }
+  .ms-item.on{ opacity:1; border-color:var(--accent); box-shadow:0 0 0 3px rgba(76,141,255,.08); }
+  .ms-item .num{ font-family:var(--mono); font-size:.72rem; color:var(--accent); flex:0 0 auto; }
+  .ms-item .t{ font-size:.86rem; } .ms-item .t b{ font-weight:600; } .ms-item .t span{ color:var(--muted); }
+  @keyframes shake{ 0%{transform:translate(0,0)} 25%{transform:translate(2.5px,-2px)} 50%{transform:translate(-2.5px,2px)} 75%{transform:translate(2px,2.5px)} 100%{transform:translate(-2px,-2.5px)} }
+
+  /* persona strip (reused in Ch3 and the run) */
+  .swarm-strip{ display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-top:16px; }
   @media(max-width:760px){ .swarm-strip{ grid-template-columns:repeat(2,1fr); } }
-  .pcard{ background:var(--surface-2); padding:12px 12px 11px; opacity:.45; transition:opacity .35s, background .35s, box-shadow .35s; position:relative; }
-  .pcard.run{ opacity:1; box-shadow:inset 0 2px 0 0 var(--accent); }
-  .pcard.ok{ opacity:1; box-shadow:inset 0 2px 0 0 var(--ok); } .pcard.dead{ opacity:1; box-shadow:inset 0 2px 0 0 var(--fail); }
-  .pcard .pn{ display:flex; align-items:center; gap:7px; font-weight:600; font-size:.82rem; }
-  .pcard .dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+  .pcard{ background:var(--surface-2); padding:12px; opacity:.5; transition:.35s; position:relative; }
+  .pcard.in{ opacity:1; } .pcard.run{ box-shadow:inset 0 2px 0 0 var(--accent); } .pcard.ok{ box-shadow:inset 0 2px 0 0 var(--ok); } .pcard.dead{ box-shadow:inset 0 2px 0 0 var(--fail); }
+  .pcard .pn{ display:flex; align-items:center; gap:7px; font-weight:600; font-size:.82rem; } .pcard .dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
   .pcard .pseg{ font-size:.68rem; color:var(--muted); margin:3px 0 7px; line-height:1.3; }
   .pcard .deg{ font-family:var(--mono); font-size:.6rem; color:var(--dim); border:1px solid var(--line-2); border-radius:5px; padding:2px 5px; display:inline-block; }
   .pcard .st{ position:absolute; top:11px; right:11px; font-family:var(--mono); font-size:.62rem; font-weight:700; }
   .pcard.ok .st{ color:var(--ok); } .pcard.dead .st{ color:var(--fail); } .pcard.run .st{ color:var(--accent); }
 
+  /* ---------- Ch4 · PR + swarm stage ---------- */
+  .pr{ border:1px solid var(--line); border-radius:14px; background:var(--surface); overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.5); margin-top:22px; }
+  .pr-head{ padding:16px 18px; border-bottom:1px solid var(--line); }
+  .pr-badge{ display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.68rem; font-weight:600; color:#fff; background:var(--ok); padding:3px 10px; border-radius:20px; } .pr-badge.blocked{ background:var(--fail); }
+  .pr-title{ font-size:1.1rem; font-weight:650; margin:10px 0 4px; } .pr-title .num{ color:var(--dim); font-weight:400; }
+  .pr-meta{ font-family:var(--mono); font-size:.72rem; color:var(--dim); } .pr-meta .who{ color:var(--muted); } .pr-meta .br{ color:var(--accent-2); }
+  .diff{ margin:12px 0 2px; border:1px solid var(--line); border-radius:9px; overflow:hidden; font-family:var(--mono); font-size:.72rem; }
+  .diff .df-h{ padding:7px 11px; background:rgba(255,255,255,.02); color:var(--dim); border-bottom:1px solid var(--line); }
+  .diff .df-l{ padding:3px 11px; white-space:pre-wrap; } .diff .rmv{ background:rgba(248,81,73,.10); color:#f7a49f; } .diff .rmv::before{ content:'- '; color:var(--fail); } .diff .add{ background:rgba(63,185,80,.10); color:#88d68f; } .diff .add::before{ content:'+ '; color:var(--ok); }
+  .checks{ border-top:1px solid var(--line); } .check{ display:flex; align-items:center; gap:11px; padding:12px 18px; border-bottom:1px solid var(--line); font-size:.9rem; } .check:last-child{ border-bottom:0; }
+  .check .ico{ width:18px; height:18px; flex:0 0 auto; display:grid; place-items:center; border-radius:50%; }
+  .ico.ok{ background:rgba(63,185,80,.16); color:var(--ok); } .ico.pend{ background:rgba(210,153,34,.16); color:var(--warn); } .ico.run{ background:transparent; } .ico.fail{ background:rgba(248,81,73,.16); color:var(--fail); }
+  .check .nm{ font-weight:550; } .check .dc{ color:var(--dim); font-family:var(--mono); font-size:.76rem; margin-left:auto; } .check.gate{ background:rgba(76,141,255,.04); } .check.gate .nm b{ color:var(--accent); }
+  .spinner{ width:16px; height:16px; border:2px solid var(--line-2); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+  .gate-run{ max-height:0; overflow:hidden; transition:max-height .7s ease; } .gate-run.open{ max-height:1000px; border-top:1px solid var(--line); }
+  .gr-head{ padding:11px 18px; font-family:var(--mono); font-size:.72rem; color:var(--muted); background:rgba(76,141,255,.05); display:flex; align-items:center; gap:9px; } .gr-head b{ color:var(--accent); } .gr-head .rt{ margin-left:auto; color:var(--dim); }
   .stage{ position:relative; min-height:460px; display:grid; place-items:center; padding:24px 16px; background:#0d1119; }
   @media(max-width:640px){ .stage{ min-height:500px; } }
-  .form-card{ width:328px; max-width:92%; background:#fff; border-radius:14px; padding:22px 20px 18px; box-shadow:0 20px 60px rgba(0,0,0,.45); color:#0f1222; position:relative; z-index:2; transition:filter .5s ease; }
-  .form-card.dim{ filter:brightness(.5) saturate(.7); }
-  .fc-brand{ display:flex; align-items:center; gap:8px; margin-bottom:14px; font-weight:700; font-size:.95rem; }
-  .fc-brand .d{ width:19px; height:19px; border-radius:6px; background:linear-gradient(135deg,#5C98FF,#2E68D8); }
-  .fc-h{ font-size:1.1rem; font-weight:700; letter-spacing:-.01em; } .fc-sub{ font-size:.76rem; color:#6b7280; margin:2px 0 15px; }
+  .form-card{ width:328px; max-width:92%; background:#fff; border-radius:14px; padding:22px 20px 18px; box-shadow:0 20px 60px rgba(0,0,0,.45); color:#0f1222; position:relative; z-index:2; transition:filter .5s ease; } .form-card.dim{ filter:brightness(.5) saturate(.7); }
+  .fc-brand{ display:flex; align-items:center; gap:8px; margin-bottom:14px; font-weight:700; font-size:.95rem; } .fc-brand .d{ width:19px; height:19px; border-radius:6px; background:linear-gradient(135deg,#5C98FF,#2E68D8); }
+  .fc-h{ font-size:1.1rem; font-weight:700; } .fc-sub{ font-size:.76rem; color:#6b7280; margin:2px 0 15px; }
   .fld{ margin-bottom:11px; } .fld label{ display:block; font-size:.71rem; font-weight:600; color:#374151; margin-bottom:5px; }
-  .inp{ height:42px; border:1px solid #d5dae2; border-radius:9px; display:flex; align-items:center; padding:0 12px; font-size:.85rem; color:#0f1222; background:#fff; transition:border-color .2s, box-shadow .2s; }
-  .inp.focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(76,141,255,.16); }
+  .inp{ height:42px; border:1px solid #d5dae2; border-radius:9px; display:flex; align-items:center; padding:0 12px; font-size:.85rem; color:#0f1222; background:#fff; transition:border-color .2s, box-shadow .2s; } .inp.focus{ border-color:var(--accent); box-shadow:0 0 0 3px rgba(76,141,255,.16); }
   .inp .ph{ color:#9aa1ac; } .inp .typed{ color:#0f1222; } .inp .caret{ width:1.5px; height:16px; background:var(--accent); margin-left:1px; animation:blink 1s steps(1) infinite; }
-  @keyframes blink{ 50%{opacity:0} }
   .consent{ display:flex; align-items:center; gap:10px; margin:5px 0 15px; }
-  .cbx{ width:24px; height:24px; flex:0 0 auto; border:1.6px solid #b7bfca; border-radius:6px; background:#fff; display:grid; place-items:center; position:relative; transition:all .18s; }
-  .cbx.on{ background:var(--accent); border-color:var(--accent); }
+  .cbx{ width:24px; height:24px; flex:0 0 auto; border:1.6px solid #b7bfca; border-radius:6px; background:#fff; display:grid; place-items:center; transition:all .18s; } .cbx.on{ background:var(--accent); border-color:var(--accent); }
   .cbx svg{ width:15px; height:15px; opacity:0; transform:scale(.5); transition:.18s; } .cbx.on svg{ opacity:1; transform:scale(1); }
   .consent .ct{ font-size:.73rem; color:#4b5563; } .consent .ct a{ color:#2E68D8; }
   .cbx.miss{ animation:cbxmiss .3s; } @keyframes cbxmiss{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
   .cta-btn{ height:42px; border-radius:9px; background:var(--accent); color:#fff; font-weight:600; font-size:.88rem; display:grid; place-items:center; }
   .fc-done{ position:absolute; inset:0; background:#fff; border-radius:14px; display:grid; place-items:center; opacity:0; pointer-events:none; transition:opacity .4s; } .fc-done.show{ opacity:1; }
   .fc-done .ring{ width:50px; height:50px; border-radius:50%; background:#e7f6ec; color:#1a9c4b; display:grid; place-items:center; font-size:1.6rem; margin-bottom:8px; } .fc-done h3{ font-size:1.1rem; }
-
-  .cursor{ position:absolute; top:0; left:0; z-index:5; width:150px; pointer-events:none; will-change:transform; transition:transform 1.05s cubic-bezier(.5,.05,.2,1); }
-  .cursor .ptr{ position:relative; } .cursor .ptr svg{ display:block; filter:drop-shadow(0 3px 6px rgba(0,0,0,.5)); }
-  .cursor .tag{ position:absolute; top:15px; left:14px; font-family:var(--mono); font-size:.6rem; font-weight:600; white-space:nowrap; padding:2px 7px; border-radius:6px; color:#fff; letter-spacing:.02em; }
-  .cursor.tagL .tag{ left:auto; right:14px; }
-  .cursor.tremor .ptr{ animation:shake .12s infinite; }
-  @keyframes shake{ 0%{transform:translate(0,0)} 25%{transform:translate(2.5px,-2px)} 50%{transform:translate(-2.5px,2px)} 75%{transform:translate(2px,2.5px)} 100%{transform:translate(-2px,-2.5px)} }
-  .cursor.click .ptr{ animation:tap .18s; } @keyframes tap{ 50%{transform:scale(.8)} }
-  .ripple{ position:absolute; z-index:4; width:26px; height:26px; margin:-13px; border-radius:50%; border:2px solid var(--accent); opacity:0; pointer-events:none; }
-  .ripple.go{ animation:rip .5s ease-out; } .ripple.miss{ border-color:var(--fail); } .ripple.ok{ border-color:var(--ok); }
+  .cursor{ position:absolute; top:0; left:0; z-index:5; width:150px; pointer-events:none; will-change:transform; transition:transform 1.05s cubic-bezier(.5,.05,.2,1); } .cursor .ptr{ position:relative; } .cursor .ptr svg{ display:block; filter:drop-shadow(0 3px 6px rgba(0,0,0,.5)); }
+  .cursor .tag{ position:absolute; top:15px; left:14px; font-family:var(--mono); font-size:.6rem; font-weight:600; white-space:nowrap; padding:2px 7px; border-radius:6px; color:#fff; } .cursor.tagL .tag{ left:auto; right:14px; }
+  .cursor.tremor .ptr{ animation:shake .12s infinite; } .cursor.click .ptr{ animation:tap .18s; } @keyframes tap{ 50%{transform:scale(.8)} }
+  .ripple{ position:absolute; z-index:4; width:26px; height:26px; margin:-13px; border-radius:50%; border:2px solid var(--accent); opacity:0; pointer-events:none; } .ripple.go{ animation:rip .5s ease-out; } .ripple.miss{ border-color:var(--fail); } .ripple.ok{ border-color:var(--ok); }
   @keyframes rip{ 0%{opacity:.9; transform:scale(.4)} 100%{opacity:0; transform:scale(2.2)} }
-  .missx{ position:absolute; z-index:6; color:var(--fail); font-family:var(--mono); font-weight:700; font-size:1rem; margin:-9px; opacity:0; pointer-events:none; text-shadow:0 2px 6px rgba(0,0,0,.6); }
-  .missx.show{ animation:misspop .5s forwards; } @keyframes misspop{ 0%{opacity:0; transform:scale(2)} 30%{opacity:1; transform:scale(1)} 100%{opacity:1} }
-  .death{ position:absolute; z-index:7; pointer-events:none; opacity:0; } .death.show{ opacity:1; transition:opacity .3s; }
-  .death .core{ width:15px; height:15px; margin:-7px; border-radius:50%; background:var(--fail); animation:beatr 1.4s infinite; }
-  .death .lbl{ position:absolute; left:14px; top:-6px; white-space:nowrap; font-family:var(--mono); font-size:.64rem; color:var(--fail); background:rgba(20,10,12,.9); padding:3px 8px; border-radius:6px; border:1px solid rgba(248,81,73,.3); }
+  .missx{ position:absolute; z-index:6; color:var(--fail); font-family:var(--mono); font-weight:700; font-size:1rem; margin:-9px; opacity:0; pointer-events:none; text-shadow:0 2px 6px rgba(0,0,0,.6); } .missx.show{ animation:misspop .5s forwards; } @keyframes misspop{ 0%{opacity:0; transform:scale(2)} 30%{opacity:1; transform:scale(1)} 100%{opacity:1} }
+  .death{ position:absolute; z-index:7; pointer-events:none; opacity:0; } .death.show{ opacity:1; transition:opacity .3s; } .death .core{ width:15px; height:15px; margin:-7px; border-radius:50%; background:var(--fail); animation:beatr 1.4s infinite; } .death .lbl{ position:absolute; left:14px; top:-6px; white-space:nowrap; font-family:var(--mono); font-size:.64rem; color:var(--fail); background:rgba(20,10,12,.9); padding:3px 8px; border-radius:6px; border:1px solid rgba(248,81,73,.3); }
   .chips{ position:absolute; left:0; right:0; bottom:12px; display:flex; justify-content:center; gap:7px; flex-wrap:wrap; z-index:8; padding:0 12px; }
-  .chip{ display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.66rem; color:var(--muted); background:rgba(20,23,29,.85); border:1px solid var(--line); border-radius:20px; padding:5px 10px; backdrop-filter:blur(6px); transition:all .3s; }
-  .chip .sw{ width:7px; height:7px; border-radius:50%; background:#3a424e; transition:.3s; }
-  .chip.run .sw{ background:var(--accent); animation:beat 1.2s infinite; }
-  .chip.ok{ color:#bfeccb; border-color:rgba(63,185,80,.35); } .chip.ok .sw{ background:var(--ok); }
-  .chip.dead{ color:#ffc4c1; border-color:rgba(248,81,73,.4); } .chip.dead .sw{ background:var(--fail); }
-
-  /* PR bot comment (appears after the verdict) */
-  .botc{ margin:0 18px 16px; border:1px solid var(--line); border-radius:11px; overflow:hidden; opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; }
-  .botc.in{ opacity:1; transform:none; }
-  .botc-h{ display:flex; align-items:center; gap:9px; padding:9px 13px; background:rgba(248,81,73,.06); border-bottom:1px solid var(--line); font-size:.8rem; }
-  .botc-h .av{ width:20px; height:20px; border-radius:5px; background:linear-gradient(135deg,#4C8DFF,#2E68D8); display:grid; place-items:center; font-size:.66rem; }
-  .botc-h b{ font-weight:600; } .botc-h .t{ margin-left:auto; font-family:var(--mono); font-size:.68rem; color:var(--dim); }
-  .botc-b{ padding:12px 14px; font-size:.84rem; line-height:1.55; }
-  .botc-b .x{ color:var(--fail); font-weight:600; } .botc-b code{ font-family:var(--mono); font-size:.8rem; background:rgba(255,255,255,.05); padding:1px 5px; border-radius:4px; }
-  .botc-b .lk{ color:var(--accent); }
-
+  .chip{ display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:.66rem; color:var(--muted); background:rgba(20,23,29,.85); border:1px solid var(--line); border-radius:20px; padding:5px 10px; backdrop-filter:blur(6px); transition:.3s; } .chip .sw{ width:7px; height:7px; border-radius:50%; background:#3a424e; transition:.3s; }
+  .chip.run .sw{ background:var(--accent); animation:beat 1.2s infinite; } .chip.ok{ color:#bfeccb; border-color:rgba(63,185,80,.35); } .chip.ok .sw{ background:var(--ok); } .chip.dead{ color:#ffc4c1; border-color:rgba(248,81,73,.4); } .chip.dead .sw{ background:var(--fail); }
+  .botc{ margin:0 18px 16px; border:1px solid var(--line); border-radius:11px; overflow:hidden; opacity:0; transform:translateY(10px); transition:.5s; } .botc.in{ opacity:1; transform:none; }
+  .botc-h{ display:flex; align-items:center; gap:9px; padding:9px 13px; background:rgba(248,81,73,.06); border-bottom:1px solid var(--line); font-size:.8rem; } .botc-h .av{ width:20px; height:20px; border-radius:5px; background:linear-gradient(135deg,#4C8DFF,#2E68D8); display:grid; place-items:center; font-size:.66rem; } .botc-h .t{ margin-left:auto; font-family:var(--mono); font-size:.68rem; color:var(--dim); }
+  .botc-b{ padding:12px 14px; font-size:.84rem; } .botc-b code{ font-family:var(--mono); font-size:.8rem; background:rgba(255,255,255,.05); padding:1px 5px; border-radius:4px; } .botc-b .lk{ color:var(--accent); }
   .merge-bar{ display:flex; align-items:center; gap:12px; padding:14px 18px; background:rgba(255,255,255,.015); border-top:1px solid var(--line); }
-  .merge-btn{ font-weight:600; font-size:.9rem; padding:9px 18px; border-radius:8px; background:var(--ok); color:#04140a; border:0; transition:.3s; }
-  .merge-btn.blocked{ background:#2a1113; color:var(--fail); border:1px solid rgba(248,81,73,.4); cursor:not-allowed; }
+  .merge-btn{ font-weight:600; font-size:.9rem; padding:9px 18px; border-radius:8px; background:var(--ok); color:#04140a; border:0; transition:.3s; } .merge-btn.blocked{ background:#2a1113; color:var(--fail); border:1px solid rgba(248,81,73,.4); cursor:not-allowed; }
   .merge-note{ font-family:var(--mono); font-size:.74rem; color:var(--dim); } .merge-note.bad{ color:#f7a49f; }
 
-  /* receipts */
-  .reveal{ opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); } .reveal.in{ opacity:1; transform:none; }
-  .rr-lead{ text-align:center; margin:30px 0 16px; }
-  .rr-lead .k{ font-family:var(--mono); font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--fail); }
-  .rr-lead h2{ font-size:clamp(1.3rem,3vw,1.8rem); font-weight:650; letter-spacing:-.02em; margin-top:6px; }
-
-  /* business impact — the loss-aversion punch */
-  .impact{ border:1px solid rgba(248,81,73,.3); background:linear-gradient(180deg,rgba(248,81,73,.09),rgba(248,81,73,.03)); border-radius:14px; padding:22px 22px; text-align:center; margin-bottom:16px; }
-  .impact .big{ font-size:clamp(1.5rem,4vw,2.3rem); font-weight:750; letter-spacing:-.02em; color:#ffb4b0; }
-  .impact .big b{ color:var(--fail); } .impact .cap{ color:var(--muted); font-size:.92rem; margin-top:8px; }
-  .impact .fine{ font-family:var(--mono); font-size:.66rem; color:var(--dim); margin-top:8px; }
-
-  .metrics{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin:0 0 16px; }
-  @media(max-width:640px){ .metrics{ grid-template-columns:1fr; } }
-  .metric{ background:var(--surface); padding:18px 18px; }
-  .metric .n{ font-size:2rem; font-weight:750; letter-spacing:-.02em; line-height:1; } .metric .n.red{ color:var(--fail); } .metric .n.blue{ color:var(--accent); } .metric .n small{ font-size:.95rem; color:var(--dim); font-weight:500; }
-  .metric .l{ font-size:.8rem; color:var(--muted); margin-top:8px; }
-
-  /* per-persona results grid */
+  /* ---------- Ch6 · receipts ---------- */
+  .impact{ border:1px solid rgba(248,81,73,.3); background:linear-gradient(180deg,rgba(248,81,73,.09),rgba(248,81,73,.03)); border-radius:14px; padding:22px; text-align:center; margin:24px 0 16px; }
+  .impact .big{ font-size:clamp(1.4rem,3.8vw,2.2rem); font-weight:750; letter-spacing:-.02em; color:#ffb4b0; } .impact .big b{ color:var(--fail); }
+  .impact .cap{ color:var(--muted); font-size:.92rem; margin-top:8px; } .impact .fine{ font-family:var(--mono); font-size:.66rem; color:var(--dim); margin-top:8px; }
+  .metrics{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin:0 0 16px; } @media(max-width:640px){ .metrics{ grid-template-columns:1fr; } }
+  .metric{ background:var(--surface); padding:18px; } .metric .n{ font-size:2rem; font-weight:750; letter-spacing:-.02em; line-height:1; } .metric .n.red{ color:var(--fail); } .metric .n.blue{ color:var(--accent); } .metric .n small{ font-size:.95rem; color:var(--dim); font-weight:500; } .metric .l{ font-size:.8rem; color:var(--muted); margin-top:8px; }
   .grid-t{ border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:16px; }
-  .gt-row{ display:grid; grid-template-columns:1.3fr 1.4fr .9fr 1fr; gap:10px; padding:11px 16px; border-bottom:1px solid var(--line); font-size:.82rem; align-items:center; }
-  .gt-row:last-child{ border-bottom:0; } .gt-row.h{ background:rgba(255,255,255,.02); font-family:var(--mono); font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
-  .gt-row .pn2{ display:flex; align-items:center; gap:8px; font-weight:600; } .gt-row .dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
-  .gt-row .deg2{ font-family:var(--mono); font-size:.72rem; color:var(--muted); }
-  .gt-row .oc{ font-family:var(--mono); font-size:.74rem; font-weight:700; } .gt-row .oc.ok{ color:var(--ok); } .gt-row .oc.bad{ color:var(--fail); }
-  .gt-row .dp{ font-family:var(--mono); font-size:.72rem; color:var(--dim); }
-  @media(max-width:640px){ .gt-row{ grid-template-columns:1fr 1fr; row-gap:4px; } .gt-row .deg2,.gt-row.h .g3,.gt-row.h .g4{ display:none; } }
+  .gt-row{ display:grid; grid-template-columns:1.3fr 1.4fr .9fr 1fr; gap:10px; padding:11px 16px; border-bottom:1px solid var(--line); font-size:.82rem; align-items:center; } .gt-row:last-child{ border-bottom:0; } .gt-row.h{ background:rgba(255,255,255,.02); font-family:var(--mono); font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+  .gt-row .pn2{ display:flex; align-items:center; gap:8px; font-weight:600; } .gt-row .dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; } .gt-row .deg2{ font-family:var(--mono); font-size:.72rem; color:var(--muted); } .gt-row .oc{ font-family:var(--mono); font-size:.74rem; font-weight:700; } .gt-row .oc.ok{ color:var(--ok); } .gt-row .oc.bad{ color:var(--fail); } .gt-row .dp{ font-family:var(--mono); font-size:.72rem; color:var(--dim); }
+  @media(max-width:640px){ .gt-row{ grid-template-columns:1fr 1fr; } .gt-row .deg2,.gt-row.h .g3,.gt-row.h .g4{ display:none; } }
+  .panels{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; } @media(max-width:760px){ .panels{ grid-template-columns:1fr; } }
+  .panel{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; } .panel h4{ font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:12px; }
+  .heat{ position:relative; height:146px; border-radius:10px; background:#0d1017; border:1px solid var(--line); overflow:hidden; } .heat .grid{ position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px); background-size:24px 24px; }
+  .heat .blob{ position:absolute; width:86px; height:86px; margin:-43px; border-radius:50%; background:radial-gradient(circle, rgba(248,81,73,.85), rgba(248,81,73,.25) 45%, transparent 70%); opacity:0; transform:scale(.3); transition:opacity .8s, transform .8s; } .heat.in .blob{ opacity:1; transform:scale(1); } .heat .pin{ position:absolute; font-family:var(--mono); font-size:.6rem; color:#ffd9d6; white-space:nowrap; transform:translate(-50%,10px); }
+  .surv svg{ width:100%; height:146px; display:block; } .surv .base{ stroke:var(--line); stroke-width:1; } .surv .trace{ fill:none; stroke:var(--accent); stroke-width:2.5; stroke-linejoin:round; stroke-dasharray:600; stroke-dashoffset:600; transition:stroke-dashoffset 1.4s ease .2s; } .surv.in .trace{ stroke-dashoffset:0; } .surv .drop{ fill:var(--fail); opacity:0; transition:opacity .4s 1.1s; } .surv.in .drop{ opacity:1; } .surv .lbl{ font-family:var(--mono); font-size:8px; fill:var(--dim); }
+  .voice{ border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px 18px; margin-bottom:16px; display:flex; gap:15px; align-items:center; } .voice .play{ width:44px; height:44px; flex:0 0 auto; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; font-size:1.1rem; box-shadow:0 6px 18px rgba(76,141,255,.4); } .voice .vb{ min-width:0; flex:1; }
+  .voice .wave{ display:flex; align-items:center; gap:2px; height:26px; margin-bottom:9px; } .voice .wave i{ width:3px; border-radius:2px; background:var(--accent-2); opacity:.4; height:20%; } .voice.play-on .wave i{ animation:wv 1s ease-in-out infinite; } @keyframes wv{ 0%,100%{ transform:scaleY(.3) } 50%{ transform:scaleY(1) } }
+  .voice .q{ font-size:.92rem; color:var(--text); font-style:italic; line-height:1.45; } .voice .q b{ font-style:normal; } .voice .who{ font-family:var(--mono); font-size:.66rem; color:var(--dim); margin-top:6px; }
+  .trend{ border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px 18px; margin-bottom:22px; } .trend h4{ font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; } .trend svg{ width:100%; height:66px; display:block; } .trend .tl{ fill:none; stroke:var(--ok); stroke-width:2; } .trend .td{ fill:var(--fail); } .trend .txt{ font-family:var(--mono); font-size:8px; fill:var(--dim); }
+  .cta{ text-align:center; padding:14px 0 60px; } .cta .line{ font-size:clamp(1.25rem,3vw,1.75rem); font-weight:650; letter-spacing:-.02em; } .cta .line .do{ color:var(--accent); }
+  .cta .go{ display:inline-flex; align-items:center; gap:9px; margin-top:18px; background:var(--accent); color:#fff; text-decoration:none; font-weight:600; padding:13px 24px; border-radius:11px; box-shadow:0 10px 30px rgba(76,141,255,.35); transition:.2s; } .cta .go:hover{ transform:translateY(-2px); box-shadow:0 16px 40px rgba(76,141,255,.5); } .cta .sub2{ color:var(--dim); font-family:var(--mono); font-size:.72rem; margin-top:16px; }
 
-  .panels{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
-  @media(max-width:760px){ .panels{ grid-template-columns:1fr; } }
-  .panel{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 16px 14px; }
-  .panel h4{ font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:12px; }
-  .heat{ position:relative; height:146px; border-radius:10px; background:#0d1017; border:1px solid var(--line); overflow:hidden; }
-  .heat .grid{ position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px); background-size:24px 24px; }
-  .heat .blob{ position:absolute; width:86px; height:86px; margin:-43px; border-radius:50%; background:radial-gradient(circle, rgba(248,81,73,.85), rgba(248,81,73,.25) 45%, transparent 70%); opacity:0; transform:scale(.3); transition:opacity .8s, transform .8s; }
-  .heat.in .blob{ opacity:1; transform:scale(1); }
-  .heat .pin{ position:absolute; font-family:var(--mono); font-size:.6rem; color:#ffd9d6; white-space:nowrap; transform:translate(-50%,10px); }
-  .surv svg{ width:100%; height:146px; display:block; }
-  .surv .base{ stroke:var(--line); stroke-width:1; }
-  .surv .trace{ fill:none; stroke:var(--accent); stroke-width:2.5; stroke-linejoin:round; stroke-dasharray:600; stroke-dashoffset:600; transition:stroke-dashoffset 1.4s ease .2s; } .surv.in .trace{ stroke-dashoffset:0; }
-  .surv .drop{ fill:var(--fail); opacity:0; transition:opacity .4s 1.1s; } .surv.in .drop{ opacity:1; } .surv .lbl{ font-family:var(--mono); font-size:8px; fill:var(--dim); }
+  /* start overlay */
+  .starter{ text-align:center; padding:40px 0 8px; }
+  .starter h1{ font-size:clamp(2rem,5.4vw,3.3rem); line-height:1.04; letter-spacing:-.03em; font-weight:680; margin-bottom:.35em; } .starter h1 .a{ color:var(--accent); }
+  .starter p{ color:var(--muted); max-width:60ch; margin:0 auto 24px; font-size:1.05rem; }
+  .btn{ font-weight:600; font-size:1rem; border:0; border-radius:12px; padding:15px 30px; cursor:pointer; transition:transform .12s, box-shadow .2s; }
+  .btn-run{ background:linear-gradient(180deg,var(--accent-2),var(--accent) 55%,var(--accent-d)); color:#fff; box-shadow:0 12px 34px rgba(76,141,255,.4); } .btn-run:hover{ transform:translateY(-2px); box-shadow:0 18px 46px rgba(76,141,255,.55); }
+  .btn-ghost{ background:transparent; color:var(--muted); border:1px solid var(--line); margin-left:10px; } .btn-ghost:hover{ color:var(--text); }
+  .starter .meta{ margin-top:14px; font-family:var(--mono); font-size:.7rem; color:var(--dim); }
 
-  /* cloned-voice exit-interview */
-  .voice{ border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px 18px; margin-bottom:16px; display:flex; gap:15px; align-items:center; }
-  .voice .play{ width:44px; height:44px; flex:0 0 auto; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; font-size:1.1rem; box-shadow:0 6px 18px rgba(76,141,255,.4); }
-  .voice .vb{ min-width:0; flex:1; }
-  .voice .wave{ display:flex; align-items:center; gap:2px; height:26px; margin-bottom:9px; }
-  .voice .wave i{ width:3px; border-radius:2px; background:var(--accent-2); opacity:.4; height:20%; }
-  .voice.play-on .wave i{ animation:wv 1s ease-in-out infinite; }
-  @keyframes wv{ 0%,100%{ transform:scaleY(.3) } 50%{ transform:scaleY(1) } }
-  .voice .q{ font-size:.92rem; color:var(--text); font-style:italic; line-height:1.45; } .voice .q b{ font-style:normal; }
-  .voice .who{ font-family:var(--mono); font-size:.66rem; color:var(--dim); margin-top:6px; }
-
-  .term{ background:#0a0d12; border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:16px; }
-  .term-bar{ display:flex; align-items:center; gap:7px; padding:9px 13px; border-bottom:1px solid var(--line); font-family:var(--mono); font-size:.68rem; color:var(--dim); }
-  .term-bar i{ width:10px; height:10px; border-radius:50%; } .term-bar .r{ background:#ff5f57 } .term-bar .y{ background:#febc2e } .term-bar .g{ background:#28c840 }
-  .term-body{ padding:15px 17px; font-family:var(--mono); font-size:.8rem; line-height:1.7; min-height:150px; }
-  .term-body .ln{ white-space:pre-wrap; opacity:0; } .term-body .ln.in{ opacity:1; }
-  .term-body .c-p{ color:var(--accent-2); } .term-body .c-d{ color:var(--dim); } .term-body .c-ok{ color:var(--ok); } .term-body .c-f{ color:var(--fail); font-weight:700; } .term-body .c-w{ color:var(--warn); }
-  .cursor-blink::after{ content:'▋'; color:var(--accent); animation:blink 1s steps(1) infinite; }
-
-  /* trend sparkline */
-  .trend{ border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:16px 18px; margin-bottom:22px; }
-  .trend h4{ font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:10px; }
-  .trend svg{ width:100%; height:66px; display:block; }
-  .trend .tl{ fill:none; stroke:var(--ok); stroke-width:2; } .trend .td{ fill:var(--fail); } .trend .txt{ font-family:var(--mono); font-size:8px; fill:var(--dim); }
-
-  .cta{ text-align:center; padding:14px 0 56px; }
-  .cta .line{ font-size:clamp(1.25rem,3vw,1.75rem); font-weight:650; letter-spacing:-.02em; } .cta .line .do{ color:var(--accent); }
-  .cta .go{ display:inline-flex; align-items:center; gap:9px; margin-top:18px; background:var(--accent); color:#fff; text-decoration:none; font-weight:600; padding:13px 24px; border-radius:11px; box-shadow:0 10px 30px rgba(76,141,255,.35); transition:transform .12s, box-shadow .2s; }
-  .cta .go:hover{ transform:translateY(-2px); box-shadow:0 16px 40px rgba(76,141,255,.5); }
-  .cta .sub2{ color:var(--dim); font-family:var(--mono); font-size:.72rem; margin-top:16px; }
-  .foot{ border-top:1px solid var(--line); padding:20px 0; text-align:center; color:var(--dim); font-family:var(--mono); font-size:.68rem; } .foot a{ color:var(--muted); text-decoration:none; } .foot a:hover{ color:var(--text); }
-  @media(prefers-reduced-motion:reduce){ *{ animation:none!important; transition-duration:.01ms!important; } .ripple.go{ opacity:.85; } .missx.show{ opacity:1; } .death .core{ box-shadow:0 0 0 5px rgba(248,81,73,.25); } }
+  .foot{ border-top:1px solid var(--line); padding:20px 0; text-align:center; color:var(--dim); font-family:var(--mono); font-size:.68rem; } .foot a{ color:var(--muted); text-decoration:none; }
+  @media(prefers-reduced-motion:reduce){ *{ animation:none!important; transition-duration:.01ms!important; } html{ scroll-behavior:auto; } .ripple.go{ opacity:.85; } .missx.show{ opacity:1; } .death .core{ box-shadow:0 0 0 5px rgba(248,81,73,.25); } }
 </style>
 </head>
 <body>
-  <header><div class="wrap">
-    <div class="brand">
-      <svg width="26" height="16" viewBox="0 0 26 16" fill="none"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#4C8DFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Simulation Labs</span>
-      <span class="live"><i></i> behavioral gate · CI</span>
+  <div class="rail">
+    <div class="rail-in">
+      <span class="brand"><svg width="24" height="15" viewBox="0 0 26 16" fill="none"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#4C8DFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Simulation Labs</span></span>
+      <div class="steps" id="steps"></div>
+      <span class="time" id="clock">0:00</span>
     </div>
-  </div></header>
+  </div>
 
   <main class="wrap">
-    <section class="hero">
-      <p class="kick">Behavioral tests, like unit tests</p>
-      <h1>Watch the gate block a bad deploy.</h1>
-      <p class="sub">A developer shrank the signup consent checkbox to match the brand. <b>Build passes. Unit tests pass.</b> Then the behavioral gate runs a swarm of mechanically-degraded AI users on the PR — and catches that people with a hand tremor can no longer finish. It counts the signups you'd lose, and blocks the merge before it ships.</p>
+    <section class="starter" id="starter">
+      <h1>Behavioral tests,<br/>like <span class="a">unit tests</span>.</h1>
+      <p>A 2-minute tour: the problem, wiring the gate into your CI, how the mechanically-degraded swarm works, and watching it block a real bad deploy — before it ships.</p>
+      <button class="btn btn-run" id="startBtn">▶ Start the tour</button>
+      <button class="btn btn-ghost" id="skipBtn">Skip to the demo</button>
+      <div class="meta">~2 min · auto-plays · click any chapter to jump</div>
     </section>
 
-    <div class="runbar">
-      <button class="btn btn-run" id="runBtn">▶ Run the behavioral gate</button>
-      <button class="btn btn-ghost" id="replayBtn" style="display:none">↻ Replay</button>
-    </div>
-
-    <section class="pr">
-      <div class="pr-head">
-        <span class="pr-badge" id="prBadge">● Open</span>
-        <div class="pr-title">Make consent checkbox on-brand (smaller) <span class="num">#248</span></div>
-        <div class="pr-meta"><span class="who">@maya-eng</span> wants to merge <span class="br">redesign/consent-box</span> → <span class="br">main</span> · 1 file changed</div>
-        <div class="diff">
-          <div class="df-h">web/signup/ConsentRow.css</div>
-          <div class="df-l rm">.consent input { width: 44px; height: 44px; }</div>
-          <div class="df-l ad">.consent input { width: 24px; height: 24px; }</div>
+    <!-- CH 1 — THE PROBLEM -->
+    <section class="chapter" id="ch1" data-title="The problem">
+      <span class="ch-tag"><span class="n">01 —</span> The problem</span>
+      <h2 class="ch-h">Your CI is green. Your funnel is <span class="r">leaking</span>.</h2>
+      <p class="ch-sub">Unit tests check that your <b>code</b> runs. Nothing checks that your <b>users</b> can finish. A tiny UI change ships, every test passes — and quietly, fewer people make it through signup. You find out weeks later in the dashboard, if at all.</p>
+      <div class="split">
+        <div class="sp-card green"><h4>What CI tells you</h4>
+          <div class="sp-line"><span class="i ok">✓</span> build passed</div>
+          <div class="sp-line"><span class="i ok">✓</span> 142 unit tests passed</div>
+          <div class="sp-line"><span class="i ok">✓</span> type-check clean</div>
+          <div class="sp-line"><span class="i ok">✓</span> deploy ready</div>
+        </div>
+        <div class="sp-card redd"><h4>What your users experience</h4>
+          <div class="sp-line"><span class="i bad">✕</span> can't hit the tiny checkbox</div>
+          <div class="sp-line"><span class="i bad">✕</span> re-taps, nothing happens</div>
+          <div class="sp-line"><span class="i bad">✕</span> assumes it's broken</div>
+          <div class="sp-line"><span class="i bad">✕</span> leaves — no error logged</div>
         </div>
       </div>
-      <div class="checks">
-        <div class="check"><span class="ico ok">✓</span><span class="nm">Build</span><span class="dc">passed in 41s</span></div>
-        <div class="check"><span class="ico ok">✓</span><span class="nm">Unit tests</span><span class="dc">142 passed</span></div>
-        <div class="check gate" id="gateCheck">
-          <span class="ico pend" id="gateIco">●</span>
-          <span class="nm"><b>simulationlabs / behavioral-gate</b></span>
-          <span class="dc" id="gateDc">not started</span>
-        </div>
-      </div>
+      <div style="margin-top:22px"><span class="bignum" id="fidNum">0</span> <span class="ch-sub" style="display:inline">— how often a prompted survey persona matches the real person it stands in for <span class="mut">(arXiv:2503.20749)</span>. So we stopped asking personas what they'd do, and started watching what they actually do.</span></div>
+      <div class="caption" id="cap1"></div>
+    </section>
 
-      <div class="gate-run" id="gateRun">
-        <div class="gr-head"><span class="spinner" id="grSpin"></span><span><b>behavioral-gate</b> · running the swarm on this PR</span><span class="rt" id="grCount">5 agents · Gemini 3.5</span></div>
-        <div class="swarm-strip" id="strip"></div>
-        <div class="stage" id="stage">
-          <div class="form-card" id="card">
-            <div class="fc-brand"><span class="d"></span>Nimbus</div>
-            <div class="fc-h">Create your account</div>
-            <div class="fc-sub">Start your 14-day free trial. No card required.</div>
-            <div class="fld"><label>Work email</label><div class="inp" id="fEmail"><span class="ph">you@company.com</span></div></div>
-            <div class="fld"><label>Password</label><div class="inp" id="fPass"><span class="ph">At least 8 characters</span></div></div>
-            <div class="consent">
-              <div class="cbx" id="fCbx"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-              <span class="ct">I agree to the <a>Terms of Service</a> and <a>Privacy Policy</a>.</span>
-            </div>
-            <div class="cta-btn">Create account</div>
-            <div class="fc-done" id="fDone"><div style="text-align:center"><div class="ring">✓</div><h3>You're in!</h3></div></div>
+    <!-- CH 2 — SETUP -->
+    <section class="chapter" id="ch2" data-title="Set it up">
+      <span class="ch-tag"><span class="n">02 —</span> Set it up</span>
+      <h2 class="ch-h">Wire it into CI in <span class="a">three lines</span>.</h2>
+      <p class="ch-sub">Install it, point it at one real flow, pick which user segments to send, and set a bar. It runs on every pull request — like any other check.</p>
+      <div class="term" style="margin-top:22px"><div class="term-bar"><i class="rd"></i><i class="yl"></i><i class="gr"></i><span style="margin-left:6px">your-app · terminal</span></div><div class="term-body" id="setupTerm"></div></div>
+      <div class="files">
+        <div class="filecard" id="file1"><div class="fh">sim.yml</div><pre id="file1b"></pre></div>
+        <div class="filecard" id="file2"><div class="fh">.github/workflows/simulate.yml</div><pre id="file2b"></pre></div>
+      </div>
+      <div class="caption" id="cap2"></div>
+    </section>
+
+    <!-- CH 3 — HOW IT WORKS -->
+    <section class="chapter" id="ch3" data-title="How it works">
+      <span class="ch-tag"><span class="n">03 —</span> How it works</span>
+      <h2 class="ch-h">We don't <span class="mut">prompt</span> an agent to act impaired.<br/>We <span class="a">break the machine</span> by measured amounts.</h2>
+      <p class="ch-sub">Each agent is a real computer-use model driving a real browser. We mechanically degrade what it sees and how it clicks — blur, colour-shift, coordinate tremor, tight patience budgets, small viewports — to model how real segments behave. Reproducible, byte-deterministic. Not vibes.</p>
+      <div class="mech">
+        <div class="mech-viz">
+          <div class="mech-shot" id="mechShot">
+            <div class="frame"><div class="mh">Create your account</div><div class="ms">Start your free trial</div><div class="mrow"></div><div class="mrow"></div><div><span class="mcbx"></span><span style="font-size:.66rem;color:#4b5563">I agree to the Terms</span></div><div class="mbtn" style="margin-top:12px"></div></div>
+            <div class="mcur" id="mechCur"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3.5 2 L3.5 17 L7.4 13.3 L10.2 20 L12.7 19 L10 12.4 L15 12.4 Z" fill="#F85149" stroke="#fff" stroke-width="1"/></svg></div>
+            <div class="badge" id="mechBadge">screenshot in</div>
           </div>
-          <div class="chips" id="chips"></div>
+        </div>
+        <div class="mech-steps" id="mechSteps">
+          <div class="ms-item" data-i="0"><span class="num">1</span><span class="t"><b>Perceive</b> <span>— screenshot the live page</span></span></div>
+          <div class="ms-item" data-i="1"><span class="num">2</span><span class="t"><b>Degrade</b> <span>— blur / colour-shift the frame (low vision, CVD)</span></span></div>
+          <div class="ms-item" data-i="2"><span class="num">3</span><span class="t"><b>Decide</b> <span>— the computer-use model picks the next action</span></span></div>
+          <div class="ms-item" data-i="3"><span class="num">4</span><span class="t"><b>Jitter</b> <span>— add tremor σ to the click; enforce the patience budget</span></span></div>
+          <div class="ms-item" data-i="4"><span class="num">5</span><span class="t"><b>Execute</b> <span>— click the real page · complete or abandon at a pixel</span></span></div>
         </div>
       </div>
-
-      <!-- PR bot comment (post-verdict) -->
-      <div class="botc" id="botc">
-        <div class="botc-h"><span class="av">🤖</span><b>simulationlabs</b><span>bot commented</span><span class="t">just now</span></div>
-        <div class="botc-b">
-          <span class="x">❌ Behavioral regression on <code>signup</code>.</span> Completion dropped <b>100% → 80%</b> vs the last passing run.
-          <b>Misclick-prone</b> users can't tick the new 24px consent box and abandon at <code>(464, 494)</code>.
-          <span class="lk">▸ full report · video receipts · exit interview</span>
-        </div>
-      </div>
-
-      <div class="merge-bar">
-        <button class="merge-btn" id="mergeBtn">Merge pull request</button>
-        <span class="merge-note" id="mergeNote">All checks are pending…</span>
-      </div>
+      <div class="swarm-strip" id="strip3"></div>
+      <div class="caption" id="cap3"></div>
     </section>
 
-    <!-- receipts -->
-    <section class="reveal" id="analytics">
-      <div class="rr-lead"><span class="k">Why the gate blocked it</span><h2>Green build. Passing tests. Users who can't finish.</h2></div>
+    <!-- CH 4 — THE DEMO (PR + run) -->
+    <section class="chapter" id="ch4" data-title="The demo">
+      <span class="ch-tag"><span class="n">04 —</span> The demo · a real PR</span>
+      <h2 class="ch-h">A developer ships a "harmless" tweak.</h2>
+      <p class="ch-sub">They shrink the signup consent checkbox to match the brand. 44px → 24px. Build passes, all 142 unit tests pass. Then the behavioral gate runs the swarm on the PR…</p>
+      <section class="pr">
+        <div class="pr-head">
+          <span class="pr-badge" id="prBadge">● Open</span>
+          <div class="pr-title">Make consent checkbox on-brand (smaller) <span class="num">#248</span></div>
+          <div class="pr-meta"><span class="who">@maya-eng</span> wants to merge <span class="br">redesign/consent-box</span> → <span class="br">main</span> · 1 file changed</div>
+          <div class="diff"><div class="df-h">web/signup/ConsentRow.css</div><div class="df-l rmv">.consent input { width: 44px; height: 44px; }</div><div class="df-l add">.consent input { width: 24px; height: 24px; }</div></div>
+        </div>
+        <div class="checks">
+          <div class="check"><span class="ico ok">✓</span><span class="nm">Build</span><span class="dc">passed in 41s</span></div>
+          <div class="check"><span class="ico ok">✓</span><span class="nm">Unit tests</span><span class="dc">142 passed</span></div>
+          <div class="check gate" id="gateCheck"><span class="ico pend" id="gateIco">●</span><span class="nm"><b>simulationlabs / behavioral-gate</b></span><span class="dc" id="gateDc">not started</span></div>
+        </div>
+        <div class="gate-run" id="gateRun">
+          <div class="gr-head"><span class="spinner" id="grSpin"></span><span><b>behavioral-gate</b> · running the swarm on this PR</span><span class="rt" id="grCount">5 agents · Gemini 3.5</span></div>
+          <div class="stage" id="stage">
+            <div class="form-card" id="card">
+              <div class="fc-brand"><span class="d"></span>Nimbus</div><div class="fc-h">Create your account</div><div class="fc-sub">Start your 14-day free trial. No card required.</div>
+              <div class="fld"><label>Work email</label><div class="inp" id="fEmail"><span class="ph">you@company.com</span></div></div>
+              <div class="fld"><label>Password</label><div class="inp" id="fPass"><span class="ph">At least 8 characters</span></div></div>
+              <div class="consent"><div class="cbx" id="fCbx"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="ct">I agree to the <a>Terms of Service</a> and <a>Privacy Policy</a>.</span></div>
+              <div class="cta-btn">Create account</div>
+              <div class="fc-done" id="fDone"><div style="text-align:center"><div class="ring">✓</div><h3>You're in!</h3></div></div>
+            </div>
+            <div class="chips" id="chips"></div>
+          </div>
+        </div>
+        <div class="botc" id="botc">
+          <div class="botc-h"><span class="av">🤖</span><b>simulationlabs</b><span>bot commented</span><span class="t">just now</span></div>
+          <div class="botc-b"><span class="r"><b>❌ Behavioral regression on <code>signup</code>.</b></span> Completion dropped <b>100% → 80%</b> vs the last passing run. <b>Misclick-prone</b> users can't tick the new 24px consent box and abandon at <code>(464, 494)</code>. <span class="lk">▸ full report · video receipts · exit interview</span></div>
+        </div>
+        <div class="merge-bar"><button class="merge-btn" id="mergeBtn">Merge pull request</button><span class="merge-note" id="mergeNote">All checks are pending…</span></div>
+      </section>
+      <div class="caption" id="cap4"></div>
+    </section>
 
-      <div class="impact">
-        <div class="big">This ships to ~8,000 signups/mo. You'd silently lose <b id="lost">~1,600</b> of them — <b id="revLost">every month</b>.</div>
-        <div class="cap">A 20-point completion drop on a flow that already passed every unit test. No error, no alert — just fewer accounts.</div>
-        <div class="fine">illustrative · scaled to a typical mid-market signup funnel</div>
-      </div>
-
+    <!-- CH 5 — RECEIPTS -->
+    <section class="chapter" id="ch5" data-title="The verdict">
+      <span class="ch-tag"><span class="n">05 —</span> Why it blocked it</span>
+      <h2 class="ch-h">Green build. Passing tests. Users who <span class="r">can't finish</span>.</h2>
+      <div class="impact"><div class="big">This ships to ~8,000 signups/mo. You'd silently lose <b id="lost">~1,600</b> of them — <b>every month</b>.</div><div class="cap">A 20-point completion drop on a flow that passed every unit test. No error, no alert — just fewer accounts.</div><div class="fine">illustrative · scaled to a typical mid-market signup funnel</div></div>
       <div class="metrics">
-        <div class="metric"><div class="n red" id="mComp">100<small>%</small> <small>→</small> 80<small>%</small></div><div class="l">signup completion vs the last passing run</div></div>
+        <div class="metric"><div class="n red">100<small>%</small> <small>→</small> 80<small>%</small></div><div class="l">signup completion vs the last passing run</div></div>
         <div class="metric"><div class="n red">1 / 5</div><div class="l">agents regressed — Misclick-prone can't tick the 24px box</div></div>
         <div class="metric"><div class="n blue">(464, 494)</div><div class="l">the exact pixel where they give up — on video</div></div>
       </div>
-
-      <div class="grid-t" id="gridT">
-        <div class="gt-row h"><span>agent</span><span class="deg2">mechanical degradation</span><span class="g3">outcome</span><span class="g4">gave up at</span></div>
-      </div>
-
+      <div class="grid-t" id="gridT"><div class="gt-row h"><span>agent</span><span class="deg2">mechanical degradation</span><span class="g3">outcome</span><span class="g4">gave up at</span></div></div>
       <div class="panels">
-        <div class="panel"><h4>Abandonment heatmap · where they die</h4>
-          <div class="heat" id="heat"><div class="grid"></div><div class="blob" id="heatBlob"></div><div class="pin" id="heatPin">✕ (464, 494) · the shrunk consent box</div></div>
-        </div>
-        <div class="panel"><h4>Survival · agents still in the flow</h4>
-          <div class="surv" id="surv"><svg viewBox="0 0 300 150" preserveAspectRatio="none">
-            <line class="base" x1="0" y1="120" x2="300" y2="120"/>
-            <path class="trace" d="M4,26 L150,26 L210,26 L210,88 L296,88"/>
-            <circle class="drop" cx="210" cy="88" r="4"/>
-            <text class="lbl" x="6" y="20">5 alive</text><text class="lbl" x="296" y="104" text-anchor="end">4 survived</text><text class="lbl" x="214" y="82">misclick-prone ✕</text>
-          </svg></div>
-        </div>
+        <div class="panel"><h4>Abandonment heatmap · where they die</h4><div class="heat" id="heat"><div class="grid"></div><div class="blob" id="heatBlob"></div><div class="pin" id="heatPin">✕ (464, 494) · the shrunk consent box</div></div></div>
+        <div class="panel"><h4>Survival · agents still in the flow</h4><div class="surv" id="surv"><svg viewBox="0 0 300 150" preserveAspectRatio="none"><line class="base" x1="0" y1="120" x2="300" y2="120"/><path class="trace" d="M4,26 L150,26 L210,26 L210,88 L296,88"/><circle class="drop" cx="210" cy="88" r="4"/><text class="lbl" x="6" y="20">5 alive</text><text class="lbl" x="296" y="104" text-anchor="end">4 survived</text><text class="lbl" x="214" y="82">misclick-prone ✕</text></svg></div></div>
       </div>
-
-      <div class="voice" id="voice">
-        <div class="play">▶</div>
-        <div class="vb">
-          <div class="wave" id="wave"></div>
-          <div class="q">“I kept jabbing at that little agree box and my hand just wouldn't land on it. After the fourth try I figured the page was broken, so I <b>bailed</b>.”</div>
-          <div class="who">cloned-voice exit interview · Misclick-prone · grounded in its real action trace · Gradium</div>
-        </div>
-      </div>
-
-      <div class="term">
-        <div class="term-bar"><i class="r"></i><i class="y"></i><i class="g"></i><span style="margin-left:6px">.github/workflows/simulate.yml</span></div>
-        <div class="term-body" id="term"></div>
-      </div>
-
-      <div class="trend">
-        <h4>Signup completion · your last 6 deploys</h4>
-        <svg viewBox="0 0 300 66" preserveAspectRatio="none">
-          <polyline class="tl" points="6,14 54,12 102,15 150,11 198,13 246,44"/>
-          <circle class="td" cx="246" cy="44" r="4"/>
-          <text class="txt" x="6" y="10">100%</text><text class="txt" x="250" y="42">80% · this PR</text>
-        </svg>
-      </div>
-
-      <div class="cta">
-        <div class="line">Ship the bug, or block the merge. Only one tool tells you what users actually <span class="do">do</span>.</div>
-        <a class="go" href="https://simulationlabs.dev">See the full report & book a teardown →</a>
-        <div class="sub2">Behavioral tests, like unit tests — on every deploy. Built with Gemini 3.5.</div>
-      </div>
+      <div class="voice" id="voice"><div class="play">▶</div><div class="vb"><div class="wave" id="wave"></div><div class="q">“I kept jabbing at that little agree box and my hand just wouldn't land on it. After the fourth try I figured the page was broken, so I <b>bailed</b>.”</div><div class="who">cloned-voice exit interview · Misclick-prone · grounded in its real action trace · Gradium</div></div></div>
+      <div class="term"><div class="term-bar"><i class="rd"></i><i class="yl"></i><i class="gr"></i><span style="margin-left:6px">.github/workflows/simulate.yml</span></div><div class="term-body" id="term"></div></div>
+      <div class="trend"><h4>Signup completion · your last 6 deploys</h4><svg viewBox="0 0 300 66" preserveAspectRatio="none"><polyline class="tl" points="6,14 54,12 102,15 150,11 198,13 246,44"/><circle class="td" cx="246" cy="44" r="4"/><text class="txt" x="6" y="10">100%</text><text class="txt" x="250" y="42">80% · this PR</text></svg></div>
+      <div class="cta"><div class="line">Ship the bug, or block the merge. Only one tool tells you what users actually <span class="do">do</span>.</div><a class="go" href="https://simulationlabs.dev">See the full report & book a teardown →</a><div class="sub2">Behavioral tests, like unit tests — on every deploy. Built with Gemini 3.5.</div></div>
     </section>
   </main>
 
-  <footer class="foot"><div class="wrap">
-    Simulation Labs · behavioral simulation · <a href="https://simulationlabs.dev/sample-report/">sample report</a> · <a href="https://simulationlabs.dev">simulationlabs.dev</a>
-  </div></footer>
+  <footer class="foot"><div class="wrap">Simulation Labs · <a href="https://simulationlabs.dev/sample-report/">sample report</a> · <a href="https://simulationlabs.dev">simulationlabs.dev</a></div></footer>
 
 <script>
 (function(){
   "use strict";
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-  var $ = function(id){ return document.getElementById(id); };
-  var stage=$('stage'), card=$('card'), runBtn=$('runBtn'), replayBtn=$('replayBtn'), chipsEl=$('chips'), stripEl=$('strip');
-  var running=false, timers=[], gen=0;
-  function T(fn,ms){ var t=setTimeout(fn, reduce?Math.min(ms,50):ms); timers.push(t); return t; }
+  var $=function(id){return document.getElementById(id);};
+  var gen=0, timers=[], playing=false, t0=0, clockIv=null;
+  var PACE = reduce ? 0.05 : 2.05;   // stretch dwells/animation to a ~2-minute guided pace
+  function T(fn,ms){ var t=setTimeout(fn, reduce?Math.min(ms,60):ms); timers.push(t); return t; }
   function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
-  var sleep=function(ms){ return new Promise(function(r){ T(r,ms); }); };
-  function scrollTo(node){ if(node && node.scrollIntoView) node.scrollIntoView({behavior: reduce?'auto':'smooth', block:'center'}); }
+  function sleep(ms){ return new Promise(function(r){ T(r, Math.round(ms*PACE)); }); }
+  function readPause(){ return sleep(2400); }   // let the viewer read the chapter headline+body
+  function scrollToEl(node){ if(node&&node.scrollIntoView) node.scrollIntoView({behavior:reduce?'auto':'smooth', block:'center'}); }
+  function scrollTop(node){ if(node&&node.scrollIntoView) node.scrollIntoView({behavior:reduce?'auto':'smooth', block:'start'}); }
 
+  // ---- chapter rail ----
+  var CH=[{id:'ch1',t:'The problem'},{id:'ch2',t:'Set it up'},{id:'ch3',t:'How it works'},{id:'ch4',t:'The demo'},{id:'ch5',t:'The verdict'}];
+  (function(){ var s=$('steps'); CH.forEach(function(c,i){ var e=document.createElement('span'); e.className='step'; e.id='st-'+i;
+    e.innerHTML='<span class="no">'+(i+1)+'</span><span class="label">'+c.t+'</span>'; e.onclick=function(){ jumpTo(i); }; s.appendChild(e); }); })();
+  function markStep(i){ CH.forEach(function(c,j){ var e=$('st-'+j); e.className='step'+(j<i?' done':'')+(j===i?' on':''); });
+    var el=$('st-'+i); if(el) el.scrollIntoView({block:'nearest',inline:'center'}); }
+  function setActive(i){ CH.forEach(function(c,j){ $(c.id).classList.toggle('active', j===i); }); markStep(i); }
+  function startClock(){ t0=Date.now(); if(clockIv) clearInterval(clockIv); clockIv=setInterval(function(){ var s=Math.floor((Date.now()-t0)/1000); $('clock').textContent=Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); },500); }
+
+  // ---- helpers ----
+  function typeLines(container, lines, cps, done){
+    container.innerHTML=''; var li=0, myGen=gen;
+    function next(){ if(myGen!==gen) return; if(li>=lines.length){ if(done)done(); return; }
+      var s=document.createElement('span'); s.className='ln in '+(lines[li][0]||''); container.appendChild(s);
+      var txt=lines[li][1], ci=0; var iv=setInterval(function(){ if(myGen!==gen){clearInterval(iv);return;} ci++; s.textContent=txt.slice(0,ci);
+        if(ci>=txt.length){ clearInterval(iv); li++; T(next,90); } }, reduce?2:cps); timers.push(iv); }
+    next();
+  }
+  function typePre(node, text, cps, done){ node.textContent=''; var i=0, myGen=gen; var iv=setInterval(function(){ if(myGen!==gen){clearInterval(iv);return;} i++; node.textContent=text.slice(0,i); if(i>=text.length){ clearInterval(iv); if(done)done(); } }, reduce?1:cps); timers.push(iv); }
+  function cap(id,text){ var e=$(id); e.textContent=text; e.classList.add('in'); }
+  function animNum(id,to,ms,prefix,suffix){ var node=$(id), start=null; function step(ts){ if(!start)start=ts; var p=Math.min((ts-start)/ms,1); var e=1-Math.pow(1-p,3); node.textContent=(prefix||'')+Math.round(to*e).toLocaleString()+(suffix||''); if(p<1) requestAnimationFrame(step);} requestAnimationFrame(step); }
+
+  // ======== CHAPTER 1 ========
+  async function ch1(){
+    setActive(0); scrollTop($('ch1')); await readPause();
+    animNum('fidNum',11.86 ? 12 : 12, 1200,'',''); // integer approximation for counter feel
+    // show the real 11.86% precisely at the end
+    T(function(){ $('fidNum').textContent='11.86%'; }, 1300);
+    await sleep(1600);
+    cap('cap1','A stated preference is not a click. The only thing that counts is whether they finish.');
+    await sleep(3200);
+  }
+
+  // ======== CHAPTER 2 ========
+  var SIMYML="version: 1\nflows:\n  - name: signup\n    url: https://app.you.com/signup\n    task: \"Create an account and reach the dashboard\"\n    fail_under: last-passing\nicp:\n  personas: [fluent, rushed, mobile-thumb, misclick-prone, ai-agent]";
+  var ACTYML="name: behavioral-gate\non: [pull_request]\njobs:\n  gate:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: simulationlabs/gate@v1\n        with:\n          flow: signup\n          fail-under: last-passing";
+  function ch2(){ return new Promise(function(resolve){
+    setActive(1); scrollTop($('ch2'));
+    var myGen=gen;
+    T(function(){ if(myGen!==gen)return;
+      typeLines($('setupTerm'), [
+        ['c-p','$ '],['','pip install simulationlabs\n'],
+        ['c-d','  installed simulationlabs 1.0  ✓\n'],
+        ['c-p','$ '],['','sim init\n'],
+        ['c-ok','  wrote sim.yml\n'],['c-ok','  wrote .github/workflows/simulate.yml\n'],
+        ['c-d','  done. the gate now runs on every pull request.\n']
+      ], 22, function(){
+        if(myGen!==gen)return;
+        $('file1').classList.add('in'); typePre($('file1b'), SIMYML, 14, function(){
+          if(myGen!==gen)return;
+          $('file2').classList.add('in'); typePre($('file2b'), ACTYML, 13, function(){
+            if(myGen!==gen)return;
+            cap('cap2','One flow. Your real segments. One bar: never drop below the last passing run.');
+            T(resolve, 2600);
+          });
+        });
+      });
+    }, 2400);
+  }); }
+
+  // ======== CHAPTER 3 ========
   var AGENTS=[
-    {id:'fluent',name:'Fluent',color:'#4C8DFF',seg:'Confident, precise user — the control',deg:'no degradation',oc:'ok',dp:'—'},
-    {id:'ai-agent',name:'AI Agent',color:'#22C1C3',seg:'Unattended bot — is it machine-navigable?',deg:'headless',oc:'ok',dp:'—'},
-    {id:'rushed',name:'Rushed',color:'#8B5CF6',seg:'In a hurry; bails if it is not obvious',deg:'patience 10 steps',oc:'ok',dp:'—'},
+    {id:'fluent',name:'Fluent',color:'#4C8DFF',seg:'Confident, precise — the control',deg:'no degradation',oc:'ok',dp:'—'},
+    {id:'ai-agent',name:'AI Agent',color:'#22C1C3',seg:'Unattended bot — machine-navigable?',deg:'headless',oc:'ok',dp:'—'},
+    {id:'rushed',name:'Rushed',color:'#8B5CF6',seg:'In a hurry; bails if unclear',deg:'patience 10 steps',oc:'ok',dp:'—'},
     {id:'mobile-thumb',name:'Mobile-thumb',color:'#D29922',seg:'Thumb on a 390px screen',deg:'viewport 390px · σ22px',oc:'ok',dp:'—'},
-    {id:'misclick-prone',name:'Misclick-prone',color:'#F85149',seg:'Imprecise taps; small targets punish it',deg:'tremor σ24px · patience 6',oc:'bad',dp:'(464, 494)'}
+    {id:'misclick-prone',name:'Misclick-prone',color:'#F85149',seg:'Imprecise taps; small targets punish it',deg:'tremor σ24px · patience 6',oc:'bad',dp:'(464,494)'}
   ];
-  var cursors={}, chips={}, pcards={};
+  function buildStrip(el){ el.innerHTML=''; AGENTS.forEach(function(a){ var c=document.createElement('div'); c.className='pcard'; c.id=el.id+'-'+a.id;
+    c.innerHTML='<div class="pn"><span class="dot" style="background:'+a.color+'"></span>'+a.name+'</div><div class="pseg">'+a.seg+'</div><span class="deg">'+a.deg+'</span><span class="st"></span>'; el.appendChild(c); }); }
+  async function ch3(){
+    setActive(2); scrollTop($('ch3')); await readPause();
+    var steps=$('mechSteps').querySelectorAll('.ms-item');
+    var shot=$('mechShot'), cur=$('mechCur'), badge=$('mechBadge');
+    var seq=[
+      {i:0,badge:'screenshot in',cur:[120,150],deg:false},
+      {i:1,badge:'perception degraded · blur + CVD',cur:[120,150],deg:true},
+      {i:2,badge:'model decides: click the consent box',cur:[24,120],deg:true},
+      {i:3,badge:'actuation degraded · tremor σ=24px',cur:[24,120],deg:true,tremor:true},
+      {i:4,badge:'executes · misses the 24px box',cur:[40,124],deg:true,tremor:true}
+    ];
+    for(var s=0;s<seq.length;s++){ var q=seq[s];
+      steps.forEach(function(n){ n.classList.remove('on'); });
+      steps[q.i].classList.add('on');
+      shot.classList.toggle('degraded', q.deg);
+      cur.classList.toggle('tremor', !!q.tremor);
+      cur.style.transform='translate('+q.cur[0]+'px,'+q.cur[1]+'px)';
+      badge.textContent=q.badge;
+      await sleep(1500);
+    }
+    cur.classList.remove('tremor');
+    buildStrip($('strip3'));
+    AGENTS.forEach(function(a,i){ T(function(){ var c=$('strip3-'+a.id); if(c){ c.classList.add('in'); c.querySelector('.st').textContent=a.deg==='no degradation'?'control':'degraded'; } }, 160*i); });
+    await sleep(1400);
+    cap('cap3','Five segments, each a measured amount of degradation. That is the swarm.');
+    await sleep(2600);
+  }
 
+  // ======== CHAPTER 4 (the run) ========
+  var cursors={}, chips={}, stage, card;
   function centerOf(node){ var s=stage.getBoundingClientRect(), r=node.getBoundingClientRect(); return { x:r.left-s.left+r.width/2, y:r.top-s.top+r.height/2 }; }
   function jitter(pt,m){ return { x:pt.x+(Math.random()*2-1)*m, y:pt.y+(Math.random()*2-1)*m }; }
-
-  function buildStrip(){
-    stripEl.innerHTML=''; pcards={};
-    AGENTS.forEach(function(a){
-      var c=document.createElement('div'); c.className='pcard'; c.id='pc-'+a.id;
-      c.innerHTML='<div class="pn"><span class="dot" style="background:'+a.color+'"></span>'+a.name+'</div>'+
-        '<div class="pseg">'+a.seg+'</div><span class="deg">'+a.deg+'</span><span class="st"></span>';
-      stripEl.appendChild(c); pcards[a.id]=c;
-    });
-  }
-  function setCard(id,cls,label){ var c=pcards[id]; if(c){ c.className='pcard '+cls; var s=c.querySelector('.st'); if(s) s.textContent=label||''; } }
-
-  function buildActors(){
-    chipsEl.innerHTML='';
-    Object.keys(cursors).forEach(function(k){ if(cursors[k].node) cursors[k].node.remove(); });
-    cursors={}; chips={};
-    AGENTS.forEach(function(a,i){
-      var c=document.createElement('div'); c.className='cursor';
+  function buildActors(){ var ce=$('chips'); ce.innerHTML=''; Object.keys(cursors).forEach(function(k){ if(cursors[k].node)cursors[k].node.remove(); }); cursors={}; chips={};
+    AGENTS.forEach(function(a,i){ var c=document.createElement('div'); c.className='cursor';
       c.innerHTML='<div class="ptr"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M3.5 2 L3.5 17 L7.4 13.3 L10.2 20 L12.7 19 L10 12.4 L15 12.4 Z" fill="'+a.color+'" stroke="#fff" stroke-width="1"/></svg><span class="tag" style="background:'+a.color+'">'+a.name+'</span></div>';
-      var sx=[36,300,50,320,180][i], sy=[26,40,410,392,18][i];
-      c.style.transform='translate('+sx+'px,'+sy+'px)'; c.style.opacity='0';
+      var sx=[36,300,50,320,180][i], sy=[26,40,410,392,18][i]; c.style.transform='translate('+sx+'px,'+sy+'px)'; c.style.opacity='0';
       stage.appendChild(c); cursors[a.id]={node:c,x:sx,y:sy};
-      var ch=document.createElement('div'); ch.className='chip'; ch.innerHTML='<span class="sw"></span>'+a.name; chipsEl.appendChild(ch); chips[a.id]=ch;
-    });
-  }
-  function moveCursor(id,pt,ms){ var c=cursors[id]; if(!c) return Promise.resolve();
-    c.node.style.transition='transform '+((reduce?50:ms)/1000)+'s cubic-bezier(.5,.05,.2,1), opacity .3s';
-    c.node.style.opacity='1'; c.node.style.transform='translate('+(pt.x-8)+'px,'+(pt.y-4)+'px)'; c.x=pt.x; c.y=pt.y;
-    c.node.classList.toggle('tagL', pt.x > stage.clientWidth - 116); return sleep(ms); }
-  function tremorOn(id){ if(cursors[id]) cursors[id].node.classList.add('tremor'); }
-  function tremorOff(id){ if(cursors[id]) cursors[id].node.classList.remove('tremor'); }
-  function fadeCursor(id){ var c=cursors[id]; if(c){ c.node.style.transition='opacity .5s, transform 1s'; c.node.style.opacity='0'; } }
-  function setChip(id,cls){ if(chips[id]) chips[id].className='chip '+cls; }
-  function clickFX(id,kind){ var c=cursors[id]; if(!c) return; var hit=(kind!=='miss');
-    c.node.classList.remove('click'); void c.node.offsetWidth; c.node.classList.add('click');
-    var r=document.createElement('div'); r.className='ripple go '+(kind||''); r.style.left=c.x+'px'; r.style.top=c.y+'px';
-    stage.appendChild(r); T(function(){ r.remove(); },600);
-    if(kind==='miss'){ var x=document.createElement('div'); x.className='missx show'; x.textContent='✕'; x.style.left=c.x+'px'; x.style.top=c.y+'px'; stage.appendChild(x); T(function(){ x.remove(); },1400); } }
-  function typeInto(inpId,text){ var inp=$(inpId); inp.classList.add('focus'); inp.innerHTML='<span class="typed"></span><span class="caret"></span>'; var t=inp.querySelector('.typed');
+      var ch=document.createElement('div'); ch.className='chip'; ch.innerHTML='<span class="sw"></span>'+a.name; ce.appendChild(ch); chips[a.id]=ch; }); }
+  function moveCur(id,pt,ms){ var c=cursors[id]; if(!c) return Promise.resolve(); c.node.style.transition='transform '+((reduce?60:ms)/1000)+'s cubic-bezier(.5,.05,.2,1), opacity .3s'; c.node.style.opacity='1'; c.node.style.transform='translate('+(pt.x-8)+'px,'+(pt.y-4)+'px)'; c.x=pt.x; c.y=pt.y; c.node.classList.toggle('tagL', pt.x>stage.clientWidth-116); return sleep(ms); }
+  function trem(id,on){ if(cursors[id]) cursors[id].node.classList.toggle('tremor',on); }
+  function fadeCur(id){ var c=cursors[id]; if(c){ c.node.style.transition='opacity .5s, transform 1s'; c.node.style.opacity='0'; } }
+  function chip(id,cls){ if(chips[id]) chips[id].className='chip '+cls; }
+  function fx(id,kind){ var c=cursors[id]; if(!c) return; c.node.classList.remove('click'); void c.node.offsetWidth; c.node.classList.add('click');
+    var r=document.createElement('div'); r.className='ripple go '+(kind||''); r.style.left=c.x+'px'; r.style.top=c.y+'px'; stage.appendChild(r); T(function(){r.remove();},600);
+    if(kind==='miss'){ var x=document.createElement('div'); x.className='missx show'; x.textContent='✕'; x.style.left=c.x+'px'; x.style.top=c.y+'px'; stage.appendChild(x); T(function(){x.remove();},1400); } }
+  function typeField(inpId,text){ var inp=$(inpId); inp.classList.add('focus'); inp.innerHTML='<span class="typed"></span><span class="caret"></span>'; var t=inp.querySelector('.typed');
     return new Promise(function(res){ var i=0; var iv=setInterval(function(){ i++; t.textContent=text.slice(0,i); if(i>=text.length){ clearInterval(iv); res(); } }, reduce?4:34); timers.push(iv); }); }
-  function unfocus(inpId){ $(inpId).classList.remove('focus'); }
-  function resetField(id,ph){ $(id).innerHTML='<span class="ph">'+ph+'</span>'; $(id).classList.remove('focus'); }
-  function animNum(id,to,ms,prefix){ var node=$(id), start=null; function step(ts){ if(!start)start=ts; var p=Math.min((ts-start)/ms,1); var e=1-Math.pow(1-p,3); node.textContent=(prefix||'')+Math.round(to*e).toLocaleString(); if(p<1) requestAnimationFrame(step); } requestAnimationFrame(step); }
+  function unfoc(id){ $(id).classList.remove('focus'); } function rfield(id,ph){ $(id).innerHTML='<span class="ph">'+ph+'</span>'; $(id).classList.remove('focus'); }
 
-  async function run(){
-    if(running) return; running=true; var myGen=++gen; var alive=function(){ return myGen===gen; };
-    runBtn.disabled=true; runBtn.textContent='● Gate running…';
-    resetAll(); await sleep(220); if(!alive()) return;
+  async function ch4(){
+    setActive(3); scrollTop($('ch4')); stage=$('stage'); card=$('card');
+    await readPause(); await sleep(900); // read the PR + diff
+    $('gateIco').className='ico run'; $('gateIco').innerHTML='<span class="spinner"></span>'; $('gateDc').textContent='running the swarm…';
+    $('mergeNote').textContent='behavioral-gate is running…';
+    $('gateRun').classList.add('open'); await sleep(500); scrollToEl($('gateRun'));
+    buildActors(); AGENTS.forEach(function(a){ cursors[a.id].node.style.opacity='1'; chip(a.id,'run'); }); await sleep(500);
+    var email=centerOf($('fEmail')), pass=centerOf($('fPass')), cbx=centerOf($('fCbx')), submit=centerOf(card.querySelector('.cta-btn'));
 
-    $('gateIco').className='ico run'; $('gateIco').innerHTML='<span class="spinner"></span>';
-    $('gateDc').textContent='running the swarm…'; $('mergeNote').textContent='behavioral-gate is running…'; $('mergeNote').className='merge-note';
-    $('gateRun').classList.add('open'); buildStrip(); scrollTo($('gateRun'));
-    await sleep(650); if(!alive()) return;
-
-    // Act 1 — meet the swarm (the mechanical-degradation capability, on display)
-    AGENTS.forEach(function(a,i){ T(function(){ setCard(a.id,'run','running'); }, 140*i); });
-    await sleep(1400); if(!alive()) return;
-
-    buildActors();
-    AGENTS.forEach(function(a){ cursors[a.id].node.style.opacity='1'; setChip(a.id,'run'); });
-    await sleep(350);
-
-    var email=centerOf($('fEmail')), pass=centerOf($('fPass')), cbx=centerOf($('fCbx')), submitPt=centerOf(card.querySelector('.cta-btn'));
-
-    // Act 2 — the control completes the flow
-    await moveCursor('fluent',email,620); clickFX('fluent','go'); await typeInto('fEmail','founder@acme.com'); unfocus('fEmail'); if(!alive()) return;
-    await moveCursor('fluent',pass,560); clickFX('fluent','go'); await typeInto('fPass','••••••••••'); unfocus('fPass');
-    await moveCursor('fluent',cbx,520); clickFX('fluent','ok'); $('fCbx').classList.add('on'); await sleep(240);
-    await moveCursor('fluent',submitPt,480); clickFX('fluent','ok'); await sleep(200);
-    $('fDone').classList.add('show'); setChip('fluent','ok'); setCard('fluent','ok','✓ done'); fadeCursor('fluent');
-    await sleep(700); if(!alive()) return;
-
-    // Act 3 — the other three healthy segments each get a quick success beat, then clear
+    // control completes (deliberately paced)
+    await moveCur('fluent',email,620); fx('fluent','go'); await typeField('fEmail','founder@acme.com'); unfoc('fEmail');
+    await moveCur('fluent',pass,560); fx('fluent','go'); await typeField('fPass','••••••••••'); unfoc('fPass');
+    await moveCur('fluent',cbx,520); fx('fluent','ok'); $('fCbx').classList.add('on'); await sleep(300);
+    await moveCur('fluent',submit,480); fx('fluent','ok'); await sleep(240);
+    $('fDone').classList.add('show'); chip('fluent','ok'); fadeCur('fluent');
+    cap('cap4','A steady hand sails through — the flow works. So build and unit tests would pass.');
+    await sleep(1500);
+    // 3 others succeed
     var healthy=['ai-agent','rushed','mobile-thumb'];
-    for(var hi=0; hi<healthy.length; hi++){ var hid=healthy[hi];
-      await moveCursor(hid, jitter(cbx,14), 380); clickFX(hid,'ok'); setChip(hid,'ok'); setCard(hid,'ok','✓ done'); fadeCursor(hid); await sleep(180); }
-    await sleep(300); if(!alive()) return;
-
-    // reset the form; the tremor agent attacks the same (now smaller) checkbox
-    $('fDone').classList.remove('show'); $('fCbx').classList.remove('on'); resetField('fEmail','you@company.com'); resetField('fPass','At least 8 characters');
+    for(var h=0;h<healthy.length;h++){ await moveCur(healthy[h],jitter(cbx,14),380); fx(healthy[h],'ok'); chip(healthy[h],'ok'); fadeCur(healthy[h]); await sleep(220); }
+    await sleep(500);
+    $('cap4').classList.remove('in');
+    $('fDone').classList.remove('show'); $('fCbx').classList.remove('on'); rfield('fEmail','you@company.com'); rfield('fPass','At least 8 characters');
     $('grCount').textContent='1 agent left · Misclick-prone';
 
-    // Act 4 — THE MONEY SHOT
-    var mid='misclick-prone'; tremorOn(mid); setCard(mid,'run','trembling'); scrollTo($('stage'));
-    await moveCursor(mid,jitter(email,9),720); clickFX(mid,'go'); await typeInto('fEmail','user@company.com'); unfocus('fEmail'); if(!alive()) return;
-    await moveCursor(mid,jitter(pass,9),600); clickFX(mid,'go'); await typeInto('fPass','••••••••••'); unfocus('fPass');
-    for(var k=0;k<4;k++){ await moveCursor(mid,jitter(cbx,20+k*4),440); clickFX(mid,'miss'); $('fCbx').classList.add('miss'); T(function(){ $('fCbx').classList.remove('miss'); },300); await sleep(330); if(!alive()) return; }
-    tremorOff(mid); await sleep(260);
-    var death=document.createElement('div'); death.className='death'; death.style.left=cbx.x+'px'; death.style.top=cbx.y+'px';
-    death.innerHTML='<div class="core"></div><div class="lbl">gave up @ (464, 494)</div>'; stage.appendChild(death); void death.offsetWidth; death.classList.add('show');
-    setChip(mid,'dead'); setCard(mid,'dead','✕ gave up'); card.classList.add('dim');
-    await sleep(1200); if(!alive()) return;
+    // money shot
+    var mid='misclick-prone'; trem(mid,true); scrollToEl($('stage'));
+    await moveCur(mid,jitter(email,9),720); fx(mid,'go'); await typeField('fEmail','user@company.com'); unfoc('fEmail');
+    await moveCur(mid,jitter(pass,9),600); fx(mid,'go'); await typeField('fPass','••••••••••'); unfoc('fPass');
+    cap('cap4','Same task, same page — but a hand tremor. Watch the 24px consent box.');
+    for(var k=0;k<4;k++){ await moveCur(mid,jitter(cbx,20+k*4),440); fx(mid,'miss'); $('fCbx').classList.add('miss'); T(function(){ $('fCbx').classList.remove('miss'); },300); await sleep(340); }
+    trem(mid,false); await sleep(300);
+    var death=document.createElement('div'); death.className='death'; death.style.left=cbx.x+'px'; death.style.top=cbx.y+'px'; death.innerHTML='<div class="core"></div><div class="lbl">gave up @ (464, 494)</div>'; stage.appendChild(death); void death.offsetWidth; death.classList.add('show');
+    chip(mid,'dead'); card.classList.add('dim');
+    cap('cap4','Four tries, four misses. It gives up — at the exact pixel. That is the receipt.');
+    await sleep(1900);
 
-    // Act 5 — the verdict: block the merge + bot comment
-    $('grSpin').style.display='none'; $('gateIco').className='ico fail'; $('gateIco').innerHTML='✕';
-    $('gateDc').textContent='regression · 100% → 80%'; $('gateCheck').querySelector('.nm').innerHTML='<b>simulationlabs / behavioral-gate</b> — failed';
+    // verdict + bot comment
+    $('grSpin').style.display='none'; $('gateIco').className='ico fail'; $('gateIco').innerHTML='✕'; $('gateDc').textContent='regression · 100% → 80%';
+    $('gateCheck').querySelector('.nm').innerHTML='<b>simulationlabs / behavioral-gate</b> — failed';
     $('prBadge').className='pr-badge blocked'; $('prBadge').textContent='● Changes requested';
     var mb=$('mergeBtn'); mb.className='merge-btn blocked'; mb.textContent='⛔ Merge blocked';
-    $('mergeNote').className='merge-note bad'; $('mergeNote').textContent='behavioral-gate failed — signup completion dropped 100% → 80%';
-    $('botc').classList.add('in'); scrollTo($('botc'));
-    await sleep(1600); if(!alive()) return;
+    $('mergeNote').className='merge-note bad'; $('mergeNote').textContent='behavioral-gate failed — completion 100% → 80%';
+    $('botc').classList.add('in'); scrollToEl($('botc'));
+    await sleep(2400);
+  }
 
-    // Act 6 — the receipts
-    $('analytics').classList.add('in'); scrollTo($('analytics')); await sleep(250);
-    animNum('lost',1600,1100,'~');
+  // ======== CHAPTER 5 (receipts) ========
+  function fillGrid(){ var g=$('gridT'); Array.prototype.slice.call(g.querySelectorAll('.gt-row:not(.h)')).forEach(function(n){n.remove();});
+    AGENTS.forEach(function(a,i){ T(function(){ var row=document.createElement('div'); row.className='gt-row';
+      row.innerHTML='<span class="pn2"><span class="dot" style="background:'+a.color+'"></span>'+a.name+'</span><span class="deg2">'+a.deg+'</span><span class="oc '+(a.oc==='ok'?'ok':'bad')+' g3">'+(a.oc==='ok'?'✓ completed':'✕ gave up')+'</span><span class="dp g4">'+a.dp+'</span>'; g.appendChild(row); }, 130*i); }); }
+  var TERM=[['c-p','$ '],['','sim gate --flow signup --fail-under last-passing\n'],['c-d','  swarm · 5 agents · Gemini 3.5 Flash · vs last-passing baseline\n'],['c-ok','  ✓ build & unit tests are green — the code runs\n'],['c-ok','  ✓ functional: signup completes end-to-end (4/5 agents finished)\n'],['c-w','  ⚠ behavioral: completion 80% < last-passing 100%\n'],['c-d','    Misclick-prone gave up @ (464,494) — the checkbox this PR shrank to 24px\n'],['c-f','\n  ❌ BEHAVIORAL REGRESSION — merge blocked (exit 1)\n'],['c-d','  # a unit test would never have caught this.\n']];
+  async function ch5(){
+    setActive(4); scrollTop($('ch5')); await readPause();
+    animNum('lost',1600,1100,'~','');
     fillGrid();
-    $('heat').classList.add('in'); positionHeat(); $('surv').classList.add('in');
-    T(function(){ $('voice').classList.add('play-on'); }, 400);
-    await sleep(700); if(!alive()) return; typeTerminal();
-
-    runBtn.style.display='none'; replayBtn.style.display='inline-block'; runBtn.disabled=false; runBtn.textContent='▶ Run the behavioral gate'; running=false;
+    $('heat').classList.add('in'); $('heatBlob').style.left='30%'; $('heatBlob').style.top='68%'; $('heatPin').style.left='30%'; $('heatPin').style.top='71%';
+    $('surv').classList.add('in');
+    T(function(){ $('voice').classList.add('play-on'); scrollToEl($('voice')); }, 1400);
+    await sleep(2600);
+    typeLines($('term'), TERM, 11);
+    await sleep(3200);
+    scrollToEl($('.cta')||document.querySelector('.cta'));
+    await sleep(1200);
   }
 
-  function fillGrid(){
-    var g=$('gridT');
-    Array.prototype.slice.call(g.querySelectorAll('.gt-row:not(.h)')).forEach(function(n){ n.remove(); });
-    AGENTS.forEach(function(a,i){ T(function(){
-      var row=document.createElement('div'); row.className='gt-row';
-      row.innerHTML='<span class="pn2"><span class="dot" style="background:'+a.color+'"></span>'+a.name+'</span>'+
-        '<span class="deg2">'+a.deg+'</span>'+
-        '<span class="oc '+(a.oc==='ok'?'ok':'bad')+' g3">'+(a.oc==='ok'?'✓ completed':'✕ gave up')+'</span>'+
-        '<span class="dp g4">'+a.dp+'</span>';
-      g.appendChild(row);
-    }, 120*i); });
-  }
-  function positionHeat(){ var b=$('heatBlob'), p=$('heatPin'); b.style.left='30%'; b.style.top='68%'; p.style.left='30%'; p.style.top='71%'; }
-
-  var TERM=[
-    ['c-p','$ '],['','sim gate --flow signup --fail-under last-passing\n'],
-    ['c-d','  swarm · 5 agents · Gemini 3.5 Flash · vs last-passing baseline\n'],
-    ['c-ok','  ✓ build & unit tests are green — the code runs\n'],
-    ['c-ok','  ✓ functional: signup completes end-to-end (4/5 agents finished)\n'],
-    ['c-w','  ⚠ behavioral: completion 80% < last-passing 100%\n'],
-    ['c-d','    Misclick-prone gave up @ (464,494) — the checkbox this PR shrank to 24px\n'],
-    ['c-f','\n  ❌ BEHAVIORAL REGRESSION — merge blocked (exit 1)\n'],
-    ['c-d','  # a unit test would never have caught this.\n']
-  ];
-  function typeTerminal(){ var term=$('term'); term.innerHTML=''; var li=0; var myGen=gen;
-    function nextLine(){ if(myGen!==gen) return; if(li>=TERM.length){ term.classList.remove('cursor-blink'); return; }
-      var s=document.createElement('span'); s.className='ln in '+TERM[li][0]; term.appendChild(s);
-      var txt=TERM[li][1], ci=0; var iv=setInterval(function(){ if(myGen!==gen){ clearInterval(iv); return; } ci++; s.textContent=txt.slice(0,ci);
-        if(ci>=txt.length){ clearInterval(iv); li++; T(nextLine,60); } }, reduce?2:6); timers.push(iv); }
-    term.classList.add('cursor-blink'); nextLine(); }
-
-  function resetAll(){
-    clearTimers();
+  // ---- reset + orchestrate ----
+  function resetAll(){ clearTimers();
+    ['cap1','cap2','cap3','cap4'].forEach(function(id){ var e=$(id); if(e){ e.textContent=''; e.classList.remove('in'); } });
+    $('fidNum').textContent='0'; $('setupTerm').innerHTML=''; $('file1').classList.remove('in'); $('file2').classList.remove('in'); $('file1b').textContent=''; $('file2b').textContent='';
+    $('strip3').innerHTML=''; $('mechShot').classList.remove('degraded');
+    // reset run
     $('gateIco').className='ico pend'; $('gateIco').innerHTML='●'; $('gateDc').textContent='not started';
-    $('gateCheck').querySelector('.nm').innerHTML='<b>simulationlabs / behavioral-gate</b>';
-    $('gateRun').classList.remove('open'); $('grSpin').style.display=''; $('grCount').textContent='5 agents · Gemini 3.5';
-    $('strip').innerHTML=''; $('prBadge').className='pr-badge'; $('prBadge').textContent='● Open';
-    var mb=$('mergeBtn'); mb.className='merge-btn'; mb.textContent='Merge pull request';
-    $('mergeNote').className='merge-note'; $('mergeNote').textContent='All checks are pending…'; $('botc').classList.remove('in');
-    $('fDone').classList.remove('show'); $('fCbx').classList.remove('on'); resetField('fEmail','you@company.com'); resetField('fPass','At least 8 characters'); card.classList.remove('dim');
-    $('analytics').classList.remove('in'); $('heat').classList.remove('in'); $('surv').classList.remove('in'); $('voice').classList.remove('play-on'); $('term').innerHTML='';
-    $('mComp').innerHTML='100<small>%</small> <small>→</small> 80<small>%</small>'; $('lost').textContent='~1,600';
-    Array.prototype.forEach.call(stage.querySelectorAll('.death,.missx,.ripple'), function(n){ n.remove(); });
-    Array.prototype.slice.call($('gridT').querySelectorAll('.gt-row:not(.h)')).forEach(function(n){ n.remove(); });
+    $('gateCheck').querySelector('.nm').innerHTML='<b>simulationlabs / behavioral-gate</b>'; $('gateRun').classList.remove('open'); $('grSpin').style.display=''; $('grCount').textContent='5 agents · Gemini 3.5';
+    $('prBadge').className='pr-badge'; $('prBadge').textContent='● Open'; var mb=$('mergeBtn'); mb.className='merge-btn'; mb.textContent='Merge pull request'; $('mergeNote').className='merge-note'; $('mergeNote').textContent='All checks are pending…'; $('botc').classList.remove('in');
+    var st=$('stage'); $('fDone').classList.remove('show'); $('fCbx').classList.remove('on'); rfield('fEmail','you@company.com'); rfield('fPass','At least 8 characters'); $('card').classList.remove('dim');
+    Array.prototype.forEach.call(st.querySelectorAll('.death,.missx,.ripple,.cursor'),function(n){n.remove();}); $('chips').innerHTML='';
+    // reset receipts
+    $('heat').classList.remove('in'); $('surv').classList.remove('in'); $('voice').classList.remove('play-on'); $('term').innerHTML=''; $('lost').textContent='~1,600';
+    Array.prototype.slice.call($('gridT').querySelectorAll('.gt-row:not(.h)')).forEach(function(n){n.remove();});
   }
 
-  // build the voice waveform bars once
-  (function(){ var w=$('wave'); for(var i=0;i<44;i++){ var b=document.createElement('i'); b.style.height=(15+Math.round(Math.abs(Math.sin(i*0.7))*70))+'%'; b.style.animationDelay=(i*0.03)+'s'; w.appendChild(b); } })();
+  var CHAPTERS=[ch1,ch2,ch3,ch4,ch5];
+  async function play(from){
+    var myGen=++gen; playing=true; $('starter').style.display='none'; startClock();
+    resetAll();
+    for(var i=(from||0); i<CHAPTERS.length; i++){ if(myGen!==gen) return; await CHAPTERS[i](); }
+    if(myGen!==gen) return;
+    playing=false; if(clockIv) clearInterval(clockIv);
+    // show a replay affordance in the rail time slot
+    $('clock').textContent='↻ replay'; $('clock').style.cursor='pointer'; $('clock').onclick=function(){ $('clock').onclick=null; $('clock').style.cursor=''; play(0); };
+  }
+  function jumpTo(i){ // restart the tour from a chosen chapter
+    if(clockIv) clearInterval(clockIv); play(i);
+  }
 
-  runBtn.addEventListener('click', run);
-  replayBtn.addEventListener('click', function(){ replayBtn.style.display='none'; runBtn.style.display='inline-block'; run(); });
+  $('startBtn').onclick=function(){ play(0); };
+  $('skipBtn').onclick=function(){ play(3); };  // jump to the demo
+
+  // build voice waveform bars
+  (function(){ var w=$('wave'); for(var i=0;i<44;i++){ var b=document.createElement('i'); b.style.height=(15+Math.round(Math.abs(Math.sin(i*0.7))*70))+'%'; b.style.animationDelay=(i*0.03)+'s'; w.appendChild(b); } })();
 })();
 </script>
 </body>
