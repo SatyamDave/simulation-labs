@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Run it on your funnel / work with us
+    url: mailto:satyam@agentmade.ai
+    about: Want Simulation Labs run on your own flow, or to partner? Email the founder.
+  - name: Security vulnerability
+    url: https://github.com/SatyamDave/simulation-labs/blob/main/SECURITY.md
+    about: Please report vulnerabilities privately — do not open a public issue.

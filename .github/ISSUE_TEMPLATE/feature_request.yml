@@ -1,0 +1,21 @@
+name: Feature request / idea
+description: A new behavioral segment, a model backend, or any improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The behavior or flow you wish the gate could catch or model.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed idea
+      description: What would you add or change? (New persona? New backend? New output?)
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Links, prior art, or a real flow where this would help.

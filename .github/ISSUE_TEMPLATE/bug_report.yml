@@ -1,0 +1,43 @@
+name: Bug report
+description: Something in the CLI, the gate, or a run behaved wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you run, and what went wrong?
+      placeholder: "sim try / sim gate ... — expected X, got Y"
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Command
+      description: The exact command you ran
+      placeholder: sim gate --url https://... --task "..."
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Model backend
+      options:
+        - Gemini (GEMINI_API_KEY)
+        - Holo (HAI_API_KEY)
+        - Self-hosted
+        - Not sure
+  - type: textarea
+    id: output
+    attributes:
+      label: Output / error
+      description: Paste the terminal output. For a behavioral false-positive/negative, attach the report .json if you can.
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: Version / commit
+      description: "Output of: pip show ghostpanel  (or the commit you installed from)"
+  - type: input
+    id: os
+    attributes:
+      label: OS & Python
+      placeholder: macOS 14 / Python 3.11
