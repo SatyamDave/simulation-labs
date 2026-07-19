@@ -4,6 +4,10 @@
 
 ### A behavioral CI gate — real computer-use agents attempt your signup, checkout, and onboarding on every deploy, and block the merge when your users start abandoning.
 
+<img src="docs/assets/sim-try.svg" alt="sim try — five behavioral agents attempt a signup flow; the steady ones succeed while the imprecise one abandons at the consent checkbox, 60% completion" width="720">
+
+<sub><i>One command. A real run: the steady agents finish, the imprecise one fumbles the consent checkbox and gives up — 60% completion.</i></sub>
+
 Unit tests prove your code runs. **They say nothing about whether a human can finish the flow.**
 Simulation Labs sends a swarm of browser agents — some steady, some rushed, some fumbling a
 small control on a phone — at a live page. Each one either completes the task or **abandons at a
