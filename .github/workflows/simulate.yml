@@ -1,14 +1,17 @@
-# Behavioral tests for every deploy — see docs/ci.md
+# Behavioral gate — example workflow (see docs/ci.md)
 #
-# Copy this file into your repo at .github/workflows/simulate.yml.
-# It sends a swarm of behavioral synthetic users through a real flow on every
-# pull request and blocks the merge when completion drops versus the last
-# passing run. Runs on your own Holo key — add it as the HAI_API_KEY secret.
+# This is a TEMPLATE. `sim init` writes a ready-to-use copy into your repo.
+# To gate your own flow on every PR:
+#   1. Copy this file to .github/workflows/simulate.yml in your repo.
+#   2. Add your model key as a secret — GEMINI_API_KEY (free tier works) or HAI_API_KEY.
+#   3. Point `url` + `task` (below) at your flow, or run `sim init` for a sim.yml.
+#   4. Change the trigger from `workflow_dispatch` to `pull_request` so it runs on PRs.
+#
+# It stays manual-only here so this repo's own PR checks don't require a key.
 
-name: Behavioral gate
+name: Behavioral gate (example)
 
 on:
-  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -23,7 +26,9 @@ jobs:
       - name: Simulation Labs — behavioral gate
         uses: SatyamDave/simulation-labs@main # -> pin to simulationlabs/gate@v1 once released
         with:
-          flow: checkout
-          icp: your-segments
+          url: https://your-app.com/signup
+          task: "create an account with email and password"
           fail-under: last-passing
+          # Provide ONE model key (the CLI auto-detects whichever is set):
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           hai-api-key: ${{ secrets.HAI_API_KEY }}

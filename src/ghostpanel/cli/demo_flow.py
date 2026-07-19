@@ -8,11 +8,9 @@ abandons — the whole point of the gate, visible in one command.
 
 from __future__ import annotations
 
-import functools
 import http.server
 import socket
 import threading
-from pathlib import Path
 
 DEMO_SIGNUP_HTML = """<!doctype html>
 <html lang="en">

@@ -37,6 +37,8 @@ from . import (
 # workflow, `sim gate` fails the build when users start abandoning.
 _WORKFLOW_YAML = """\
 # .github/workflows/simulate.yml — Simulation Labs behavioral gate
+# Fails the build when your users start abandoning. Add a model key as a repo
+# secret: GEMINI_API_KEY (free tier works) or HAI_API_KEY — either is auto-detected.
 name: simulate
 on:
   pull_request:
@@ -48,10 +50,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # The published Marketplace action `simulationlabs/gate@v1` is in private
-      # beta. Until it ships, run the gate directly from this repo — same verdict:
-      - run: pip install -e . && python -m ghostpanel.cli gate --config sim.yml --flow signup
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: |
+          pip install "ghostpanel @ git+https://github.com/SatyamDave/simulation-labs@main"
+          python -m playwright install --with-deps chromium
+      - run: python -m ghostpanel.cli gate --config sim.yml --flow signup
         env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           HAI_API_KEY: ${{ secrets.HAI_API_KEY }}
 """
 
@@ -360,7 +367,7 @@ def _cmd_try(args: argparse.Namespace) -> int:
         print(_NO_KEY_MSG)
         return exit_codes.MISSING_KEY
 
-    print(f"Simulation Labs — behavioral gate demo")
+    print("Simulation Labs — behavioral gate demo")
     print(f"→ backend: {backend} (auto-detected from your key)")
     print("→ serving a demo signup flow and sending a swarm of degraded users at it…\n")
 

@@ -36,8 +36,10 @@
 name: Deploy (staged)
 
 on:
-  push:
-    branches: [main]
+  # Manual-only: this deploys the OPTIONAL hosted backend and needs operator
+  # secrets (FLY_API_TOKEN, *_DATABASE_URL). It does not run on push so the public
+  # repo stays green for contributors who only use the CLI/library. Re-add a
+  # `push:` trigger once your deploy secrets are configured.
   workflow_dispatch:
 
 # Never run two deploys of the same ref at once; let an in-flight deploy finish.

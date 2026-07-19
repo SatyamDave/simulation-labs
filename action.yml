@@ -68,9 +68,18 @@ inputs:
     default: "sim.yml"
   hai-api-key:
     description: >-
-      Your H Company Holo Models API key (format hk-...). Exported to the CLI as
-      HAI_API_KEY. Store it as a repository secret — never inline it.
-    required: true
+      Your H Company Holo Models API key. Exported to the CLI as HAI_API_KEY.
+      Store it as a repository secret — never inline it. Provide this OR
+      gemini-api-key (any model key works; the CLI auto-detects it).
+    required: false
+    default: ""
+  gemini-api-key:
+    description: >-
+      Your Google Gemini API key (free tier works). Exported to the CLI as
+      GEMINI_API_KEY. Store it as a repository secret. Provide this OR
+      hai-api-key — the CLI auto-detects whichever is set.
+    required: false
+    default: ""
   github-token:
     description: >-
       Token used to post/update the pull-request comment. Defaults to the
@@ -124,8 +133,9 @@ runs:
       id: gate
       shell: bash
       env:
-        # Exported so the CLI's LiveHoloClient picks up the customer's key.
+        # Exported so the CLI auto-detects the customer's key (any one works).
         HAI_API_KEY: ${{ inputs.hai-api-key }}
+        GEMINI_API_KEY: ${{ inputs.gemini-api-key }}
         SIM_FLOW: ${{ inputs.flow }}
         SIM_ICP: ${{ inputs.icp }}
         SIM_FAIL_UNDER: ${{ inputs.fail-under }}
@@ -137,6 +147,11 @@ runs:
         # No `set -e`: we must capture the CLI's exit code (1 == GATE_FAILED is the
         # block-merge signal) and still let the later if:always() steps run.
         set -uo pipefail
+
+        if [ -z "${HAI_API_KEY:-}" ] && [ -z "${GEMINI_API_KEY:-}" ]; then
+          echo "::error::No model API key provided. Pass gemini-api-key or hai-api-key (from a repository secret)."
+          exit 1
+        fi
 
         args=( gate --fail-under "$SIM_FAIL_UNDER" --out "$SIM_OUT" )
 
