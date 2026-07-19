@@ -37,8 +37,14 @@ DEMO_SIGNUP_HTML = """<!doctype html>
   input[type=email],input[type=password],input[type=text]{ width:100%; height:52px; padding:0 13px;
     border:1px solid #d5dae2; border-radius:9px; font-size:.95rem; outline:none; }
   input:focus{ border-color:#4C8DFF; box-shadow:0 0 0 3px rgba(76,141,255,.15); }
-  .consent{ display:flex; align-items:center; gap:11px; margin:8px 0 20px; }
-  .consent input{ width:24px; height:24px; margin:0; flex:0 0 auto; accent-color:#4C8DFF; cursor:pointer; }
+  .consent{ display:flex; align-items:center; gap:5px; margin:8px 0 20px; }
+  /* 24px VISIBLE checkbox inside a ~42px padded clickable hit area (the label
+     wraps only the box). This decouples where a model AIMS (the visible box) from
+     what registers a toggle (the 42px zone): a steady hand's small grounding
+     error still lands inside and checks it, while a tremor click that jitters
+     beyond ~21px misses — reliable across strong- and weak-grounding models. */
+  .cbx-hit{ padding:9px; display:inline-flex; cursor:pointer; border-radius:8px; flex:0 0 auto; }
+  .cbx-hit input{ width:24px; height:24px; margin:0; accent-color:#4C8DFF; cursor:pointer; }
   .consent .consent-text{ font-weight:400; font-size:.86rem; color:#374151; line-height:1.35; }
   .consent .consent-text a{ color:#2E68D8; }
   .cta{ width:100%; height:46px; border:0; border-radius:9px; font-size:.98rem; font-weight:600;
@@ -70,7 +76,7 @@ DEMO_SIGNUP_HTML = """<!doctype html>
           <input id="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" />
         </div>
         <div class="consent">
-          <input id="agree" type="checkbox" aria-label="I agree to the Terms of Service and Privacy Policy" />
+          <label class="cbx-hit"><input id="agree" type="checkbox" aria-label="I agree to the Terms of Service and Privacy Policy" /></label>
           <span class="consent-text">I agree to the <a href="#" onclick="return false">Terms of Service</a> and <a href="#" onclick="return false">Privacy Policy</a>.</span>
         </div>
         <p class="err" id="err"></p>

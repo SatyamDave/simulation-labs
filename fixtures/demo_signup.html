@@ -26,8 +26,13 @@
      itself toggles — the label text is inert — so an imprecise (tremor) click
      that lands beside the box does nothing, exactly like a real user fumbling a
      small control. A steady hand hits the 24px box first try. */
-  .consent{ display:flex; align-items:center; gap:11px; margin:8px 0 20px; }
-  .consent input{ width:24px; height:24px; margin:0; flex:0 0 auto; accent-color:#4C8DFF; cursor:pointer; }
+  .consent{ display:flex; align-items:center; gap:5px; margin:8px 0 20px; }
+  /* 24px VISIBLE checkbox inside a ~42px padded clickable hit area (label wraps
+     only the box; the text is inert). Decouples where a model AIMS from what
+     registers a toggle, so a steady hand reliably checks it while a tremor click
+     that jitters beyond ~21px misses — robust across grounding qualities. */
+  .cbx-hit{ padding:9px; display:inline-flex; cursor:pointer; border-radius:8px; flex:0 0 auto; }
+  .cbx-hit input{ width:24px; height:24px; margin:0; accent-color:#4C8DFF; cursor:pointer; }
   .consent .consent-text{ font-weight:400; font-size:.86rem; color:#374151; line-height:1.35; }
   .consent .consent-text a{ color:#2E68D8; }
   .cta{ width:100%; height:46px; border:0; border-radius:9px; font-size:.98rem; font-weight:600;
@@ -64,7 +69,7 @@
         </div>
 
         <div class="consent">
-          <input id="agree" type="checkbox" aria-label="I agree to the Terms of Service and Privacy Policy" />
+          <label class="cbx-hit"><input id="agree" type="checkbox" aria-label="I agree to the Terms of Service and Privacy Policy" /></label>
           <span class="consent-text">I agree to the <a href="#" onclick="return false">Terms of Service</a> and <a href="#" onclick="return false">Privacy Policy</a>.</span>
         </div>
         <p class="err" id="err"></p>
