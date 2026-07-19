@@ -246,7 +246,7 @@
           <div class="sp-line"><span class="i bad">✕</span> leaves — no error logged</div>
         </div>
       </div>
-      <div style="margin-top:22px"><span class="bignum" id="fidNum">0</span> <span class="ch-sub" style="display:inline">— how often a prompt-only LLM reproduces a real user's next action <span class="mut">(arXiv:2503.20749)</span>. Prompting a persona to "act impaired" doesn't reproduce the impairment. So we stopped prompting behavior and started mechanically degrading it.</span></div>
+      <div style="margin-top:22px"><span class="bignum" id="fidNum">0</span> <span class="ch-sub" style="display:inline">— how often a prompt-only LLM reproduces a real user's next action <span class="mut">(arXiv:2503.20749)</span>. Prompting a persona to "act rushed" or "act unsteady" doesn't reproduce the behavior. So we stopped prompting behavior and started mechanically degrading it.</span></div>
       <div class="caption" id="cap1"></div>
     </section>
 
@@ -266,8 +266,8 @@
     <!-- CH 3 — HOW IT WORKS -->
     <section class="chapter" id="ch3" data-title="How it works">
       <span class="ch-tag"><span class="n">03 —</span> How it works</span>
-      <h2 class="ch-h">We don't <span class="mut">prompt</span> an agent to act impaired.<br/>We <span class="a">break the machine</span> by measured amounts.</h2>
-      <p class="ch-sub">Each agent is a real computer-use model driving a real browser. We mechanically degrade what it sees and how it clicks — blur, colour-shift, coordinate tremor, tight patience budgets, small viewports — to model how real segments behave. Seeded and reproducible: same blur, same tremor σ, same viewport every run. Not vibes.</p>
+      <h2 class="ch-h">We don't <span class="mut">prompt</span> an agent to act rushed.<br/>We <span class="a">break the machine</span> by measured amounts.</h2>
+      <p class="ch-sub">Each agent is a real computer-use model driving a real browser. We mechanically degrade what it sees and how it clicks — coordinate noise on every tap, tight patience budgets, small phone viewports, downscaled frames — to model how real segments behave. Seeded and reproducible: same tremor σ, same budget, same viewport every run. Not vibes.</p>
       <div class="mech">
         <div class="mech-viz">
           <div class="mech-shot" id="mechShot">
@@ -278,7 +278,7 @@
         </div>
         <div class="mech-steps" id="mechSteps">
           <div class="ms-item" data-i="0"><span class="num">1</span><span class="t"><b>Perceive</b> <span>— screenshot the live page</span></span></div>
-          <div class="ms-item" data-i="1"><span class="num">2</span><span class="t"><b>Degrade</b> <span>— blur / colour-shift the frame (low vision, CVD)</span></span></div>
+          <div class="ms-item" data-i="1"><span class="num">2</span><span class="t"><b>Degrade</b> <span>— downscale the frame, shrink the viewport (small screens)</span></span></div>
           <div class="ms-item" data-i="2"><span class="num">3</span><span class="t"><b>Decide</b> <span>— the computer-use model picks the next action</span></span></div>
           <div class="ms-item" data-i="3"><span class="num">4</span><span class="t"><b>Jitter</b> <span>— add tremor σ to the click; enforce the patience budget</span></span></div>
           <div class="ms-item" data-i="4"><span class="num">5</span><span class="t"><b>Execute</b> <span>— click the real page · complete or abandon at a pixel</span></span></div>
@@ -461,7 +461,7 @@
     var shot=$('mechShot'), cur=$('mechCur'), badge=$('mechBadge');
     var seq=[
       {i:0,badge:'screenshot in',cur:[120,150],deg:false},
-      {i:1,badge:'perception degraded · blur + CVD',cur:[120,150],deg:true},
+      {i:1,badge:'perception degraded · downscale + small viewport',cur:[120,150],deg:true},
       {i:2,badge:'model decides: click the consent box',cur:[24,120],deg:true},
       {i:3,badge:'actuation degraded · tremor σ=24px',cur:[24,120],deg:true,tremor:true},
       {i:4,badge:'executes · misses the 24px box',cur:[40,124],deg:true,tremor:true}

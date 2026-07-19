@@ -72,7 +72,6 @@
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/></svg>H&nbsp;Company Holo</li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="15" x2="6" y2="9"/><line x1="10.7" y1="17" x2="10.7" y2="7"/><line x1="15.3" y1="18" x2="15.3" y2="6"/><line x1="20" y1="16" x2="20" y2="8"/></svg>Gradium</li>
           <li><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="4" x2="12" y2="20"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="6.3" y1="6.3" x2="17.7" y2="17.7"/><line x1="17.7" y1="6.3" x2="6.3" y2="17.7"/></svg>Anthropic Claude</li>
-          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12 C7 5, 17 5, 21 12 C17 19, 7 19, 3 12 Z"/><circle cx="12" cy="12" r="3"/></svg>NVIDIA NemoClaw</li>
         </ul>
       </div>
     </section>
@@ -247,8 +246,8 @@
       <div class="big__in reveal">
         <div class="big__lead">
           <span class="sect__k">Mechanical fidelity</span>
-          <h2>We don't prompt an agent to act impaired. We break the machine by measured amounts.</h2>
-          <p class="big__cap">Blur the frame, add Gaussian noise to the click, cap the steps, shrink the viewport. Real, reproducible, byte-deterministic limits. Not vibes.</p>
+          <h2>We don't prompt an agent to act rushed. We break the machine by measured amounts.</h2>
+          <p class="big__cap">Add Gaussian noise to the click, cap the steps, tighten the clock, shrink the viewport. Real, reproducible, byte-deterministic limits on how the agent perceives and acts. Not vibes.</p>
         </div>
         <figure class="chart">
           <figcaption class="chart__cap">tremor &sigma;=14px &middot; miss-rate vs target size</figcaption>
@@ -401,9 +400,8 @@
 product      : behavioral_regression_gate(flow, icp, fail_under=last-passing)
 capability   : behavioral_simulation(target_url, task, persona_ids[])
 persona      : pre-trained computer-use agent (screenshot-in / action-out); we consume, not train
-degradation  : perception{gaussian_blur, downsample, colour_transform}
-               actuation{coordinate_noise sigma_px, tremor}
-               budget{max_steps, wall_clock_ms} · viewport{w,h}
+degradation  : perception{downsample, blur} · actuation{coordinate_noise sigma_px}
+               budget{max_steps, wall_clock_ms} · viewport{w,h} · reading{literal}
 calibration  : persona distribution tuned to customer ICP segments (config, not gradient training)
 loop         : screenshot -> perceive(perturb) -> model.action -> actuate(jitter)
                -> execute(playwright) -> emit(event)
@@ -417,18 +415,17 @@ vs_field     : survey_personas(words, ~11.86% fidelity) · attention_heatmaps(fi
                · ai_feedback_testers(opinions, non-reproducible) · analytics_prediction(needs
                customer data, models the past) · us: agents ATTEMPT the flow -> reproducible
                abandonment_pixel + video_receipt
-stack        : Holo(holo3-1-35b-a3b) · Playwright · Gradium(voice) · Claude(optional narration)
-               · NVIDIA NemoClaw(network policy)
+stack        : computer-use model (Holo or Gemini) · Playwright · Gradium(voice) · Claude(optional narration)
 evidence     : prompted-persona fidelity ~11.86%  [arXiv:2503.20749]
                tremor sigma=14px miss-rate: 60.9%@24px, 20.5%@44px, &lt;5%@&gt;=62px
                  (offline Monte-Carlo, 20k trials/cell, illustrative)
-               173 tests · MIT · frozen-contract 5-module architecture
+               416 tests · MIT · frozen-contract 5-module architecture
 triggers     : ci_cd_gate(regression vs last-passing) [the product; private beta w/ design partners]
                · first_flow_test(manual swarm + report) [how you engage today + join the beta]
                · mcp_skill(mid-session, coding agent) [planned]
 pricing      : ci_gate(design-partner/private beta now; self-serve after founding cohort) [product]
                · first_flow_test($1.5-3k/flow, manual swarm + report, ~1 week) [entry, founding rate]
-distribution : MIT-licensed; degradation primitives (blur/tremor/icp-fitter) open-sourced
+distribution : MIT-licensed; degradation primitives (coordinate-noise / viewport / budget / icp-fitter) open-sourced
 cta          : test_first_flow(email) -> satyam@agentmade.ai · https://simulationlabs.dev
 repo         : https://github.com/SatyamDave/simulation-labs</pre>
       </div>
@@ -438,7 +435,7 @@ repo         : https://github.com/SatyamDave/simulation-labs</pre>
   <footer class="foot">
     <div class="foot__in">
       <span>Simulation Labs · Behavioral simulation research</span>
-      <span>Built at the H Company Computer Use Hackathon · SF · 2026 · MIT-licensed</span>
+      <span>Open-source · MIT-licensed · runs on your own model key</span>
       <span><a href="https://github.com/SatyamDave/simulation-labs">GitHub</a> · <a href="mailto:satyam@agentmade.ai">Contact</a> · © 2026</span>
     </div>
   </footer>

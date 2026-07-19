@@ -76,7 +76,7 @@
       click. So rather than ask a model to opine, we degrade the channel and watch behavior. We claim
       <b>mechanical fidelity</b>, that the perceptual and motor limits we impose are real, measured, and
       reproducible, not psychological fidelity. Working end-to-end; frozen-contract five-module
-      architecture; 400+ tests; MIT-licensed; built at the H&nbsp;Company Computer Use Hackathon.
+      architecture; 400+ tests; MIT-licensed; MIT-licensed; runs on your own model key.
     </p>
 
     <h2 id="grounding">1 · Computer-use agents: screenshot-to-action grounding</h2>
@@ -332,14 +332,14 @@ score = round(100 * sum(credit) / count(non-error personas))</code></pre>
     <p>
       A success earns full credit; a failure earns partial credit for distance travelled, capped at 0.5,
       so dying at step 2 costs more than dying at step 25. A separate <b>agent-readiness</b> score is
-      derived from the unimpaired AI-agent control: if an unimpaired agent cannot finish, the flow is not
+      derived from the undegraded AI-agent control: if an undegraded agent cannot finish, the flow is not
       agent-usable. Every figure is reported with its behavioral condition and its calibration
       uncertainty; none is a conformance verdict.
     </p>
 
     <h2 id="policy">Policy &amp; safety</h2>
     <p>
-      Runs are browse-only. A YAML request policy (a NemoClaw mirror) is enforced in-process at the
+      Runs are browse-only. A YAML request policy is enforced in-process at the
       Playwright network layer: every request is intercepted and anything the policy denies, including
       form <code>POST</code>s, is aborted before it leaves the machine (fail-closed). We do not complete
       real purchases or submissions on third-party sites; a persona that claims completion after a
@@ -377,7 +377,7 @@ score = round(100 * sum(credit) / count(non-error personas))</code></pre>
   <footer class="foot">
     <div class="foot__in">
       <span>Simulation Labs · Behavioral simulation research</span>
-      <span>Built at the H Company Computer Use Hackathon · SF · 2026 · MIT-licensed</span>
+      <span>Simulation Labs · Open-source · MIT-licensed</span>
       <span><a href="https://github.com/SatyamDave/simulation-labs">GitHub</a> · <a href="mailto:satyam@agentmade.ai">Contact</a> · © 2026</span>
     </div>
   </footer>

@@ -24,10 +24,10 @@
 ## Evidence
 - prompted-persona fidelity ~11.86% (arXiv:2503.20749)
 - tremor sigma=14px miss-rate: 60.9%@24px, 20.5%@44px, <5%@>=62px (offline Monte-Carlo, 20k trials/cell, illustrative)
-- 173 tests; MIT-licensed; frozen-contract 5-module architecture; built at the H Company Computer Use Hackathon
+- 416 tests; MIT-licensed; frozen-contract 5-module architecture
 
 ## Stack
-- Holo (holo3-1-35b-a3b), Playwright, Gradium (voice), Claude (optional narration), NVIDIA NemoClaw (network policy)
+- Holo (holo3-1-35b-a3b), Playwright, Gradium (voice), Claude (optional narration)
 
 ## Triggers
 - ci_cd_gate (regression vs last-passing) [the product; private beta with design partners]
