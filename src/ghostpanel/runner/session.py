@@ -92,6 +92,25 @@ _REASONS = {
     PersonaOutcome.ERROR: "session error",
 }
 
+# When the target page itself returns an HTTP error status, the run must NEVER read
+# that as a persona giving up: Playwright does not raise on a 4xx/5xx, so the error
+# page loads, the persona "explores" it, and a BROKEN TARGET gets scored as
+# abandonment — making a broken deploy look like a behavioral regression, the exact
+# false signal that would destroy trust in the gate. Both the runner (per persona)
+# and the swarm (run level) tag the condition with this EXACT prefix so the run
+# layer + CLI recognise it and surface "the page under test is erroring" instead.
+# Keep the prefix stable: it is a cross-module contract, matched by
+# ``re.search(r"target returned HTTP (\d+)", reason)``.
+TARGET_HTTP_ERROR_PREFIX = "target returned HTTP"
+
+
+def target_http_error_reason(status: int) -> str:
+    """The human, classifiable failure string for a target that returned >= 400."""
+    return (
+        f"{TARGET_HTTP_ERROR_PREFIX} {status} — the page under test is erroring, "
+        "not the persona (no abandonment was scored)"
+    )
+
 
 class PlaywrightSessionRunner:
     """Concrete `SessionRunner`. Holds a shared Browser + an artifact directory.
@@ -304,14 +323,27 @@ class PlaywrightSessionRunner:
             state["outcome"] = PersonaOutcome.STEP_BUDGET
 
         try:
-            await page.goto(target_url)
-            video = page.video
-            await sink.emit(PersonaStarted(run_id=run_id, persona_id=persona.id))
-            try:
-                await asyncio.wait_for(_loop(), timeout=_WALL_CAP_S)
-            except asyncio.TimeoutError:
+            response = await page.goto(target_url)
+            # Playwright does NOT raise on a 4xx/5xx — the error page loads like any
+            # other. Read the top-level HTTP status: on >= 400, stop here and record
+            # an ERROR (which the report EXCLUDES from the completion rate), never a
+            # persona verdict. ``page.goto`` returns None for non-HTTP navigations
+            # (file://, about:blank) and a test double may hand back a non-int
+            # status, so guard for a real int before comparing.
+            status = getattr(response, "status", None)
+            if isinstance(status, int) and status >= 400:
                 state["outcome"] = PersonaOutcome.ERROR
-                state["failure_reason"] = "wall-clock safety cap hit (infra, not persona patience)"
+                state["failure_reason"] = target_http_error_reason(status)
+                # Fall through to `finally`: no steps are driven on a broken page,
+                # and no PersonaStarted is emitted — the persona never really began.
+            else:
+                video = page.video
+                await sink.emit(PersonaStarted(run_id=run_id, persona_id=persona.id))
+                try:
+                    await asyncio.wait_for(_loop(), timeout=_WALL_CAP_S)
+                except asyncio.TimeoutError:
+                    state["outcome"] = PersonaOutcome.ERROR
+                    state["failure_reason"] = "wall-clock safety cap hit (infra, not persona patience)"
         except Exception as exc:  # infra failure — not a real "abandon"
             state["outcome"] = PersonaOutcome.ERROR
             state["failure_reason"] = f"{type(exc).__name__}: {exc}"[:200]

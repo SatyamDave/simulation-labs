@@ -58,6 +58,34 @@ def target_url(http_base):
     return f"{http_base}/fixtures/hostile_form.html"
 
 
+class _BoomHandler(http.server.BaseHTTPRequestHandler):
+    """Serves a real HTTP 500 with a fully-rendered body — mirroring a broken
+    deploy: Playwright loads the page (it does NOT raise on a 5xx), so only the
+    status distinguishes it from a healthy target."""
+
+    def log_message(self, *args):  # silence request logging
+        pass
+
+    def do_GET(self):
+        body = b"<html><body><h1>Internal Server Error</h1></body></html>"
+        self.send_response(500)
+        self.send_header("Content-Type", "text/html")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+
+@pytest.fixture
+def error_url():
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _BoomHandler)
+    port = server.server_address[1]
+    t = threading.Thread(target=server.serve_forever, daemon=True)
+    t.start()
+    yield f"http://127.0.0.1:{port}/checkout"
+    server.shutdown()
+    server.server_close()
+
+
 @pytest.fixture
 async def browser():
     async with async_playwright() as pw:
@@ -217,6 +245,69 @@ async def test_dead_spot_clicks_detected_as_stuck(browser, tmp_path, target_url)
         persona, StubPersonaAgent(persona, script), target_url, "sign up", sink, "run-dead-spot"
     )
     assert result.outcome == PersonaOutcome.STUCK
+
+
+async def test_target_500_scored_error_not_abandonment(browser, tmp_path, error_url):
+    """A target that returns HTTP 500 must be an ERROR (excluded from completion),
+    NOT a persona verdict — otherwise a broken deploy reads as a behavioral
+    regression. The script here would 'succeed' on a healthy page; the run must
+    refuse to drive it and never emit a PersonaStarted."""
+    persona = make_persona()
+    script = [Action(type=ActionType.ANSWER, text="done", caption="done")]
+    sink = CollectingEventSink()
+    runner = PlaywrightSessionRunner(browser, tmp_path, success_predicate=_ok_visible)
+    result = await runner.run(
+        persona, StubPersonaAgent(persona, script), error_url, "check out", sink, "run-500"
+    )
+
+    assert result.outcome == PersonaOutcome.ERROR
+    assert result.outcome != PersonaOutcome.SUCCESS
+    assert "target returned HTTP 500" in result.failure_reason
+    # No steps were driven and the persona never "started" — the page was refused.
+    assert result.steps == []
+    assert not any(isinstance(e, PersonaStarted) for e in sink.events)
+    # The finished event carries the honest ERROR outcome.
+    finished = [e for e in sink.events if isinstance(e, PersonaFinished)]
+    assert finished and finished[0].outcome == PersonaOutcome.ERROR
+
+
+async def test_target_404_scored_error(browser, tmp_path, http_base):
+    """A 404 on the top-level document is the same class of failure as a 500:
+    the page loads but the target is broken, so it is ERROR, not abandonment."""
+    persona = make_persona()
+    script = [Action(type=ActionType.ANSWER, text="done", caption="done")]
+    sink = CollectingEventSink()
+    runner = PlaywrightSessionRunner(browser, tmp_path)
+    result = await runner.run(
+        persona,
+        StubPersonaAgent(persona, script),
+        f"{http_base}/fixtures/does_not_exist.html",
+        "sign up",
+        sink,
+        "run-404",
+    )
+    assert result.outcome == PersonaOutcome.ERROR
+    assert "target returned HTTP 404" in result.failure_reason
+
+
+async def test_healthy_target_still_runs_normally(browser, tmp_path, target_url):
+    """Guard against the status check firing on a 200: a healthy page (real
+    Response, status 200) must run the persona loop exactly as before."""
+    c = await _measure(browser, target_url)
+    persona = make_persona()
+    script = [
+        Action(type=ActionType.CLICK, x=c["accept"][0], y=c["accept"][1], caption="accept cookies"),
+        Action(type=ActionType.ANSWER, text="I give up", caption="give up"),
+    ]
+    sink = CollectingEventSink()
+    runner = PlaywrightSessionRunner(browser, tmp_path)
+    result = await runner.run(
+        persona, StubPersonaAgent(persona, script), target_url, "sign up", sink, "run-healthy"
+    )
+    # Not the HTTP-error path: the loop ran, so it's a real persona verdict.
+    assert "target returned HTTP" not in result.failure_reason
+    assert any(isinstance(e, PersonaStarted) for e in sink.events)
+    assert len(result.steps) >= 1
 
 
 async def test_success_script_yields_success(browser, tmp_path, target_url):

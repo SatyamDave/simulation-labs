@@ -26,6 +26,40 @@ from ghostpanel_contracts import Action, ActionType, ScrollDirection
 
 from . import prompts
 
+class HoloClientError(RuntimeError):
+    """A Holo inference failure the user must act on (bad key, exhausted quota…).
+
+    The message is written to read cleanly to a stranger: it becomes a persona's
+    ``failure_reason`` (see runner.session) and is surfaced verbatim by the CLI, so
+    it must NOT leak the raw provider payload (``Error code: 401 - {'error': …}``)."""
+
+
+def _classify_api_error(exc: Exception) -> Optional[str]:
+    """Map a raw provider exception to a clean, human, classifiable message.
+
+    Returns None when the error isn't one we can phrase better than its own text
+    (the original is then re-raised unwrapped)."""
+    status = getattr(exc, "status_code", None)
+    name = type(exc).__name__.lower()
+    text = str(exc)
+    if status == 401 or "authenticationerror" in name or "invalid api key" in text.lower():
+        return (
+            "Holo API rejected the API key (HTTP 401). Set a valid model API key "
+            "(HOLO_API_KEY / the configured backend key) and retry."
+        )
+    if status == 403 or "permissiondenied" in name:
+        return (
+            "Holo API denied access (HTTP 403). The key is valid but lacks "
+            "permission for this model."
+        )
+    if status == 429 or "ratelimit" in name or "429" in text:
+        return (
+            "Holo API rate limit hit (HTTP 429) and retries were exhausted. Lower "
+            "--rpm or wait for the key's quota to refill."
+        )
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Shared asyncio token-bucket rate limiter
 # ---------------------------------------------------------------------------
@@ -414,8 +448,17 @@ class LiveHoloClient:
                 ):
                     await asyncio.sleep(min(2.0 ** attempt, 10.0))
                     continue
+                # Terminal for this error: re-raise as a clean, classifiable message
+                # (auth/quota/permission) so `failure_reason` reads to a stranger;
+                # otherwise pass the original through unwrapped.
+                clean = _classify_api_error(exc)
+                if clean is not None:
+                    raise HoloClientError(clean) from exc
                 raise
         assert last_err is not None
+        clean = _classify_api_error(last_err)
+        if clean is not None:
+            raise HoloClientError(clean) from last_err
         raise last_err
 
     def _localize_prompt(self, instruction: str) -> str:

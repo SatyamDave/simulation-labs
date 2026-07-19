@@ -33,7 +33,7 @@ from ghostpanel.report.builder import SurvivalReportBuilder
 from ghostpanel.report import write_deliverable_report
 from ghostpanel.report.insights import build_insights
 from ghostpanel.runner.policy import RequestPolicy
-from ghostpanel.runner.session import PlaywrightSessionRunner
+from ghostpanel.runner.session import PlaywrightSessionRunner, target_http_error_reason
 from ghostpanel.voice.narrate import write_exit_interview
 
 from .runs import RunRegistry
@@ -185,13 +185,29 @@ class SwarmManager:
                 )
             )
 
+            # Probe the target ONCE up front: this both grabs the heatmap
+            # screenshot AND reads the top-level HTTP status. If the page under test
+            # is itself erroring (>= 400), abort the run here — driving personas at a
+            # broken page would score them as abandonment and make a broken deploy
+            # look like a behavioral regression, the exact false signal the gate must
+            # never emit. (status None = couldn't determine -> proceed normally.)
+            target_status = await self._capture_target(run_id, target_url)
+            if isinstance(target_status, int) and target_status >= 400:
+                reason = target_http_error_reason(target_status)
+                logger.warning("Run %s aborted before personas ran: %s", run_id, reason)
+                self.registry.set_error(run_id, reason)
+                await run_sink.emit(
+                    RunFinished(
+                        run_id=run_id,
+                        report_url=f"/artifacts/{run_id}/report.html",
+                        completion_rate=0.0,
+                    )
+                )
+                return
+
             # Give each persona a distinct Gradium voice up front (guarded; voice
             # trouble must never break a run).
             await self._assign_voices(personas)
-
-            # Best-effort clean screenshot of the target (1280x800) so the report can
-            # overlay the abandonment heatmap on the REAL page. Never breaks the run.
-            await self._capture_target(run_id, target_url)
 
             predicate = self.predicate_factory(target_url)
             results: list[PersonaResult] = await asyncio.gather(
@@ -217,8 +233,11 @@ class SwarmManager:
                 write_deliverable_report(
                     report, self.artifact_dir, insights=insights, personas=personas
                 )
-            except Exception:  # noqa: BLE001 - a report render hiccup must not kill the run
-                pass
+            except Exception as exc:  # noqa: BLE001 - a report render hiccup must not kill the run
+                logger.warning(
+                    "Report render failed for run %s; run data is still available: %s",
+                    run_id, exc,
+                )
 
             self.registry.set_report(run_id, report)
 
@@ -280,13 +299,20 @@ class SwarmManager:
             logger.warning("Insights generation failed for run %s: %s", run_id, exc)
             return None
 
-    async def _capture_target(self, run_id: str, target_url: str) -> None:
-        """Open the target in a fresh context and save a clean 1280x800 screenshot to
-        ``<artifact_dir>/<run_id>/target.png`` for the report heatmap overlay. Purely
-        best-effort — any failure (bad URL, launch_browser=False in tests) is swallowed."""
+    async def _capture_target(self, run_id: str, target_url: str) -> Optional[int]:
+        """Open the target once in a fresh context: save a clean 1280x800 screenshot
+        to ``<artifact_dir>/<run_id>/target.png`` for the report heatmap overlay AND
+        report the top-level HTTP status so ``_execute`` can abort a broken target
+        instead of mis-scoring it as abandonment.
+
+        The status is the authoritative return value; the screenshot is best-effort
+        and its failure never masks a status we already read. Returns None when the
+        status can't be determined (no browser, non-HTTP nav, or a navigation error
+        such as connection-refused) — a None must be treated as "proceed normally"."""
         if self.browser is None:
-            return
+            return None
         context = None
+        status: Optional[int] = None
         try:
             run_dir = self.artifact_dir / run_id
             run_dir.mkdir(parents=True, exist_ok=True)
@@ -294,17 +320,33 @@ class SwarmManager:
                 viewport={"width": 1280, "height": 800}
             )
             page = await context.new_page()
-            await page.goto(target_url, wait_until="domcontentloaded", timeout=20000)
-            await page.wait_for_timeout(600)
-            await page.screenshot(path=str(run_dir / "target.png"))
-        except Exception:  # noqa: BLE001
-            pass
+            response = await page.goto(
+                target_url, wait_until="domcontentloaded", timeout=20000
+            )
+            resp_status = getattr(response, "status", None)
+            if isinstance(resp_status, int):
+                status = resp_status
+            # Screenshot is best-effort; a hiccup here must not lose the status.
+            try:
+                await page.wait_for_timeout(600)
+                await page.screenshot(path=str(run_dir / "target.png"))
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "Target screenshot failed for run %s; continuing without it: %s",
+                    run_id, exc,
+                )
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "Target capture failed for run %s; continuing without it: %s",
+                run_id, exc,
+            )
         finally:
             if context is not None:
                 try:
                     await context.close()
                 except Exception:  # noqa: BLE001
                     pass
+        return status
 
     async def _run_one(
         self,
