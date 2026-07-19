@@ -165,7 +165,7 @@
         </div>
         <ul class="icp__grid" aria-label="Example calibrated personas (illustrative)">
           <li><span class="icp-n">Rushed</span><span class="icp-p">step budget 6 · wall-clock 4.5s</span></li>
-          <li><span class="icp-n">Misclick-prone</span><span class="icp-p">click noise &sigma; = 24px</span></li>
+          <li><span class="icp-n">Misclick-prone</span><span class="icp-p">click noise &sigma; = 14px</span></li>
           <li><span class="icp-n">First-timer</span><span class="icp-p">re-reads · slow parse · times out</span></li>
           <li><span class="icp-n">Mobile thumb</span><span class="icp-p">viewport 390px · fat-finger offset</span></li>
         </ul>
@@ -277,12 +277,12 @@
       <div class="sect__in">
         <div class="sect__label"><span class="sect__k">The product</span><h2>Behavioral tests, like unit tests.</h2></div>
         <div class="sect__body">
-          <p class="prose" style="color:var(--muted);max-width:58ch;margin-bottom:1.6em">Your CI already blocks a merge when a unit test breaks. Simulation Labs runs a swarm of simulated human agents through checkout or signup on every deploy and blocks the merge on two things: the flow is <b>broken</b> (a capable agent can't finish it &mdash; a functional/E2E failure), or the flow still works but fewer real <b>segments</b> can complete it than the last passing run (a behavioral regression). Every run also compounds into a cross-site model of where real users give up, so the next test is sharper than the last.</p>
+          <p class="prose" style="color:var(--muted);max-width:58ch;margin-bottom:1.6em">Your CI already blocks a merge when a unit test breaks. Simulation Labs blocks it when your <b>users</b> break &mdash; when the swarm's completion rate on checkout or signup drops versus the last passing run. Every deploy gets a behavioral regression test, and every run compounds into a cross-site model of where real segments give up, so the next test is sharper than the last.</p>
           <div class="qa-grid reveal">
             <div class="qa-card is-primary">
               <span class="qa-k"><i aria-hidden="true"></i>The gate · private beta</span>
               <h3>Gate every deploy</h3>
-              <p>Simulated human agents test each flow two ways: <b>functional</b> &mdash; does it work at all? (a red E2E test if a capable agent can't finish) &mdash; and <b>behavioral</b> &mdash; can real degraded segments still complete it vs the last passing run? Either failure blocks the merge. In private beta with design partners now.</p>
+              <p>The swarm runs on every deploy and blocks the merge when flow-completion drops versus the last passing run. Behavioral regressions caught before your users hit them. In private beta with design partners now.</p>
             </div>
             <div class="qa-card">
               <span class="qa-k"><i aria-hidden="true"></i>Start here · available today</span>
@@ -398,10 +398,8 @@
 &gt; calibrated, against a live flow on every deploy and fail the build when completion
 &gt; regresses vs the last passing run. We simulate what users DO, not what they SAY.
 
-product      : merge_gate(flow, icp, fail_under=last-passing) -> {pass | functional_fail | behavioral_regression}
-verdicts     : functional_fail(undegraded baseline agent can't finish -> flow broken, like a red E2E test)
-               · behavioral_regression(flow works, but fewer degraded segments finish vs last-passing)
-capability   : behavioral_simulation(target_url, task, persona_ids[]) · simulated human agents (functional + behavioral)
+product      : behavioral_regression_gate(flow, icp, fail_under=last-passing)
+capability   : behavioral_simulation(target_url, task, persona_ids[])
 persona      : pre-trained computer-use agent (screenshot-in / action-out); we consume, not train
 degradation  : perception{gaussian_blur, downsample, colour_transform}
                actuation{coordinate_noise sigma_px, tremor}
@@ -424,13 +422,13 @@ stack        : Holo(holo3-1-35b-a3b) · Playwright · Gradium(voice) · Claude(o
 evidence     : prompted-persona fidelity ~11.86%  [arXiv:2503.20749]
                tremor sigma=14px miss-rate: 60.9%@24px, 20.5%@44px, &lt;5%@&gt;=62px
                  (offline Monte-Carlo, 20k trials/cell, illustrative)
-               400+ tests · MIT · frozen-contract 5-module architecture
+               173 tests · MIT · frozen-contract 5-module architecture
 triggers     : ci_cd_gate(regression vs last-passing) [the product; private beta w/ design partners]
                · first_flow_test(manual swarm + report) [how you engage today + join the beta]
                · mcp_skill(mid-session, coding agent) [planned]
 pricing      : ci_gate(design-partner/private beta now; self-serve after founding cohort) [product]
                · first_flow_test($1.5-3k/flow, manual swarm + report, ~1 week) [entry, founding rate]
-distribution : MIT-licensed; degradation primitives (blur/tremor/persona-config) open-sourced
+distribution : MIT-licensed; degradation primitives (blur/tremor/icp-fitter) open-sourced
 cta          : test_first_flow(email) -> satyam@agentmade.ai · https://simulationlabs.dev
 repo         : https://github.com/SatyamDave/simulation-labs</pre>
       </div>

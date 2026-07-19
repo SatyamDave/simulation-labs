@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulation Labs — Sign up for Nimbus: enter a work email and a password, tick the small &#39;I agree to the Terms&#39; checkbox until it is checked, then click Create account. Done when you see &#39;You&#39;re in!&#39;.</title>
+<style>
+  :root {
+    --bg: #0B0D11; --bg-alt: #0F1218; --panel: #1E2127;
+    --blue: #4C8DFF; --blue-hover: #6AA0FF; --cyan: #39D0E0;
+    --text: #E9EAEC; --muted: #8B9099; --border: #2C3038;
+    --ok: #28C840; --fail: #FF5F57;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font-family: &#39;Space Grotesk&#39;, &#39;Segoe UI&#39;, system-ui, -apple-system, &#39;Helvetica Neue&#39;, Arial, sans-serif; line-height: 1.55;
+         -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { color: var(--blue-hover); text-decoration: underline; }
+  .mono { font-family: ui-monospace, &#39;SF Mono&#39;, Menlo, Consolas, monospace; font-size: .82rem; }
+  .muted { color: var(--muted); }
+
+  /* header */
+  .brand { display: flex; align-items: center; gap: .6rem; font-weight: 700;
+           letter-spacing: -.01em; font-size: 1.05rem; }
+  .brand .dot { width: 10px; height: 10px; border-radius: 50%;
+                background: var(--cyan); box-shadow: 0 0 12px var(--cyan); }
+  .brand .tag { color: var(--muted); font-weight: 500; font-size: .8rem; }
+  h1 { font-size: 2rem; font-weight: 700; letter-spacing: -.02em;
+       margin: 1.6rem 0 .4rem; }
+  .meta { color: var(--muted); font-size: .88rem; }
+  .meta strong { color: var(--text); font-weight: 600; }
+  .rule { height: 1px; background: var(--border); border: 0; margin: 2.2rem 0; }
+
+  /* hero */
+  .hero { display: flex; flex-wrap: wrap; gap: 1rem; margin: 2rem 0 .5rem; }
+  .hero-card { background: var(--bg-alt); border: 1px solid var(--border);
+               border-radius: 14px; padding: 1.3rem 1.5rem; flex: 1; min-width: 200px; }
+  .hero-num { font-size: 2.8rem; font-weight: 700; letter-spacing: -.03em;
+              line-height: 1; }
+  .hero-num.ok { color: var(--ok); } .hero-num.warn { color: var(--fail); }
+  .hero-num.blue { color: var(--cyan); }
+  .hero-label { color: var(--muted); font-size: .82rem; margin-top: .5rem; }
+  .verdict { font-size: 1.05rem; margin: 1.4rem 0 0; }
+
+  /* sections */
+  h2 { font-size: 1.3rem; font-weight: 700; letter-spacing: -.01em;
+       margin: 0 0 .3rem; }
+  .kicker { color: var(--cyan); font-size: .72rem; font-weight: 700;
+            letter-spacing: .12em; text-transform: uppercase; }
+  section { margin: 3rem 0; }
+  .lede { color: var(--muted); font-size: .92rem; margin: .2rem 0 1.4rem; }
+
+  /* findings */
+  .finding { background: var(--panel); border: 1px solid var(--border);
+             border-left: 3px solid var(--blue); border-radius: 12px;
+             padding: 1.4rem 1.6rem; margin: 1rem 0; }
+  .finding .idx { color: var(--muted); font-size: .74rem; font-weight: 700;
+                  letter-spacing: .1em; text-transform: uppercase; }
+  .finding h3 { font-size: 1.2rem; font-weight: 700; letter-spacing: -.01em;
+                margin: .35rem 0 .9rem; line-height: 1.35; }
+  .ev-head, .why-head { font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+             text-transform: uppercase; color: var(--muted); margin: .8rem 0 .35rem; }
+  .finding ul { margin: 0; padding-left: 1.1rem; }
+  .finding li { margin: .2rem 0; font-size: .9rem; }
+  .finding .why { font-size: .95rem; }
+
+  /* chart panels */
+  .panel { background: var(--bg-alt); border: 1px solid var(--border);
+           border-radius: 14px; padding: 1.4rem; overflow-x: auto; }
+  .frame { background:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, #2C303844 39px, #2C303844 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, #2C303844 39px, #2C303844 40px),
+      var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      display: inline-block; position: relative; }
+  .legend { display: flex; flex-wrap: wrap; gap: .5rem 1.1rem; margin-top: 1rem;
+            font-size: .82rem; color: var(--muted); }
+  .legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+                margin-right: .4rem; vertical-align: middle; background: var(--fail); }
+
+  /* roster / traces */
+  .seg { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+  .seg-card { background: var(--panel); border: 1px solid var(--border);
+              border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .seg-top { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; }
+  .badge { font-size: .72rem; font-weight: 700; letter-spacing: .04em;
+           padding: .2rem .6rem; border-radius: 999px; border: 1px solid var(--border);
+           color: var(--cyan); background: #39D0E014; }
+  .seg-name { font-weight: 600; }
+  .pill { font-size: .74rem; font-weight: 700; padding: .15rem .55rem;
+          border-radius: 999px; margin-left: auto; }
+  .pill.ok { color: var(--ok); background: #28C8401c; }
+  .pill.fail { color: var(--fail); background: #FF5F571c; }
+  .seg-blurb { color: var(--muted); font-size: .85rem; margin: .5rem 0 0; }
+  .seg-body { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1rem;
+              align-items: flex-start; }
+  .trace { flex: 1; min-width: 240px; }
+  .trace ol { margin: 0; padding-left: 1.2rem; font-size: .85rem; }
+  .trace li { margin: .12rem 0; }
+  .trace .pt { color: var(--muted); }
+  .receipts { font-size: .85rem; margin-top: .8rem; }
+  .receipts .none { color: var(--muted); }
+  .stat-inline { color: var(--muted); font-size: .85rem; margin-top: .4rem; }
+  .stat-inline b { color: var(--text); }
+
+  /* axis text */
+  text.axis { font-size: 11px; fill: #8B9099; }
+  footer { color: var(--muted); font-size: .82rem; border-top: 1px solid var(--border);
+           padding-top: 1.4rem; margin-top: 3.5rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand"><span class="dot"></span>Simulation Labs
+    <span class="tag">&nbsp;/ behavioral conversion audit</span></div>
+
+  <h1>Sign up for Nimbus: enter a work email and a password, tick the small &#39;I agree to the Terms&#39; checkbox until it is checked, then click Create account. Done when you see &#39;You&#39;re in!&#39;.</h1>
+  <div class="meta">
+    Target <strong>http://localhost:8137/fixtures/demo_signup.html</strong><br>
+    4 of 5 behavioral segments completed the task
+    &middot; run <span class="mono">bbcbf3a832ea</span>
+    &middot; 2026-07-18T23:43:23.846564+00:00
+  </div>
+
+  <div class="hero">
+    <div class="hero-card">
+      <div class="hero-num ok">80%</div>
+      <div class="hero-label">of tested segments completed the task</div>
+    </div>
+    
+    <div class="hero-card">
+      <div class="hero-num blue">88</div>
+      <div class="hero-label">Simulation Score / 100 &mdash; survival-weighted composite</div>
+    </div>
+    
+    <div class="hero-card">
+      <div class="hero-num warn">1</div>
+      <div class="hero-label">segment abandoned before finishing</div>
+    </div>
+  </div>
+  <p class="verdict">1 of 5 tested segments silently abandoned before finishing “Sign up for Nimbus: enter a work email and a password, tick the small &#39;I agree to the Terms&#39; checkbox until it is checked, then click Create account. Done when you see &#39;You&#39;re in!&#39;” — here is exactly where, and why.</p>
+
+  <hr class="rule">
+
+  <!-- ============ FINDINGS (the lead) ============ -->
+  <section>
+    <div class="kicker">What we found</div>
+    <h2>Findings</h2>
+    <p class="lede">The interpretation, first. Each finding names the segments
+      affected, the exact evidence from their action traces, and why it costs you
+      conversions. Supporting charts follow below.</p>
+    
+    <div class="finding">
+      <div class="idx">Finding 1 of 2</div>
+      <h3>Misclick-prone users exhaust their patience before reaching the goal</h3>
+      <div class="ev-head">Evidence</div>
+      <ul><li>Misclick-prone ran out of steps after 5 steps without completing</li></ul>
+      <div class="why-head">Why it matters</div>
+      <p class="why">These segments are time- and step-sensitive: every extra hop, modal, or slow response compounds against them. A confident user clears the flow in 4 steps — trimming steps and latency is what recovers this segment.</p>
+    </div>
+    
+    <div class="finding">
+      <div class="idx">Finding 2 of 2</div>
+      <h3>The flow works end to end — the losses are comprehension gaps, not broken functionality</h3>
+      <div class="ev-head">Evidence</div>
+      <ul><li>Fluent completed the task in 6 steps</li><li>AI Agent completed the task in 6 steps</li><li>Rushed completed the task in 4 steps</li><li>Mobile-thumb completed the task in 6 steps</li></ul>
+      <div class="why-head">Why it matters</div>
+      <p class="why">4 of 5 segments finish the task, including an unattended AI agent. Because the mechanics work, the 1 failing segment(s) are hitting layout, labelling, and copy ambiguity — fixable without touching the backend.</p>
+    </div>
+    
+  </section>
+
+  <!-- ============ HEATMAP ============ -->
+  <section>
+    <div class="kicker">Where they die</div>
+    <h2>Abandonment heatmap</h2>
+    <p class="lede">Every point is one segment's last recorded pixel before it gave
+      up, placed on your 1280&times;800 viewport. Overlap glows hotter.</p>
+    <div class="panel">
+    
+      <svg class="frame" width="720" height="450"
+           role="img" aria-label="Abandonment heatmap">
+        <defs>
+          <radialGradient id="heat" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#FF5F57" stop-opacity="0.85"/>
+            <stop offset="45%" stop-color="#FF5F57" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#FF5F57" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        
+        <circle cx="261.0" cy="277.9" r="58" fill="url(#heat)"/>
+        
+        
+        <circle cx="261.0" cy="277.9" r="5" fill="#FF5F57"
+                stroke="#0B0D11" stroke-width="1.5"/>
+        <text class="axis" x="270.0" y="281.9"
+              fill="#E9EAEC">Misclick-prone</text>
+        
+      </svg>
+      <div class="legend"><span><span class="sw"></span>last pixel before
+        abandonment &mdash; brighter = more segments died there</span></div>
+    
+    </div>
+  </section>
+
+  <!-- ============ SURVIVAL CURVE ============ -->
+  
+  <section>
+    <div class="kicker">How far they got</div>
+    <h2>Survival curve</h2>
+    <p class="lede">Segments still in the flow at each step. A cliff marks a step
+      where several segments abandon at once.</p>
+    <div class="panel">
+      <svg width="640" height="170" role="img"
+           aria-label="Stepped survival curve: segments alive by step">
+        <line x1="30" y1="140" x2="610"
+              y2="140" stroke="#2C3038"/>
+        <line x1="30" y1="140" x2="30"
+              y2="30" stroke="#2C3038"/>
+        <path d="M30.0 30.0 H126.7 V30.0 H223.3 V30.0 H320.0 V30.0 H416.7 V30.0 H513.3 V30.0 H610.0 V52.0" fill="none" stroke="#4C8DFF"
+              stroke-width="2.5" stroke-linejoin="round"/>
+        <text class="axis" x="30" y="156">0</text>
+        <text class="axis" x="610" y="156"
+              text-anchor="end">6 steps</text>
+        <text class="axis" x="22" y="34"
+              text-anchor="end">5</text>
+        <text class="axis" x="22" y="144"
+              text-anchor="end">0</text>
+      </svg>
+    </div>
+  </section>
+  
+
+  <!-- ============ SEGMENT-BY-SEGMENT ============ -->
+  <section>
+    <div class="kicker">Segment by segment</div>
+    <h2>The panel</h2>
+    <p class="lede">Each segment is a computer-use agent constrained to model one
+      real-world behaviour &mdash; browsing speed, tap precision, familiarity,
+      screen size. It either completes your task or abandons at a specific pixel.</p>
+    <div class="seg">
+    
+      <div class="seg-card">
+        <div class="seg-top">
+          <span class="badge">Fluent</span>
+          
+          <span class="pill ok">completed</span>
+        </div>
+        <p class="seg-blurb">Confident, unhurried user — the control the others are measured against.</p>
+        <div class="seg-body">
+          
+          <div>
+            <svg class="frame" width="300" height="188"
+                 role="img" aria-label="Cursor path for Fluent">
+              <polyline points="149.1,77.5 149.1,77.5 150.0,98.2 150.0,97.8 113.0,113.0 150.0,132.8" fill="none"
+                        stroke="#4C8DFF" stroke-width="1.5"
+                        stroke-dasharray="3 3" opacity="0.8"/>
+              
+              <circle cx="149.1" cy="77.5" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="149.1" y="80.5" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">1</text>
+              
+              <circle cx="149.1" cy="77.5" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="149.1" y="80.5" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">2</text>
+              
+              <circle cx="150.0" cy="98.2" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="150.0" y="101.2" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">3</text>
+              
+              <circle cx="150.0" cy="97.8" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="150.0" y="100.8" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">4</text>
+              
+              <circle cx="113.0" cy="113.0" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="113.0" y="116.0" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">5</text>
+              
+              <circle cx="150.0" cy="132.8" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="150.0" y="135.8" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">6</text>
+              
+            </svg>
+          </div>
+          
+          <div class="trace">
+            
+            <ol>
+            
+              <li>Clicking Work email input field
+                <span class="pt mono">(636, 330)</span>
+              </li>
+            
+              <li>Typing &#39;user@example.com&#39; into Work email input field
+                <span class="pt mono">(636, 330)</span>
+              </li>
+            
+              <li>Clicking Password input field
+                <span class="pt mono">(640, 418)</span>
+              </li>
+            
+              <li>Typing &#39;password123&#39; into Password input field
+                <span class="pt mono">(640, 416)</span>
+              </li>
+            
+              <li>Clicking I agree to the Terms checkbox
+                <span class="pt mono">(482, 481)</span>
+              </li>
+            
+              <li>Clicking Create account button
+                <span class="pt mono">(640, 565)</span>
+              </li>
+            
+            </ol>
+            
+            <div class="stat-inline">
+              Survived <b>6</b> steps
+              
+            </div>
+            
+            <div class="receipts">
+              <a href="fluent.webm">&#9654; Watch the video receipt (.webm)</a>
+              
+              
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <div class="seg-card">
+        <div class="seg-top">
+          <span class="badge">AI Agent</span>
+          
+          <span class="pill ok">completed</span>
+        </div>
+        <p class="seg-blurb">An unattended computer-use agent — is your flow machine-navigable?</p>
+        <div class="seg-body">
+          
+          <div>
+            <svg class="frame" width="300" height="188"
+                 role="img" aria-label="Cursor path for AI Agent">
+              <polyline points="149.1,77.5 149.1,78.0 150.0,98.2 150.0,97.8 113.0,113.0 150.0,132.8" fill="none"
+                        stroke="#4C8DFF" stroke-width="1.5"
+                        stroke-dasharray="3 3" opacity="0.8"/>
+              
+              <circle cx="149.1" cy="77.5" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="149.1" y="80.5" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">1</text>
+              
+              <circle cx="149.1" cy="78.0" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="149.1" y="81.0" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">2</text>
+              
+              <circle cx="150.0" cy="98.2" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="150.0" y="101.2" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">3</text>
+              
+              <circle cx="150.0" cy="97.8" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="150.0" y="100.8" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">4</text>
+              
+              <circle cx="113.0" cy="113.0" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="113.0" y="116.0" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">5</text>
+              
+              <circle cx="150.0" cy="132.8" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="150.0" y="135.8" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">6</text>
+              
+            </svg>
+          </div>
+          
+          <div class="trace">
+            
+            <ol>
+            
+              <li>Clicking Work email input field
+                <span class="pt mono">(636, 330)</span>
+              </li>
+            
+              <li>Typing &#39;user@example.com&#39; into Work email input field
+                <span class="pt mono">(636, 332)</span>
+              </li>
+            
+              <li>Clicking Password input field
+                <span class="pt mono">(640, 418)</span>
+              </li>
+            
+              <li>Typing &#39;password123&#39; into Password input field
+                <span class="pt mono">(640, 416)</span>
+              </li>
+            
+              <li>Clicking I agree to the Terms checkbox
+                <span class="pt mono">(482, 481)</span>
+              </li>
+            
+              <li>Clicking Create account button
+                <span class="pt mono">(640, 565)</span>
+              </li>
+            
+            </ol>
+            
+            <div class="stat-inline">
+              Survived <b>6</b> steps
+              
+            </div>
+            
+            <div class="receipts">
+              <a href="ai-agent.webm">&#9654; Watch the video receipt (.webm)</a>
+              
+              
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <div class="seg-card">
+        <div class="seg-top">
+          <span class="badge">Rushed</span>
+          
+          <span class="pill ok">completed</span>
+        </div>
+        <p class="seg-blurb">In a hurry; abandons the moment the path isn&#39;t obvious.</p>
+        <div class="seg-body">
+          
+          <div>
+            <svg class="frame" width="300" height="188"
+                 role="img" aria-label="Cursor path for Rushed">
+              <polyline points="149.1,77.5 150.0,98.5 113.0,113.0 150.0,132.8" fill="none"
+                        stroke="#4C8DFF" stroke-width="1.5"
+                        stroke-dasharray="3 3" opacity="0.8"/>
+              
+              <circle cx="149.1" cy="77.5" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="149.1" y="80.5" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">1</text>
+              
+              <circle cx="150.0" cy="98.5" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="150.0" y="101.5" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">2</text>
+              
+              <circle cx="113.0" cy="113.0" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="113.0" y="116.0" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">3</text>
+              
+              <circle cx="150.0" cy="132.8" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="150.0" y="135.8" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">4</text>
+              
+            </svg>
+          </div>
+          
+          <div class="trace">
+            
+            <ol>
+            
+              <li>Typing &#39;user@example.com&#39; into Work email input field
+                <span class="pt mono">(636, 330)</span>
+              </li>
+            
+              <li>Typing &#39;password123&#39;
+                <span class="pt mono">(640, 419)</span>
+              </li>
+            
+              <li>Clicking I agree to the Terms checkbox
+                <span class="pt mono">(482, 481)</span>
+              </li>
+            
+              <li>Clicking Create account button
+                <span class="pt mono">(640, 565)</span>
+              </li>
+            
+            </ol>
+            
+            <div class="stat-inline">
+              Survived <b>4</b> steps
+              
+            </div>
+            
+            <div class="receipts">
+              <a href="rushed.webm">&#9654; Watch the video receipt (.webm)</a>
+              
+              
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <div class="seg-card">
+        <div class="seg-top">
+          <span class="badge">Mobile-thumb</span>
+          
+          <span class="pill ok">completed</span>
+        </div>
+        <p class="seg-blurb">Small screen, thumb-driven; reflow and tap-size sensitive.</p>
+        <div class="seg-body">
+          
+          <div>
+            <svg class="frame" width="300" height="649"
+                 role="img" aria-label="Cursor path for Mobile-thumb">
+              <polyline points="185.4,297.6 144.6,367.6 45.4,380.6 43.1,385.2 156.2,461.4 158.5,353.7" fill="none"
+                        stroke="#4C8DFF" stroke-width="1.5"
+                        stroke-dasharray="3 3" opacity="0.8"/>
+              
+              <circle cx="185.4" cy="297.6" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="185.4" y="300.6" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">1</text>
+              
+              <circle cx="144.6" cy="367.6" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="144.6" y="370.6" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">2</text>
+              
+              <circle cx="45.4" cy="380.6" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="45.4" y="383.6" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">3</text>
+              
+              <circle cx="43.1" cy="385.2" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="43.1" y="388.2" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">4</text>
+              
+              <circle cx="156.2" cy="461.4" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="156.2" y="464.4" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">5</text>
+              
+              <circle cx="158.5" cy="353.7" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="158.5" y="356.7" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">6</text>
+              
+            </svg>
+          </div>
+          
+          <div class="trace">
+            
+            <ol>
+            
+              <li>Typing &#39;user@company.com&#39; into Work email input field
+                <span class="pt mono">(241, 387)</span>
+              </li>
+            
+              <li>Typing &#39;SecurePass123&#39; into Password input field
+                <span class="pt mono">(188, 478)</span>
+              </li>
+            
+              <li>Clicking I agree to the Terms checkbox
+                <span class="pt mono">(59, 495)</span>
+              </li>
+            
+              <li>Clicking I agree to the Terms checkbox
+                <span class="pt mono">(56, 501)</span>
+              </li>
+            
+              <li>Clicking at (195, 592)
+                <span class="pt mono">(203, 600)</span>
+              </li>
+            
+              <li>Typing &#39;SecurePass123&#39; into Password input field
+                <span class="pt mono">(206, 460)</span>
+              </li>
+            
+            </ol>
+            
+            <div class="stat-inline">
+              Survived <b>6</b> steps
+              
+            </div>
+            
+            <div class="receipts">
+              <a href="mobile-thumb.webm">&#9654; Watch the video receipt (.webm)</a>
+              
+              
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    
+      <div class="seg-card">
+        <div class="seg-top">
+          <span class="badge">Misclick-prone</span>
+          
+          <span class="pill fail">ran out of steps</span>
+        </div>
+        <p class="seg-blurb">Imprecise taps; punished by small or crowded targets.</p>
+        <div class="seg-body">
+          
+          <div>
+            <svg class="frame" width="300" height="188"
+                 role="img" aria-label="Cursor path for Misclick-prone">
+              <polyline points="156.3,71.9 156.8,88.8 145.5,81.3 153.8,85.8 154.2,72.1 108.8,116.1" fill="none"
+                        stroke="#4C8DFF" stroke-width="1.5"
+                        stroke-dasharray="3 3" opacity="0.8"/>
+              
+              <circle cx="156.3" cy="71.9" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="156.3" y="74.9" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">1</text>
+              
+              <circle cx="156.8" cy="88.8" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="156.8" y="91.8" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">2</text>
+              
+              <circle cx="145.5" cy="81.3" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="145.5" y="84.3" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">3</text>
+              
+              <circle cx="153.8" cy="85.8" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="153.8" y="88.8" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">4</text>
+              
+              <circle cx="154.2" cy="72.1" r="7"
+                      fill="#4C8DFF"
+                      opacity="0.9"/>
+              <text x="154.2" y="75.1" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">5</text>
+              
+              <circle cx="108.8" cy="116.1" r="7"
+                      fill="#FF5F57"
+                      opacity="0.9"/>
+              <text x="108.8" y="119.1" text-anchor="middle"
+                    font-size="9" fill="#0B0D11" font-weight="700">6</text>
+              
+            </svg>
+          </div>
+          
+          <div class="trace">
+            
+            <ol>
+            
+              <li>Clicking Work email input field
+                <span class="pt mono">(667, 306)</span>
+              </li>
+            
+              <li>Typing &#39;user@example.com&#39; into Work email input field
+                <span class="pt mono">(669, 378)</span>
+              </li>
+            
+              <li>Clicking Work email input field
+                <span class="pt mono">(621, 346)</span>
+              </li>
+            
+              <li>Typing &#39;user@company.com&#39;
+                <span class="pt mono">(656, 365)</span>
+              </li>
+            
+              <li>Typing &#39;demo@example.com&#39;
+                <span class="pt mono">(658, 307)</span>
+              </li>
+            
+              <li>Clicking I agree to the Terms checkbox
+                <span class="pt mono">(464, 494)</span>
+              </li>
+            
+            </ol>
+            
+            <div class="stat-inline">
+              Survived <b>5</b> steps
+              
+                &middot; last pixel <b class="mono">(464, 494)</b>
+              
+            </div>
+            
+            <div class="stat-inline">ran out of steps</div>
+            
+            <div class="receipts">
+              <a href="misclick-prone.webm">&#9654; Watch the video receipt (.webm)</a>
+              
+              
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    </div>
+  </section>
+
+  <footer>
+    <strong>Method.</strong> Simulation Labs points a swarm of computer-use agents
+    at your live flow. Each agent's perception and actuation are mechanically
+    constrained to model a distinct conversion segment &mdash; not roleplay. The
+    result is what the segment <em>did</em>, grounded in a real action trace, with
+    video receipts alongside this file.
+    <br><br>
+    Prepared for the client &middot; run <span class="mono">bbcbf3a832ea</span>
+    &middot; 2026-07-18T23:43:23.846564+00:00 &middot; contract 1.0.0
+  </footer>
+</div>
+</body>
+</html>
