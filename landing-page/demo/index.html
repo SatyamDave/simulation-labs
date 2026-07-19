@@ -41,7 +41,9 @@
   .rail .step.on{ color:var(--text); border-color:var(--accent); background:rgba(76,141,255,.1); }
   .rail .step.on .no{ background:var(--accent); color:#fff; }
   .rail .step.done .no{ background:var(--ok); color:#04140a; }
-  .rail .time{ flex:0 0 auto; font-family:var(--mono); font-size:.66rem; color:var(--dim); }
+  .rail .pausebtn{ flex:0 0 auto; background:transparent; border:1px solid var(--line); color:var(--muted); border-radius:8px; height:26px; min-width:30px; padding:0 8px; cursor:pointer; font-size:.66rem; font-family:var(--mono); transition:.2s; }
+  .rail .pausebtn:hover{ color:var(--text); border-color:var(--accent); }
+  .rail .time{ flex:0 0 auto; font-family:var(--mono); font-size:.66rem; color:var(--dim); min-width:64px; text-align:right; }
   @media(max-width:720px){ .rail .brand span{ display:none; } .rail .step .label{ display:none; } .rail .step{ padding:4px 6px; } }
 
   /* ---------- chapter section ---------- */
@@ -202,6 +204,7 @@
     <div class="rail-in">
       <span class="brand"><svg width="24" height="15" viewBox="0 0 26 16" fill="none"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#4C8DFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Simulation Labs</span></span>
       <div class="steps" id="steps"></div>
+      <button class="pausebtn" id="pauseBtn" title="Pause" aria-label="Pause" style="display:none">❚❚</button>
       <span class="time" id="clock">0:00</span>
     </div>
   </div>
@@ -346,10 +349,15 @@
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   var $=function(id){return document.getElementById(id);};
   var gen=0, timers=[], playing=false, t0=0, clockIv=null;
+  var paused=false, pausedAt=0, pausedTotal=0;
   var PACE = reduce ? 0.05 : 2.05;   // stretch dwells/animation to a ~2-minute guided pace
   function T(fn,ms){ var t=setTimeout(fn, reduce?Math.min(ms,60):ms); timers.push(t); return t; }
   function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
-  function sleep(ms){ return new Promise(function(r){ T(r, Math.round(ms*PACE)); }); }
+  // Pausable dwell: counts down only while not paused, so pausing freezes the tour
+  // at the current beat (typing + the clock respect the same flag).
+  function sleep(ms){ var remaining=Math.round(ms*PACE), last=Date.now();
+    return new Promise(function(resolve){ (function tick(){ var now=Date.now(); if(!paused) remaining-=(now-last); last=now;
+      if(remaining<=0){ resolve(); return; } T(tick, 70); })(); }); }
   function readPause(){ return sleep(2400); }   // let the viewer read the chapter headline+body
   function scrollToEl(node){ if(node&&node.scrollIntoView) node.scrollIntoView({behavior:reduce?'auto':'smooth', block:'center'}); }
   function scrollTop(node){ if(node&&node.scrollIntoView) node.scrollIntoView({behavior:reduce?'auto':'smooth', block:'start'}); }
@@ -361,18 +369,23 @@
   function markStep(i){ CH.forEach(function(c,j){ var e=$('st-'+j); e.className='step'+(j<i?' done':'')+(j===i?' on':''); });
     var el=$('st-'+i); if(el) el.scrollIntoView({block:'nearest',inline:'center'}); }
   function setActive(i){ CH.forEach(function(c,j){ $(c.id).classList.toggle('active', j===i); }); markStep(i); }
-  function startClock(){ t0=Date.now(); if(clockIv) clearInterval(clockIv); clockIv=setInterval(function(){ var s=Math.floor((Date.now()-t0)/1000); $('clock').textContent=Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); },500); }
+  function startClock(){ t0=Date.now(); pausedTotal=0; paused=false; if(clockIv) clearInterval(clockIv);
+    clockIv=setInterval(function(){ var extra=paused?(Date.now()-pausedAt):0; var s=Math.floor((Date.now()-t0-pausedTotal-extra)/1000); if(s<0)s=0;
+      $('clock').textContent=Math.floor(s/60)+':'+('0'+(s%60)).slice(-2); },400); }
+  function togglePause(){ var b=$('pauseBtn');
+    if(paused){ paused=false; pausedTotal+=Date.now()-pausedAt; b.textContent='❚❚'; b.title='Pause'; b.setAttribute('aria-label','Pause'); }
+    else{ paused=true; pausedAt=Date.now(); b.textContent='▶'; b.title='Resume'; b.setAttribute('aria-label','Resume'); } }
 
   // ---- helpers ----
   function typeLines(container, lines, cps, done){
     container.innerHTML=''; var li=0, myGen=gen;
     function next(){ if(myGen!==gen) return; if(li>=lines.length){ if(done)done(); return; }
       var s=document.createElement('span'); s.className='ln in '+(lines[li][0]||''); container.appendChild(s);
-      var txt=lines[li][1], ci=0; var iv=setInterval(function(){ if(myGen!==gen){clearInterval(iv);return;} ci++; s.textContent=txt.slice(0,ci);
+      var txt=lines[li][1], ci=0; var iv=setInterval(function(){ if(myGen!==gen){clearInterval(iv);return;} if(paused) return; ci++; s.textContent=txt.slice(0,ci);
         if(ci>=txt.length){ clearInterval(iv); li++; T(next,90); } }, reduce?2:cps); timers.push(iv); }
     next();
   }
-  function typePre(node, text, cps, done){ node.textContent=''; var i=0, myGen=gen; var iv=setInterval(function(){ if(myGen!==gen){clearInterval(iv);return;} i++; node.textContent=text.slice(0,i); if(i>=text.length){ clearInterval(iv); if(done)done(); } }, reduce?1:cps); timers.push(iv); }
+  function typePre(node, text, cps, done){ node.textContent=''; var i=0, myGen=gen; var iv=setInterval(function(){ if(myGen!==gen){clearInterval(iv);return;} if(paused) return; i++; node.textContent=text.slice(0,i); if(i>=text.length){ clearInterval(iv); if(done)done(); } }, reduce?1:cps); timers.push(iv); }
   function cap(id,text){ var e=$(id); e.textContent=text; e.classList.add('in'); }
   function animNum(id,to,ms,prefix,suffix){ var node=$(id), start=null; function step(ts){ if(!start)start=ts; var p=Math.min((ts-start)/ms,1); var e=1-Math.pow(1-p,3); node.textContent=(prefix||'')+Math.round(to*e).toLocaleString()+(suffix||''); if(p<1) requestAnimationFrame(step);} requestAnimationFrame(step); }
 
@@ -558,19 +571,22 @@
   var CHAPTERS=[ch1,ch2,ch3,ch4,ch5];
   async function play(from){
     var myGen=++gen; playing=true; $('starter').style.display='none'; startClock();
+    // reset the pause button to an active "playing" state
+    if(paused){ paused=false; } var pb=$('pauseBtn'); pb.style.display=''; pb.textContent='❚❚'; pb.title='Pause'; pb.setAttribute('aria-label','Pause');
     resetAll();
     for(var i=(from||0); i<CHAPTERS.length; i++){ if(myGen!==gen) return; await CHAPTERS[i](); }
     if(myGen!==gen) return;
-    playing=false; if(clockIv) clearInterval(clockIv);
+    playing=false; if(clockIv) clearInterval(clockIv); $('pauseBtn').style.display='none';
     // show a replay affordance in the rail time slot
     $('clock').textContent='↻ replay'; $('clock').style.cursor='pointer'; $('clock').onclick=function(){ $('clock').onclick=null; $('clock').style.cursor=''; play(0); };
   }
   function jumpTo(i){ // restart the tour from a chosen chapter
-    if(clockIv) clearInterval(clockIv); play(i);
+    if(clockIv) clearInterval(clockIv); $('clock').onclick=null; $('clock').style.cursor=''; play(i);
   }
 
   $('startBtn').onclick=function(){ play(0); };
   $('skipBtn').onclick=function(){ play(3); };  // jump to the demo
+  $('pauseBtn').onclick=togglePause;
 
   // build voice waveform bars
   (function(){ var w=$('wave'); for(var i=0;i<44;i++){ var b=document.createElement('i'); b.style.height=(15+Math.round(Math.abs(Math.sin(i*0.7))*70))+'%'; b.style.animationDelay=(i*0.03)+'s'; w.appendChild(b); } })();
