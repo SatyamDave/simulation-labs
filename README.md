@@ -1,113 +1,163 @@
-# Simulation Labs — Behavioral Tests for User Flows
+<div align="center">
 
-**Behavioral tests, like unit tests — but for whether your users can actually finish.**
-Your CI blocks a merge when a unit test breaks; Simulation Labs blocks it when your *users*
-break. It runs a swarm of computer-use agents ([H Company **Holo**](https://hcompany.ai/holo-models-api),
-or Google Gemini via `MODEL_BACKEND=gemini`) against a live flow — checkout, signup, onboarding —
-on every deploy, and **fails the build when flow-completion regresses vs the last passing run**.
-Each agent's perception and actuation are *mechanically* degraded (coordinate noise for tremor,
-tight budgets for impatience, small viewports, blur) so it behaves like a real segment, attempts
-the task, and either completes it or **abandons at a specific, reproducible pixel**. You get a
-survival curve, an abandonment heatmap over your real page, an **agent-readiness verdict**, video
-receipts, and **cloned-voice exit-interviews** ([Gradium](https://gradium.ai)) grounded in each
-agent's actual action trace.
+# Simulation Labs
 
-Every run also compounds into a cross-site model of where real segments give up, so the next test
-is sharper than the last. **Today** you start with a founder-run test of one flow (the on-ramp to
-the private beta of the gate); the self-serve gate follows the founding cohort.
+### A behavioral CI gate — real computer-use agents attempt your signup, checkout, and onboarding on every deploy, and block the merge when your users start abandoning.
 
-Behavioral user research that *does*, not *says*. The internal engine/codebase is named
-`ghostpanel` (the Python package); the product/company is **Simulation Labs**.
+Unit tests prove your code runs. **They say nothing about whether a human can finish the flow.**
+Simulation Labs sends a swarm of browser agents — some steady, some rushed, some fumbling a
+small control on a phone — at a live page. Each one either completes the task or **abandons at a
+specific, reproducible pixel**. You get a completion rate, an abandonment heatmap over your real
+page, and a non-zero exit code when it regresses.
 
-> Built at H Company's Computer Use Hackathon (SF, Jul 2026). Track 2 — Browser Use.
-> Read **[DEMO_PLAYBOOK.md](DEMO_PLAYBOOK.md)** to run it, **[VISION.md](VISION.md)** for the
-> pitch, and **[CLAUDE.md](CLAUDE.md)** for the architecture.
+[![MIT License](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-black.svg)](pyproject.toml)
+[![Tests](https://img.shields.io/badge/tests-416%20passing-black.svg)](tests/)
+[![Backends](https://img.shields.io/badge/backend-Gemini%20·%20Holo%20·%20self--host-black.svg)](#bring-any-key)
+
+**[▶ Watch the 2-min demo](https://simulationlabs.dev/demo/)** · **[See a real report](https://simulationlabs.dev/sample-report/)** · **[Why this exists](VISION.md)**
+
+</div>
 
 ---
 
-## Quickstart: the CI gate
+## 60-second quickstart
 
-Wire the behavioral swarm into CI so every deploy is tested against a real flow and the
-build **fails when completion regresses** — a behavioral test suite, like unit tests. Full
-guide: **[docs/ci.md](docs/ci.md)**.
+One command. No account, no config, no signup. Bring any model key you already have.
 
 ```bash
-pip install "git+https://github.com/SatyamDave/simulation-labs@main"   # pipx works too
-export HAI_API_KEY=hai-...        # your own H Company Holo key — no backend, runs on your key
-sim init                          # writes sim.yml + .github/workflows/simulate.yml
-sim gate --fail-under last-passing   # exit 1 blocks the merge when users start abandoning
-```
-
-`sim baseline` seeds the first green run; after that `sim gate` compares each run against the
-last-passing baseline. See **[docs/ci.md](docs/ci.md)** for the `sim.yml` schema, exit codes,
-and the GitHub Actions setup (`simulationlabs/gate@v1`).
-
----
-
-## Why it's different
-
-Every "synthetic user research" tool simulates what users *say* (shallow, people-pleasing).
-Ghostpanel simulates what users *do*. Holo is a screenshot-in / action-out model, so we
-control the pixels it sees and the clicks it makes — and we degrade them to model real
-impairments. **Failure is the product.**
-
-## Architecture (30-second version)
-
-```
-web/ (React grid)  ──WS──►  server/ (FastAPI swarm orchestrator)
-                                 │  asyncio.gather over personas
-                                 ▼
-                            runner/ (Playwright)  ──►  engine/ (perturb → Holo → jitter)
-                                 │ on finish
-                                 ├─►  report/  (survival curve + heatmap)
-                                 └─►  voice/   (Gradium exit-interview .wav)
-```
-
-All modules talk only through **frozen contracts** in `shared/ghostpanel_contracts/`.
-See the file-ownership map and class registry in [CLAUDE.md](CLAUDE.md).
-
-## Repo layout
-
-```
-shared/ghostpanel_contracts/  # FROZEN Pydantic models + Protocols (the spine)
-src/ghostpanel/{engine,runner,server,voice,report}/   # the five modules
-web/                          # React + Vite dashboard
-personas/                     # persona JSON configs
-fixtures/                     # hostile_form.html + sample screenshot + sample run/events
-agents/                       # the five parallel-agent work packages
-tests/                        # test_contracts.py (frozen) + per-module tests
-```
-
-## Quickstart
-
-```bash
-python3.11 -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev]"
+pip install "git+https://github.com/SatyamDave/simulation-labs@main"
 playwright install chromium
-cp .env.example .env            # add HAI_API_KEY, GRADIUM_API_KEY, ANTHROPIC_API_KEY
-pytest tests/test_contracts.py -q
 
-# offline demo target (a deliberately hostile signup flow):
-python -m http.server 8137      # → http://localhost:8137/fixtures/hostile_form.html
-
-# run the app (once Agent 3 lands):
-python -m ghostpanel.server.main
-
-# benchmarks — swarm quality + runner perf on bundled flows (easy control vs hostile):
-python -m ghostpanel.benchmarks                 # offline: runner overhead, no network
-python -m ghostpanel.benchmarks --live          # real Holo: completion rate, steps, latency
+export GEMINI_API_KEY=...        # or HAI_API_KEY, or point at a self-hosted model — any key works
+sim try
 ```
 
-## Sponsors
+`sim try` spins up a real signup page, sends five behavioral agents at it, and shows you the
+result live:
 
-**H Company** (Holo — the engine) · **Gradium** (voice exit-interviews) ·
-**NVIDIA / NemoClaw** (policy-sandboxed swarm) · Accel · AWS.
+```
+  Fluent          success          ✓
+  AI Agent        success          ✓
+  Mobile-thumb    success          ✓
+  Rushed          stuck            ✗
+  Misclick-prone  step_budget      ✗   ← abandoned at the consent checkbox
 
-## Status
+  Completion rate: 60%  (3/5)
 
-**Working end-to-end.** All five modules built (engine, runner, server, voice, report) + the
-React frontend. Verified live: real Holo drives real browsers (baseline persona completes the
-signup; impaired personas fail differentially at exact pixels), Gradium produces cloned-voice
-exit-interviews, and the full pipeline (POST → live WS grid → survival/heatmap report → video +
-audio artifacts) runs. Tests: **400+ passing** (`pytest -q`). See **[DEMO_PLAYBOOK.md](DEMO_PLAYBOOK.md)**
-to run it and for the 90-second demo script. MIT licensed.
+  ✓ it works. That was real browser agents attempting a real signup flow.
+    open the full report:  .sim-try/…/report.html
+```
+
+The steady agents finish. The imprecise one fumbles a small checkbox and gives up — exactly
+where a slice of your real traffic does. **That gap is the thing nobody else measures.**
+
+Don't have a key? Get a [free Gemini key](https://aistudio.google.com/apikey) — the free tier
+runs `sim try` end to end.
+
+---
+
+## Point it at your own flow
+
+```bash
+sim gate \
+  --url https://your-app.com/signup \
+  --task "create an account with email and password"
+```
+
+Exit code `0` if completion holds, `1` if it regressed. That's the whole contract — it drops
+straight into any CI:
+
+```yaml
+# .github/workflows/simulate.yml
+- run: pip install "git+https://github.com/SatyamDave/simulation-labs@main"
+- run: playwright install chromium
+- run: sim gate --url ${{ env.PREVIEW_URL }} --task "create an account"
+  env:
+    GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+```
+
+`sim init` writes the workflow and a `sim.yml` for you. `sim baseline` seeds the first green
+run; after that every `sim gate` compares against the last passing one and tells you **which
+kind** of failure it caught:
+
+- **`FUNCTIONAL_FAIL`** — even an undegraded agent can't finish. The flow is broken. Block the merge.
+- **`BEHAVIORAL_REGRESSION`** — it still works for a steady user, but a segment that used to
+  complete now abandons. A UX regression a unit test would wave through. Block it anyway.
+
+---
+
+## Bring any key
+
+There is no Simulation Labs backend to sign up for. The agent runs on **your** inference. Set
+any one of these and the CLI auto-detects it:
+
+| Backend | Env var | Notes |
+|---|---|---|
+| **Google Gemini** | `GEMINI_API_KEY` | Free tier runs `sim try` end to end |
+| **H Company Holo** | `HAI_API_KEY` | Purpose-built computer-use model |
+| **Self-hosted** | `MODEL_BACKEND=selfhost` + `MODEL_BASE_URL` | Any OpenAI-compatible vision endpoint |
+| **Echo (offline)** | `MODEL_BACKEND=echo` | Deterministic, no network — for tests/CI dry-runs |
+
+Drop a key in `.env` and it loads automatically. Nothing leaves your machine except the
+screenshots you send to the model provider you chose.
+
+---
+
+## How it works
+
+The agent is screenshot-in, action-out: it sees a picture of the page and returns a click or
+keystroke. Because we own that loop, we can **mechanically** shape what it perceives and how
+precisely it acts — reproducing behavioral segments instead of guessing at them.
+
+```
+   screenshot ──►  perturb (per segment)  ──►  model  ──►  action  ──►  jitter coords  ──►  click
+                   blur / downscale / crop            (Gemini/Holo)      tremor noise
+```
+
+| Segment | What we change | Models the user who… |
+|---|---|---|
+| **Fluent** | nothing (control) | finishes cleanly — your baseline |
+| **AI Agent** | nothing (control) | is an autonomous agent filling your form |
+| **Rushed** | tight step + time budget | bounces if it takes too long |
+| **Mobile-thumb** | small viewport | is on a phone with a fat-finger tap target |
+| **Misclick-prone** | coordinate noise on every click | fumbles small controls and gives up |
+
+The controls set the ceiling; the degraded agents show you how far below it your real traffic
+sits, and **where** — down to the pixel — they walk away.
+
+**What you get per run:** a completion rate, a survival curve, an abandonment heatmap painted
+over your real screenshot, video receipts of each session, and grounded exit-interview
+transcripts explaining the abandonment. See a full one: **[live sample report](https://simulationlabs.dev/sample-report/)**.
+
+---
+
+## Architecture
+
+```
+web/ (live grid)  ──WS──►  server/ (async swarm orchestrator)
+                              │  one asyncio task per agent
+                              ▼
+                         runner/ (Playwright)  ──►  engine/ (perturb → model → jitter)
+                              │ on finish
+                              ├─►  report/  (completion rate + survival + heatmap)
+                              └─►  voice/   (grounded exit-interview)
+```
+
+Everything crossing a module boundary is a typed contract, not a dict. `sim try`, `sim gate`,
+`sim baseline`, and `sim init` are the four commands you need. 416 tests, MIT licensed.
+
+## Contributing
+
+Issues and PRs welcome — especially new behavioral segments, new model backends, and real-world
+flows that break the gate in interesting ways. `pip install -e ".[dev]" && pytest` to get started.
+
+## License
+
+MIT. Use it, fork it, ship it.
+
+---
+
+<div align="center">
+<sub>Behavioral user research that <b>does</b>, not <b>says</b>. · <a href="https://simulationlabs.dev">simulationlabs.dev</a></sub>
+</div>
