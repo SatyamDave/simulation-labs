@@ -24,10 +24,11 @@ DEFAULT_GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/open
 DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
 # Free-tier Flash allows ~10 RPM; raise GEMINI_RPM in .env on a paid tier.
 DEFAULT_GEMINI_RPM = 10.0
-# Free-tier endpoints drop connections when a 5-persona swarm opens 5 concurrent
-# vision calls at once (verified: 5 concurrent -> APIConnectionError; 2 -> clean).
-# Cap in-flight Gemini calls; raise GEMINI_MAX_CONCURRENCY on a paid tier.
-DEFAULT_GEMINI_MAX_CONCURRENCY = 2
+# The free tier's per-minute rate limit buckles when a 5-persona swarm fires
+# calls at once (verified: 5 concurrent -> 429 quota on every agent). Serialize to
+# ONE in-flight call so the shared RPM limiter can pace under the free-tier ceiling;
+# raise GEMINI_MAX_CONCURRENCY (and GEMINI_RPM) on a paid tier for speed.
+DEFAULT_GEMINI_MAX_CONCURRENCY = 1
 
 # Exact Holo wordings we rewrite -> grid wordings. If the source prompt drifts
 # and a wording disappears, we raise instead of silently sending Gemini a

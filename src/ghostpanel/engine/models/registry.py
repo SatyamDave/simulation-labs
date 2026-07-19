@@ -53,10 +53,35 @@ def available() -> list[str]:
 def default_backend() -> str:
     """The backend to use when none is specified.
 
-    Reads the ``MODEL_BACKEND`` environment variable (default ``"holo"``) so the
-    default can be flipped for CI/offline runs without any Settings change.
+    Explicit ``MODEL_BACKEND`` always wins. Otherwise we AUTO-DETECT from whichever
+    provider key the developer already has in their environment — so `sim try` and
+    `sim gate` "just work" with any supported key, no config:
+
+        GEMINI_API_KEY  -> gemini   (free tier at aistudio.google.com/apikey)
+        HAI_API_KEY     -> holo     (H Company Holo)
+
+    Falls back to ``holo`` when nothing is set; preflight then prints a friendly
+    "set a key" message rather than failing cryptically.
     """
-    return os.environ.get("MODEL_BACKEND", "holo")
+    explicit = os.environ.get("MODEL_BACKEND", "").strip().lower()
+    if explicit:
+        return explicit
+    if os.environ.get("GEMINI_API_KEY", "").strip():
+        return "gemini"
+    if os.environ.get("HAI_API_KEY", "").strip():
+        return "holo"
+    return "holo"
+
+
+def detected_key_backend() -> str | None:
+    """Which supported provider key is present (for friendly messaging), or None."""
+    if os.environ.get("MODEL_BACKEND", "").strip():
+        return os.environ["MODEL_BACKEND"].strip().lower()
+    if os.environ.get("GEMINI_API_KEY", "").strip():
+        return "gemini"
+    if os.environ.get("HAI_API_KEY", "").strip():
+        return "holo"
+    return None
 
 
 def build_model(name: str, settings) -> HoloClient:

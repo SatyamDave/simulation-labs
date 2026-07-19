@@ -121,6 +121,7 @@ def test_check_reachable_dns_failure(monkeypatch):
 
 def test_check_model_key_missing(monkeypatch):
     monkeypatch.delenv("MODEL_BACKEND", raising=False)  # default -> holo
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)  # no provider key present
     monkeypatch.setenv("HAI_API_KEY", "")
     get_settings.cache_clear()
     try:
@@ -198,6 +199,7 @@ def test_run_unreachable_url_exit_code(tmp_path, monkeypatch, capsys):
 def test_run_missing_key_exit_code(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("MODEL_BACKEND", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)   # no provider key at all
     monkeypatch.setenv("HAI_API_KEY", "")
     get_settings.cache_clear()
     # skip the network-touching checks so we reach the key check deterministically

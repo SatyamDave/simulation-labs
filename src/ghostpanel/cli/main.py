@@ -334,6 +334,81 @@ def _functional_probe_ids(report: RunReport) -> set[str]:
     }
 
 
+_NO_KEY_MSG = """\
+No model API key found. `sim try` drives real browser agents, so it needs one.
+Bring your own — any of these works and `sim` auto-detects it:
+
+  # Google Gemini — free tier, no card. Recommended to start:
+  export GEMINI_API_KEY=...     # get one at https://aistudio.google.com/apikey
+
+  # or H Company Holo:
+  export HAI_API_KEY=...        # https://hcompany.ai
+
+Then just re-run:  sim try"""
+
+
+def _cmd_try(args: argparse.Namespace) -> int:
+    """Zero-config proof it works: serve a bundled signup flow and run the swarm
+    against it with whatever provider key you have. `sim try` and you're done."""
+    from types import SimpleNamespace
+
+    from ghostpanel.cli import demo_flow
+    from ghostpanel.engine.models.registry import detected_key_backend
+
+    backend = detected_key_backend()
+    if backend is None:
+        print(_NO_KEY_MSG)
+        return exit_codes.MISSING_KEY
+
+    print(f"Simulation Labs — behavioral gate demo")
+    print(f"→ backend: {backend} (auto-detected from your key)")
+    print("→ serving a demo signup flow and sending a swarm of degraded users at it…\n")
+
+    out_dir = Path(args.out or ".sim-try")
+    with demo_flow.DemoServer() as srv:
+        params = SimpleNamespace(
+            persona_ids=demo_flow.DEMO_PERSONAS,
+            out_dir=out_dir,
+            url=srv.url,
+            task=demo_flow.DEMO_TASK,
+            fixture=False,
+            allow_private=True,
+            allowlist=["127.0.0.1", "localhost"],
+            rpm=None,
+        )
+        preflight.run_preflight(params)  # validates key/personas/output; localhost allowed
+        if backend == "holo":
+            print("(Holo free tier is ~5 rpm, so a 5-agent run takes a few minutes — grab a coffee.)\n")
+        on_event = render.make_progress_printer() if not args.quiet else None
+        outcome = driver.run_flow(
+            url=srv.url, task=demo_flow.DEMO_TASK, persona_ids=demo_flow.DEMO_PERSONAS,
+            out_dir=out_dir, fixture=False, rpm=None, on_event=on_event,
+        )
+
+    if outcome.error:
+        print(f"\nrun error: {outcome.error}")
+        hint = preflight.classify_run_error(outcome.error)
+        if hint:
+            print(hint)
+        return exit_codes.RUN_ERROR
+
+    _write_json(out_dir / "report.json", outcome.report)
+    if preflight.usable_results(outcome.report) == 0:
+        print("\nevery agent hit an infra error — nothing to report. Check the error above.")
+        return exit_codes.NO_RESULTS
+
+    print()
+    render.print_summary(outcome.report)
+    report_html = next(iter(out_dir.glob("*/report.html")), None)
+    print("\n✓ it works. That was real browser agents attempting a real signup flow.")
+    if report_html:
+        print(f"  open the full report:  {report_html}")
+    print("\nNow point it at YOUR flow:")
+    print('  sim gate --url https://your-app.com/signup --task "create an account"')
+    print("  # exit 1 blocks the merge when your users start abandoning. Wire it into CI: sim init")
+    return exit_codes.OK
+
+
 def _cmd_baseline(args: argparse.Namespace) -> int:
     params = None if getattr(args, "from_", None) else _RunParams(args)
     report, params, err = _obtain_report(args, params)
@@ -377,6 +452,10 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
+    p_try = sub.add_parser("try", help="zero-config demo: run the swarm on a bundled signup flow with your key")
+    p_try.add_argument("--out", help="output directory (default: .sim-try)")
+    p_try.add_argument("--quiet", action="store_true", help="suppress live per-step progress")
+
     sub.add_parser("init", help="scaffold sim.yml + .github/workflows/simulate.yml")
 
     p_run = sub.add_parser("run", help="run a flow and write a report")
@@ -401,6 +480,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 _DISPATCH = {
+    "try": _cmd_try,
     "init": _cmd_init,
     "run": _cmd_run,
     "gate": _cmd_gate,
@@ -408,8 +488,24 @@ _DISPATCH = {
 }
 
 
+def _load_dotenv() -> None:
+    """Load a .env from the cwd (or above) so `GEMINI_API_KEY=...` etc. in a .env
+    file "just work" without the developer having to `export` them. Best-effort:
+    never clobber a variable already set in the real environment."""
+    try:
+        from dotenv import find_dotenv, load_dotenv  # from python-dotenv (a dependency)
+        # usecwd=True: look for .env from the working directory the developer runs
+        # `sim` in (and up), not from the installed package location.
+        path = find_dotenv(usecwd=True)
+        if path:
+            load_dotenv(path, override=False)
+    except Exception:  # noqa: BLE001 — a missing .env or dotenv is not fatal
+        pass
+
+
 def main(argv: list[str] | None = None) -> int:
     """Parse argv and run a subcommand. Returns a process exit code."""
+    _load_dotenv()
     parser = _build_parser()
     args = parser.parse_args(argv)   # argparse exits(2) on bad args == CONFIG_ERROR
     handler = _DISPATCH[args.command]

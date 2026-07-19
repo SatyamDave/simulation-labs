@@ -55,10 +55,26 @@ def test_name_is_case_insensitive():
 
 
 def test_default_backend_reads_env(monkeypatch):
+    # Clear provider keys so auto-detection is deterministic.
     monkeypatch.delenv("MODEL_BACKEND", raising=False)
-    assert default_backend() == "holo"
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("HAI_API_KEY", raising=False)
+    assert default_backend() == "holo"          # nothing set -> holo fallback
     monkeypatch.setenv("MODEL_BACKEND", "echo")
-    assert default_backend() == "echo"
+    assert default_backend() == "echo"          # explicit always wins
+
+
+def test_default_backend_auto_detects_from_key(monkeypatch):
+    monkeypatch.delenv("MODEL_BACKEND", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("HAI_API_KEY", raising=False)
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    assert default_backend() == "gemini"        # a Gemini key -> gemini, no config
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.setenv("HAI_API_KEY", "k")
+    assert default_backend() == "holo"          # a Holo key -> holo
+    monkeypatch.setenv("MODEL_BACKEND", "echo")
+    assert default_backend() == "echo"          # explicit still wins over a key
 
 
 @pytest.mark.asyncio
