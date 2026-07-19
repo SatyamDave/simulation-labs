@@ -115,9 +115,11 @@ def create_app(
         if holo is None:
             # Pluggable inference backend (MODEL_BACKEND=holo|echo|...); Holo is the
             # default. Keeps the swarm vendor-swappable — see engine/models/registry.
-            from ghostpanel.engine.models.registry import build_model, default_backend
+            # build_holo_client returns None (never raises) when no key is configured,
+            # so a keyless server still starts — jobs just ERROR at drive time.
+            from ghostpanel.jobs.worker import build_holo_client
 
-            holo = build_model(default_backend(), settings)
+            holo = build_holo_client(settings)
 
         voice_factory = None
         voice_assigner = None
