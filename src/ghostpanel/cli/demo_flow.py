@@ -149,7 +149,11 @@ class DemoServer:
 
     @property
     def url(self) -> str:
-        return f"http://127.0.0.1:{self.port}/signup"
+        # Path ends in demo_signup.html so the bundled success predicate
+        # (#done "You're in!" becomes visible) is recognised — otherwise a persona
+        # that completes the form is never marked SUCCESS. The handler serves the
+        # same page for any path, so this only affects predicate matching.
+        return f"http://127.0.0.1:{self.port}/demo_signup.html"
 
     def __enter__(self) -> "DemoServer":
         self._thread.start()
