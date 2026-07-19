@@ -131,9 +131,17 @@
   .spinner{ width:16px; height:16px; border:2px solid var(--line-2); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
   .gate-run{ max-height:0; overflow:hidden; transition:max-height .7s ease; } .gate-run.open{ max-height:1000px; border-top:1px solid var(--line); }
   .gr-head{ padding:11px 18px; font-family:var(--mono); font-size:.72rem; color:var(--muted); background:rgba(76,141,255,.05); display:flex; align-items:center; gap:9px; } .gr-head b{ color:var(--accent); } .gr-head .rt{ margin-left:auto; color:var(--dim); }
-  .stage{ position:relative; min-height:460px; display:grid; place-items:center; padding:24px 16px; background:#0d1119; }
-  @media(max-width:640px){ .stage{ min-height:500px; } }
-  .form-card{ width:328px; max-width:92%; background:#fff; border-radius:14px; padding:22px 20px 18px; box-shadow:0 20px 60px rgba(0,0,0,.45); color:#0f1222; position:relative; z-index:2; transition:filter .5s ease; } .form-card.dim{ filter:brightness(.5) saturate(.7); }
+  .stage{ position:relative; min-height:480px; display:grid; place-items:center; padding:26px 16px; background:radial-gradient(120% 100% at 50% 0%, #141a24, #0d1119); }
+  @media(max-width:640px){ .stage{ min-height:520px; } }
+  /* mock browser window — the signup page lives inside a real-looking chrome */
+  .browser{ width:430px; max-width:94%; border-radius:12px; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.55); position:relative; z-index:2; transition:filter .5s ease, transform .5s; }
+  .browser.dim{ filter:brightness(.55) saturate(.75); }
+  .browser-bar{ height:38px; background:#e7ebf1; display:flex; align-items:center; gap:10px; padding:0 12px; }
+  .browser-bar .bdots{ display:flex; gap:6px; flex:0 0 auto; } .browser-bar .bdots i{ width:11px; height:11px; border-radius:50%; }
+  .browser-bar .burl{ flex:1; background:#fff; border-radius:7px; height:24px; display:flex; align-items:center; gap:7px; padding:0 11px; font-family:var(--mono); font-size:.72rem; color:#5b6472; min-width:0; }
+  .browser-bar .brefresh{ flex:0 0 auto; color:#8a929e; font-size:.9rem; }
+  .browser-body{ background:#eef1f6; padding:24px 20px; display:grid; place-items:center; }
+  .form-card{ width:100%; max-width:300px; background:#fff; border-radius:14px; padding:22px 20px 18px; box-shadow:0 6px 22px rgba(16,24,40,.10); color:#0f1222; position:relative; z-index:2; }
   .fc-brand{ display:flex; align-items:center; gap:8px; margin-bottom:14px; font-weight:700; font-size:.95rem; } .fc-brand .d{ width:19px; height:19px; border-radius:6px; background:linear-gradient(135deg,#5C98FF,#2E68D8); }
   .fc-h{ font-size:1.1rem; font-weight:700; } .fc-sub{ font-size:.76rem; color:#6b7280; margin:2px 0 15px; }
   .fld{ margin-bottom:11px; } .fld label{ display:block; font-size:.71rem; font-weight:600; color:#374151; margin-bottom:5px; }
@@ -173,7 +181,7 @@
   .grid-t{ border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:16px; }
   .gt-row{ display:grid; grid-template-columns:1.3fr 1.4fr .9fr 1fr; gap:10px; padding:11px 16px; border-bottom:1px solid var(--line); font-size:.82rem; align-items:center; } .gt-row:last-child{ border-bottom:0; } .gt-row.h{ background:rgba(255,255,255,.02); font-family:var(--mono); font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
   .gt-row .pn2{ display:flex; align-items:center; gap:8px; font-weight:600; } .gt-row .dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; } .gt-row .deg2{ font-family:var(--mono); font-size:.72rem; color:var(--muted); } .gt-row .oc{ font-family:var(--mono); font-size:.74rem; font-weight:700; } .gt-row .oc.ok{ color:var(--ok); } .gt-row .oc.bad{ color:var(--fail); } .gt-row .dp{ font-family:var(--mono); font-size:.72rem; color:var(--dim); }
-  @media(max-width:640px){ .gt-row{ grid-template-columns:1fr 1fr; } .gt-row .deg2,.gt-row.h .g3,.gt-row.h .g4{ display:none; } }
+  @media(max-width:640px){ .gt-row{ grid-template-columns:1fr 1fr; } .gt-row .deg2,.gt-row .g4,.gt-row.h .g3{ display:none; } }
   .panels{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; } @media(max-width:760px){ .panels{ grid-template-columns:1fr; } }
   .panel{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; } .panel h4{ font-family:var(--mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin-bottom:12px; }
   .heat{ position:relative; height:146px; border-radius:10px; background:#0d1017; border:1px solid var(--line); overflow:hidden; } .heat .grid{ position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px); background-size:24px 24px; }
@@ -204,6 +212,7 @@
     <div class="rail-in">
       <span class="brand"><svg width="24" height="15" viewBox="0 0 26 16" fill="none"><path d="M1 9 H8 L10.5 3 L13 14 L14.6 9 H25" stroke="#4C8DFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Simulation Labs</span></span>
       <div class="steps" id="steps"></div>
+      <button class="pausebtn" id="skipRailBtn" title="Skip to the demo" aria-label="Skip to the demo" style="display:none">demo ⇥</button>
       <button class="pausebtn" id="pauseBtn" title="Pause" aria-label="Pause" style="display:none">❚❚</button>
       <span class="time" id="clock">0:00</span>
     </div>
@@ -237,7 +246,7 @@
           <div class="sp-line"><span class="i bad">✕</span> leaves — no error logged</div>
         </div>
       </div>
-      <div style="margin-top:22px"><span class="bignum" id="fidNum">0</span> <span class="ch-sub" style="display:inline">— how often a prompted survey persona matches the real person it stands in for <span class="mut">(arXiv:2503.20749)</span>. So we stopped asking personas what they'd do, and started watching what they actually do.</span></div>
+      <div style="margin-top:22px"><span class="bignum" id="fidNum">0</span> <span class="ch-sub" style="display:inline">— how often a prompt-only LLM reproduces a real user's next action <span class="mut">(arXiv:2503.20749)</span>. Prompting a persona to "act impaired" doesn't reproduce the impairment. So we stopped prompting behavior and started mechanically degrading it.</span></div>
       <div class="caption" id="cap1"></div>
     </section>
 
@@ -258,7 +267,7 @@
     <section class="chapter" id="ch3" data-title="How it works">
       <span class="ch-tag"><span class="n">03 —</span> How it works</span>
       <h2 class="ch-h">We don't <span class="mut">prompt</span> an agent to act impaired.<br/>We <span class="a">break the machine</span> by measured amounts.</h2>
-      <p class="ch-sub">Each agent is a real computer-use model driving a real browser. We mechanically degrade what it sees and how it clicks — blur, colour-shift, coordinate tremor, tight patience budgets, small viewports — to model how real segments behave. Reproducible, byte-deterministic. Not vibes.</p>
+      <p class="ch-sub">Each agent is a real computer-use model driving a real browser. We mechanically degrade what it sees and how it clicks — blur, colour-shift, coordinate tremor, tight patience budgets, small viewports — to model how real segments behave. Seeded and reproducible: same blur, same tremor σ, same viewport every run. Not vibes.</p>
       <div class="mech">
         <div class="mech-viz">
           <div class="mech-shot" id="mechShot">
@@ -297,15 +306,24 @@
           <div class="check gate" id="gateCheck"><span class="ico pend" id="gateIco">●</span><span class="nm"><b>simulationlabs / behavioral-gate</b></span><span class="dc" id="gateDc">not started</span></div>
         </div>
         <div class="gate-run" id="gateRun">
-          <div class="gr-head"><span class="spinner" id="grSpin"></span><span><b>behavioral-gate</b> · running the swarm on this PR</span><span class="rt" id="grCount">5 agents · Gemini 3.5</span></div>
+          <div class="gr-head"><span class="spinner" id="grSpin"></span><span><b>behavioral-gate</b> · running the swarm on this PR</span><span class="rt" id="grCount">5 agents · Gemini 3.5 Flash</span></div>
           <div class="stage" id="stage">
-            <div class="form-card" id="card">
-              <div class="fc-brand"><span class="d"></span>Nimbus</div><div class="fc-h">Create your account</div><div class="fc-sub">Start your 14-day free trial. No card required.</div>
-              <div class="fld"><label>Work email</label><div class="inp" id="fEmail"><span class="ph">you@company.com</span></div></div>
-              <div class="fld"><label>Password</label><div class="inp" id="fPass"><span class="ph">At least 8 characters</span></div></div>
-              <div class="consent"><div class="cbx" id="fCbx"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="ct">I agree to the <a>Terms of Service</a> and <a>Privacy Policy</a>.</span></div>
-              <div class="cta-btn">Create account</div>
-              <div class="fc-done" id="fDone"><div style="text-align:center"><div class="ring">✓</div><h3>You're in!</h3></div></div>
+            <div class="browser" id="browser">
+              <div class="browser-bar">
+                <span class="bdots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></span>
+                <span class="burl"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 10V8a6 6 0 1112 0v2" stroke="#8a929e" stroke-width="2"/><rect x="4" y="10" width="16" height="10" rx="2" fill="#8a929e"/></svg> app.nimbus.io/signup</span>
+                <span class="brefresh">⟳</span>
+              </div>
+              <div class="browser-body">
+                <div class="form-card" id="card">
+                  <div class="fc-brand"><span class="d"></span>Nimbus</div><div class="fc-h">Create your account</div><div class="fc-sub">Start your 14-day free trial. No card required.</div>
+                  <div class="fld"><label>Work email</label><div class="inp" id="fEmail"><span class="ph">you@company.com</span></div></div>
+                  <div class="fld"><label>Password</label><div class="inp" id="fPass"><span class="ph">At least 8 characters</span></div></div>
+                  <div class="consent"><div class="cbx" id="fCbx"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="ct">I agree to the <a>Terms of Service</a> and <a>Privacy Policy</a>.</span></div>
+                  <div class="cta-btn">Create account</div>
+                  <div class="fc-done" id="fDone"><div style="text-align:center"><div class="ring">✓</div><h3>You're in!</h3></div></div>
+                </div>
+              </div>
             </div>
             <div class="chips" id="chips"></div>
           </div>
@@ -323,7 +341,7 @@
     <section class="chapter" id="ch5" data-title="The verdict">
       <span class="ch-tag"><span class="n">05 —</span> Why it blocked it</span>
       <h2 class="ch-h">Green build. Passing tests. Users who <span class="r">can't finish</span>.</h2>
-      <div class="impact"><div class="big">This ships to ~8,000 signups/mo. You'd silently lose <b id="lost">~1,600</b> of them — <b>every month</b>.</div><div class="cap">A 20-point completion drop on a flow that passed every unit test. No error, no alert — just fewer accounts.</div><div class="fine">illustrative · scaled to a typical mid-market signup funnel</div></div>
+      <div class="impact"><div class="big">Imprecise-tap users are ~15–20% of mobile signups. On a 24px target, most now fail — <b id="lost">~1,600</b>/mo of ~8,000 that would have converted, gone.</div><div class="cap">A completion drop concentrated in one segment, on a flow that passed every unit test. No error, no alert — just fewer accounts.</div><div class="fine">illustrative · scaled to a typical mid-market signup funnel</div></div>
       <div class="metrics">
         <div class="metric"><div class="n red">100<small>%</small> <small>→</small> 80<small>%</small></div><div class="l">signup completion vs the last passing run</div></div>
         <div class="metric"><div class="n red">1 / 5</div><div class="l">agents regressed — Misclick-prone can't tick the 24px box</div></div>
@@ -337,7 +355,7 @@
       <div class="voice" id="voice"><div class="play">▶</div><div class="vb"><div class="wave" id="wave"></div><div class="q">“I kept jabbing at that little agree box and my hand just wouldn't land on it. After the fourth try I figured the page was broken, so I <b>bailed</b>.”</div><div class="who">cloned-voice exit interview · Misclick-prone · grounded in its real action trace · Gradium</div></div></div>
       <div class="term"><div class="term-bar"><i class="rd"></i><i class="yl"></i><i class="gr"></i><span style="margin-left:6px">.github/workflows/simulate.yml</span></div><div class="term-body" id="term"></div></div>
       <div class="trend"><h4>Signup completion · your last 6 deploys</h4><svg viewBox="0 0 300 66" preserveAspectRatio="none"><polyline class="tl" points="6,14 54,12 102,15 150,11 198,13 246,44"/><circle class="td" cx="246" cy="44" r="4"/><text class="txt" x="6" y="10">100%</text><text class="txt" x="250" y="42">80% · this PR</text></svg></div>
-      <div class="cta"><div class="line">Ship the bug, or block the merge. Only one tool tells you what users actually <span class="do">do</span>.</div><a class="go" href="https://simulationlabs.dev">See the full report & book a teardown →</a><div class="sub2">Behavioral tests, like unit tests — on every deploy. Built with Gemini 3.5.</div></div>
+      <div class="cta"><div class="line">Ship the bug, or block the merge. Only one tool tells you what users actually <span class="do">do</span>.</div><a class="go" href="https://simulationlabs.dev">See the full report & book a teardown →</a><div class="sub2">Behavioral tests, like unit tests — on every deploy. Built with Gemini 3.5 Flash.</div></div>
     </section>
   </main>
 
@@ -387,17 +405,17 @@
   }
   function typePre(node, text, cps, done){ node.textContent=''; var i=0, myGen=gen; var iv=setInterval(function(){ if(myGen!==gen){clearInterval(iv);return;} if(paused) return; i++; node.textContent=text.slice(0,i); if(i>=text.length){ clearInterval(iv); if(done)done(); } }, reduce?1:cps); timers.push(iv); }
   function cap(id,text){ var e=$(id); e.textContent=text; e.classList.add('in'); }
-  function animNum(id,to,ms,prefix,suffix){ var node=$(id), start=null; function step(ts){ if(!start)start=ts; var p=Math.min((ts-start)/ms,1); var e=1-Math.pow(1-p,3); node.textContent=(prefix||'')+Math.round(to*e).toLocaleString()+(suffix||''); if(p<1) requestAnimationFrame(step);} requestAnimationFrame(step); }
+  function animNum(id,to,ms,prefix,suffix,decimals){ var node=$(id), start=null, myGen=gen;
+    function step(ts){ if(myGen!==gen) return; if(!start)start=ts; var p=Math.min((ts-start)/ms,1); var e=1-Math.pow(1-p,3); var val=to*e;
+      node.textContent=(prefix||'')+(decimals?val.toFixed(decimals):Math.round(val).toLocaleString())+(suffix||''); if(p<1) requestAnimationFrame(step);} requestAnimationFrame(step); }
 
   // ======== CHAPTER 1 ========
   async function ch1(){
-    setActive(0); scrollTop($('ch1')); await readPause();
-    animNum('fidNum',11.86 ? 12 : 12, 1200,'',''); // integer approximation for counter feel
-    // show the real 11.86% precisely at the end
-    T(function(){ $('fidNum').textContent='11.86%'; }, 1300);
-    await sleep(1600);
+    setActive(0); scrollTop($('ch1'));
+    animNum('fidNum',11.86,1500,'','%',2);   // motion in the first second; lands exactly on 11.86%
+    await sleep(2600);
     cap('cap1','A stated preference is not a click. The only thing that counts is whether they finish.');
-    await sleep(3200);
+    await sleep(2400);
   }
 
   // ======== CHAPTER 2 ========
@@ -455,14 +473,14 @@
       cur.classList.toggle('tremor', !!q.tremor);
       cur.style.transform='translate('+q.cur[0]+'px,'+q.cur[1]+'px)';
       badge.textContent=q.badge;
-      await sleep(1500);
+      await sleep(1150);
     }
     cur.classList.remove('tremor');
     buildStrip($('strip3'));
     AGENTS.forEach(function(a,i){ T(function(){ var c=$('strip3-'+a.id); if(c){ c.classList.add('in'); c.querySelector('.st').textContent=a.deg==='no degradation'?'control':'degraded'; } }, 160*i); });
     await sleep(1400);
     cap('cap3','Five segments, each a measured amount of degradation. That is the swarm.');
-    await sleep(2600);
+    await sleep(2200);
   }
 
   // ======== CHAPTER 4 (the run) ========
@@ -519,7 +537,7 @@
     for(var k=0;k<4;k++){ await moveCur(mid,jitter(cbx,20+k*4),440); fx(mid,'miss'); $('fCbx').classList.add('miss'); T(function(){ $('fCbx').classList.remove('miss'); },300); await sleep(340); }
     trem(mid,false); await sleep(300);
     var death=document.createElement('div'); death.className='death'; death.style.left=cbx.x+'px'; death.style.top=cbx.y+'px'; death.innerHTML='<div class="core"></div><div class="lbl">gave up @ (464, 494)</div>'; stage.appendChild(death); void death.offsetWidth; death.classList.add('show');
-    chip(mid,'dead'); card.classList.add('dim');
+    chip(mid,'dead'); $('browser').classList.add('dim');
     cap('cap4','Four tries, four misses. It gives up — at the exact pixel. That is the receipt.');
     await sleep(1900);
 
@@ -548,7 +566,7 @@
     await sleep(2600);
     typeLines($('term'), TERM, 11);
     await sleep(3200);
-    scrollToEl($('.cta')||document.querySelector('.cta'));
+    scrollToEl(document.querySelector('.cta'));
     await sleep(1200);
   }
 
@@ -557,11 +575,13 @@
     ['cap1','cap2','cap3','cap4'].forEach(function(id){ var e=$(id); if(e){ e.textContent=''; e.classList.remove('in'); } });
     $('fidNum').textContent='0'; $('setupTerm').innerHTML=''; $('file1').classList.remove('in'); $('file2').classList.remove('in'); $('file1b').textContent=''; $('file2b').textContent='';
     $('strip3').innerHTML=''; $('mechShot').classList.remove('degraded');
+    $('mechCur').classList.remove('tremor'); $('mechCur').style.transform=''; $('mechBadge').textContent='screenshot in';
+    Array.prototype.forEach.call($('mechSteps').querySelectorAll('.ms-item'),function(n){ n.classList.remove('on'); });
     // reset run
     $('gateIco').className='ico pend'; $('gateIco').innerHTML='●'; $('gateDc').textContent='not started';
-    $('gateCheck').querySelector('.nm').innerHTML='<b>simulationlabs / behavioral-gate</b>'; $('gateRun').classList.remove('open'); $('grSpin').style.display=''; $('grCount').textContent='5 agents · Gemini 3.5';
+    $('gateCheck').querySelector('.nm').innerHTML='<b>simulationlabs / behavioral-gate</b>'; $('gateRun').classList.remove('open'); $('grSpin').style.display=''; $('grCount').textContent='5 agents · Gemini 3.5 Flash';
     $('prBadge').className='pr-badge'; $('prBadge').textContent='● Open'; var mb=$('mergeBtn'); mb.className='merge-btn'; mb.textContent='Merge pull request'; $('mergeNote').className='merge-note'; $('mergeNote').textContent='All checks are pending…'; $('botc').classList.remove('in');
-    var st=$('stage'); $('fDone').classList.remove('show'); $('fCbx').classList.remove('on'); rfield('fEmail','you@company.com'); rfield('fPass','At least 8 characters'); $('card').classList.remove('dim');
+    var st=$('stage'); $('fDone').classList.remove('show'); $('fCbx').classList.remove('on'); rfield('fEmail','you@company.com'); rfield('fPass','At least 8 characters'); $('browser').classList.remove('dim');
     Array.prototype.forEach.call(st.querySelectorAll('.death,.missx,.ripple,.cursor'),function(n){n.remove();}); $('chips').innerHTML='';
     // reset receipts
     $('heat').classList.remove('in'); $('surv').classList.remove('in'); $('voice').classList.remove('play-on'); $('term').innerHTML=''; $('lost').textContent='~1,600';
@@ -573,10 +593,11 @@
     var myGen=++gen; playing=true; $('starter').style.display='none'; startClock();
     // reset the pause button to an active "playing" state
     if(paused){ paused=false; } var pb=$('pauseBtn'); pb.style.display=''; pb.textContent='❚❚'; pb.title='Pause'; pb.setAttribute('aria-label','Pause');
+    $('skipRailBtn').style.display = (from||0) < 3 ? '' : 'none';   // escape hatch until the demo chapter
     resetAll();
-    for(var i=(from||0); i<CHAPTERS.length; i++){ if(myGen!==gen) return; await CHAPTERS[i](); }
+    for(var i=(from||0); i<CHAPTERS.length; i++){ if(myGen!==gen) return; if(i>=3) $('skipRailBtn').style.display='none'; await CHAPTERS[i](); }
     if(myGen!==gen) return;
-    playing=false; if(clockIv) clearInterval(clockIv); $('pauseBtn').style.display='none';
+    playing=false; if(clockIv) clearInterval(clockIv); $('pauseBtn').style.display='none'; $('skipRailBtn').style.display='none';
     // show a replay affordance in the rail time slot
     $('clock').textContent='↻ replay'; $('clock').style.cursor='pointer'; $('clock').onclick=function(){ $('clock').onclick=null; $('clock').style.cursor=''; play(0); };
   }
@@ -585,7 +606,8 @@
   }
 
   $('startBtn').onclick=function(){ play(0); };
-  $('skipBtn').onclick=function(){ play(3); };  // jump to the demo
+  $('skipBtn').onclick=function(){ play(3); };  // jump to the demo (starter overlay)
+  $('skipRailBtn').onclick=function(){ play(3); };  // jump to the demo (rail, during playback)
   $('pauseBtn').onclick=togglePause;
 
   // build voice waveform bars
