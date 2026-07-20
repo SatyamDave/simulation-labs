@@ -129,7 +129,7 @@ def _play_run(report: RunReport, *, animate: bool, delay: float, quiet: bool) ->
             on_event(ev)
             if animate:
                 time.sleep(delay if ev.get("event") == "persona_finished" else delay * 0.45)
-    render.print_summary(report)
+    render.print_summary(report, header=not quiet)
 
 
 def play(*, delay: float = 0.32, quiet: bool = False) -> bool:
