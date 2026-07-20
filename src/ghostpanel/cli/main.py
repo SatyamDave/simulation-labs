@@ -457,7 +457,7 @@ def _cmd_try(args: argparse.Namespace) -> int:
     # Keyless (or explicit --replay): show a genuine recorded run in seconds. This
     # is what makes "pip install && sim try" a real result with no key/config.
     if getattr(args, "replay", False) or (backend is None and not getattr(args, "live", False)):
-        if replay.play(delay=0 if args.quiet else 0.32):
+        if replay.play(delay=0 if args.quiet else 0.32, quiet=args.quiet):
             return exit_codes.OK
         # Cassette missing (should not happen — it ships in-package): fall through
         # to the live path, which will prompt/guide for a key.

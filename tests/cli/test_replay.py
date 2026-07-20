@@ -59,12 +59,16 @@ def test_play_is_deterministic_and_labels_recorded(capsys: pytest.CaptureFixture
     assert replay.play(delay=0) is True
     second = capsys.readouterr().out
     assert first == second, "replay must be byte-for-byte deterministic"
-    # The 'recorded run' label must be on the primary output, not hidden.
-    assert "replaying a recorded run" in first
-    assert "recorded run" in first
-    # The completion rate shown must be the cassette's real number.
+    # The 'recorded run' label must be on the primary output (header), not hidden.
+    assert "No key set" in first
+    assert "recorded" in first.lower()
+    # The completion rate shown must be the cassette's real number (working = PASS).
     report = replay.load_cassette()
     assert f"{report.completion_rate * 100:.0f}%" in first
+    # When a broken cassette ships, the regression punchline must show the gate fails.
+    if replay.load_broken_cassette() is not None:
+        assert "gate FAIL" in first
+        assert "gate PASS" in first
 
 
 def test_play_calls_no_model(monkeypatch: pytest.MonkeyPatch) -> None:

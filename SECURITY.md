@@ -5,7 +5,7 @@ We take the security of Simulation Labs seriously.
 ## Reporting a vulnerability
 
 Please **do not** open a public issue for security vulnerabilities. Instead, email
-**satyam@agentmade.ai** with:
+**sdaveofficial@gmail.com** with:
 
 - a description of the issue and its impact,
 - steps to reproduce (or a proof of concept), and

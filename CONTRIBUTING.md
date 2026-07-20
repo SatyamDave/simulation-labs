@@ -51,4 +51,4 @@ report `.json` if you can.
 ## Talk to us
 
 Want to run this on your funnel, partner, or just compare notes? Open an issue or email the
-founder at **satyam@agentmade.ai**.
+founder at **sdaveofficial@gmail.com**.

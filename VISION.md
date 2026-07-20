@@ -76,4 +76,4 @@ Simulation Labs is behavioral user research that **does**, not **says**. Open-so
 on your own model key, drops into any CI in one command.
 
 **Want to run it on your funnel, or work with us?** Open an issue, or reach the founder at
-**satyam@agentmade.ai**.
+**sdaveofficial@gmail.com**.
