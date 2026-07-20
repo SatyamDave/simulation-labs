@@ -253,6 +253,15 @@ def classify_run_error(error: Optional[str]) -> Optional[str]:
     if not error:
         return None
     low = error.lower()
+    if any(
+        s in low
+        for s in ("401", "403", "unauthor", "authentication", "invalid api key",
+                  "invalid key", "api key not valid", "permission denied", "forbidden")
+    ):
+        return (
+            "hint: the model API rejected your key (auth failed) — it looks invalid or "
+            "expired. Regenerate one (Gemini: https://aistudio.google.com/apikey) and re-run."
+        )
     if "429" in low or "rate limit" in low or "rate-limit" in low or "too many requests" in low:
         return (
             "hint: the model API rate-limited the swarm (429). Lower --rpm, send "

@@ -6,7 +6,7 @@
   "blur_sigma": 0.0,
   "downscale_factor": 1.0,
   "tremor_sigma_px": 24.0,
-  "max_steps": 6,
+  "max_steps": 4,
   "deadline_s": 40.0,
   "literacy_note": "",
   "active_perturbations": [

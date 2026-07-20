@@ -30,6 +30,7 @@ from . import (
     preflight,
     regression,
     render,
+    replay,
     safety,
 )
 
@@ -417,16 +418,55 @@ def _ensure_chromium() -> bool:
         return False
 
 
+def _distinct_failure_reasons(report: RunReport) -> list[str]:
+    """The distinct, non-empty per-persona failure reasons — the real 'why' behind
+    an all-infra-error run (a bad key, a 429, a network drop), which the summary
+    table alone doesn't show."""
+    seen: list[str] = []
+    for r in report.results:
+        reason = (r.failure_reason or "").strip()
+        if reason and reason not in seen:
+            seen.append(reason)
+    return seen
+
+
+def _surface_run_error(error: str) -> None:
+    """Print a run-level error as a clean, human headline. A broken target already
+    carries a full human sentence (Orion's marker) — show it as-is; otherwise label
+    it and add an actionable hint when we recognise the cause."""
+    if error and "target returned HTTP" in error:
+        print(f"\n✗ {error}")
+        return
+    print(f"\nrun error: {error}")
+    hint = preflight.classify_run_error(error)
+    if hint:
+        print(hint)
+
+
 def _cmd_try(args: argparse.Namespace) -> int:
-    """Zero-config proof it works: serve a bundled signup flow and run the swarm
-    against it with whatever provider key you have. `sim try` and you're done."""
+    """Zero-config proof it works. With NO key, replay a real recorded run instantly
+    (no browser, no network) — the honest zero-config first impression. With a key
+    (or `--live`), run the swarm live against the bundled signup flow."""
     from types import SimpleNamespace
 
     from ghostpanel.cli import demo_flow
+    from ghostpanel.engine.models.registry import detected_key_backend
 
-    backend = _resolve_try_backend()
+    backend = detected_key_backend()
+
+    # Keyless (or explicit --replay): show a genuine recorded run in seconds. This
+    # is what makes "pip install && sim try" a real result with no key/config.
+    if getattr(args, "replay", False) or (backend is None and not getattr(args, "live", False)):
+        if replay.play(delay=0 if args.quiet else 0.32):
+            return exit_codes.OK
+        # Cassette missing (should not happen — it ships in-package): fall through
+        # to the live path, which will prompt/guide for a key.
+
+    # Live run — needs a model key. `--live` with no key prompts (tty) or guides.
     if backend is None:
-        return exit_codes.MISSING_KEY
+        backend = _resolve_try_backend()
+        if backend is None:
+            return exit_codes.MISSING_KEY
 
     if not _ensure_chromium():
         return exit_codes.RUN_ERROR
@@ -457,15 +497,18 @@ def _cmd_try(args: argparse.Namespace) -> int:
         )
 
     if outcome.error:
-        print(f"\nrun error: {outcome.error}")
-        hint = preflight.classify_run_error(outcome.error)
-        if hint:
-            print(hint)
+        _surface_run_error(outcome.error)
         return exit_codes.RUN_ERROR
 
     _write_json(out_dir / "report.json", outcome.report)
     if preflight.usable_results(outcome.report) == 0:
-        print("\nevery agent hit an infra error — nothing to report. Check the error above.")
+        print("\n✗ No agent could act — this is an infrastructure problem, not your flow:")
+        reasons = _distinct_failure_reasons(outcome.report)
+        for reason in reasons:
+            print(f"    • {reason}")
+        hint = preflight.classify_run_error(reasons[0] if reasons else None)
+        if hint:
+            print(f"  {hint}")
         return exit_codes.NO_RESULTS
 
     print()
@@ -523,9 +566,13 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_try = sub.add_parser("try", help="zero-config demo: run the swarm on a bundled signup flow with your key")
+    p_try = sub.add_parser("try", help="zero-config demo: replay a real recorded run (no key), or run it live with your key")
     p_try.add_argument("--out", help="output directory (default: .sim-try)")
     p_try.add_argument("--quiet", action="store_true", help="suppress live per-step progress")
+    p_try.add_argument("--live", action="store_true",
+                       help="force a live run against the bundled demo (needs a model key)")
+    p_try.add_argument("--replay", action="store_true",
+                       help="force replay of the recorded run even if a key is set")
 
     sub.add_parser("init", help="scaffold sim.yml + .github/workflows/simulate.yml")
 
@@ -596,6 +643,16 @@ def main(argv: list[str] | None = None) -> int:
         # Ctrl-C mid-run: exit cleanly, never dump a traceback in front of a client.
         print("\ninterrupted — run cancelled.")
         return exit_codes.INTERRUPTED
+    except Exception as exc:  # noqa: BLE001 — last line of defence: never show a raw trace
+        if os.environ.get("SIM_DEBUG"):
+            import traceback
+            traceback.print_exc()
+        print(f"\nunexpected error: {type(exc).__name__}: {exc}")
+        print(
+            "this is a bug in sim, not your setup. Re-run with SIM_DEBUG=1 for the full "
+            "trace, or report it: https://github.com/SatyamDave/simulation-labs/issues"
+        )
+        return exit_codes.RUN_ERROR
 
 
 if __name__ == "__main__":  # `python -m ghostpanel.cli.main` mirrors `sim`
