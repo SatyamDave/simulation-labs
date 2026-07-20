@@ -14,7 +14,7 @@ Simulation Labs — behavioral gate demo
 ① A working signup flow — five behavioral segments attempt it:
 
   PERSONA         OUTCOME  STEPS
-  ---------------------------------
+  ------------------------------
   Fluent          success      4  ✓
   AI Agent        success      4  ✓
   Rushed          success      4  ✓
@@ -28,7 +28,7 @@ Completion rate: 100%  (5/5 personas completed)
 ② The same flow on a regressed build (a deploy broke the submit):
 
   PERSONA         OUTCOME      STEPS
-  -------------------------------------
+  ----------------------------------
   Fluent          stuck            5  ✗  ← gave up at (638, 566)
   AI Agent        stuck            5  ✗  ← gave up at (638, 566)
   Rushed          stuck            7  ✗  ← gave up at (638, 568)
@@ -38,6 +38,11 @@ Completion rate: 100%  (5/5 personas completed)
 Completion rate: 0%  (0/5 personas completed)
 
   gate FAIL ✗  — completion 0% (was 100%). The build broke the flow — the merge is blocked. (exit 1)
+
+That's the whole contract: green when your users can finish, red — with the exact failures — when they can't.
+
+▷ recorded (working run: gemini; regressed-build run: holo, 2026-07-19) · set GEMINI_API_KEY to run this live, or point it at your own flow:
+  sim gate --url https://your-app.com/signup --task "create an account"
 ```
 
 <div align="center">

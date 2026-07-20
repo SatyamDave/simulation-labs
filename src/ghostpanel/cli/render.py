@@ -102,9 +102,10 @@ def _rows(report: RunReport) -> list[tuple[str, str, int, bool, Optional[tuple[i
     return rows
 
 
-def print_summary(report: RunReport) -> None:
+def print_summary(report: RunReport, *, header: bool = True) -> None:
     """Print the per-persona survival table + headline completion rate. Failing
-    agents are annotated with the exact pixel they abandoned at, when known."""
+    agents are annotated with the exact pixel they abandoned at, when known. Set
+    ``header=False`` to omit the run-id/task/URL banner (the compact summary view)."""
     rows = _rows(report)
 
     persona_w = max([len("PERSONA")] + [len(r[0]) for r in rows]) if rows else len("PERSONA")
@@ -112,11 +113,12 @@ def print_summary(report: RunReport) -> None:
     steps_w = max([len("STEPS")] + [len(str(r[2])) for r in rows]) if rows else len("STEPS")
 
     print()
-    print(_bold(f"Behavioral run {report.run_id}  ·  {report.task}"))
-    print(_dim(report.target_url))
-    print()
+    if header:
+        print(_bold(f"Behavioral run {report.run_id}  ·  {report.task}"))
+        print(_dim(report.target_url))
+        print()
 
-    header = f"  {'PERSONA':<{persona_w}}  {'OUTCOME':<{outcome_w}}  {'STEPS':>{steps_w}}  {'':<1}"
+    header = f"  {'PERSONA':<{persona_w}}  {'OUTCOME':<{outcome_w}}  {'STEPS':>{steps_w}}"
     print(_bold(header))
     print(_dim("  " + "-" * (len(header) - 2)))
     for label, outcome, steps, completed, coords in rows:
